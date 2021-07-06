@@ -1,0 +1,58 @@
+name: VirtualBox VM
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    name: Build
+    runs-on: macos-10.15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Read app config from env file
+        id: app-config
+        env:
+          ENV_FILE_PATH: ./app-config.env
+        run: ./ci/read-env-file.sh
+
+      - name: Output app config that was read from file
+        env:
+          DIGITALOCEAN_IMAGE: ${{ steps.app-config.outputs.DIGITALOCEAN_IMAGE }}
+          WORKER_MANAGER_VERSION: ${{ steps.app-config.outputs.WORKER_MANAGER_VERSION }}
+        run: printenv
+
+      - name: Show package versions
+        run: |
+          vagrant --version
+          VBoxManage --version
+
+      - name: Cache multiple paths
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.vagrant.d/boxes/focal-server-cloudimg-amd64-vagrant
+          key: ${{ runner.os }}-${{ hashFiles('**/lockfiles') }}
+
+      - name: Validate Vagrantfile
+        run: vagrant validate
+
+      - name: Lint provision.sh
+        run: |
+          brew install shellcheck
+          shellcheck provision.sh
+
+      - name: Vagrant up
+        env:
+          HOST_PORT: 80
+          DIGITALOCEAN_API_TOKEN: ${{ secrets.DIGITALOCEAN_API_TOKEN }}
+          DIGITALOCEAN_IMAGE: ${{ steps.app-config.outputs.DIGITALOCEAN_IMAGE }}
+          WORKER_MANAGER_VERSION: ${{ steps.app-config.outputs.WORKER_MANAGER_VERSION }}
+        run: vagrant up
