@@ -1,0 +1,35 @@
+version: "3"
+
+services:
+  postgres:
+    image: postgres:13
+    container_name: postgres
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - ${POSTGRES_EXPOSED_PORT}:5432
+
+  nginx:
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    container_name: nginx
+    restart: always
+    ports:
+      - ${NGINX_EXPOSED_PORT}:80
+    links:
+      - app:app
+    volumes:
+      - /var/log/nginx:/var/log/nginx
+
+  app:
+    image: ghcr.io/smartassert/worker-manager:${WORKER_MANAGER_VERSION}
+    container_name: worker-manager
+    restart: always
+    env_file: app.env
+    environment:
+      DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD}@postgres:5432/worker-db?serverVersion=12&charset=utf8
+      MESSENGER_TRANSPORT_DSN: doctrine://default
+    depends_on:
+      - postgres
