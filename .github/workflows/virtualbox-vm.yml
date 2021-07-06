@@ -55,4 +55,4 @@ jobs:
           DIGITALOCEAN_API_TOKEN: ${{ secrets.DIGITALOCEAN_API_TOKEN }}
           DIGITALOCEAN_IMAGE: ${{ steps.app-config.outputs.DIGITALOCEAN_IMAGE }}
           WORKER_MANAGER_VERSION: ${{ steps.app-config.outputs.WORKER_MANAGER_VERSION }}
-        run: vagrant up basil_worker
+        run: vagrant up
