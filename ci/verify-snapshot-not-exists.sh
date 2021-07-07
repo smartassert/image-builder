@@ -4,7 +4,7 @@ EXIT_CODE_RESPONSE_ID_MISSING=1
 EXIT_CODE_SNAPSHOT_ID_MISSING=2
 EXIT_CODE_RESPONSE_ID_INCORRECT=3
 
-AUTH_HEADER="Authorization: Bearer ${DIGIALOCEAN_API_TOKEN}"
+AUTH_HEADER="Authorization: Bearer ${DIGITALOCEAN_API_TOKEN}"
 URL="https://api.digitalocean.com/v2/snapshots/${ID}"
 
 RESPONSE_JSON=$(curl -s -X GET -H 'Content-Type: application/json' -H "${AUTH_HEADER}" "${URL}")
