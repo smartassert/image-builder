@@ -1,0 +1,139 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  release:
+    types:
+      - published
+
+jobs:
+  build:
+    name: Release
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Set version
+        id: version
+        env:
+          RELEASE_TAG_NAME: ${{ github.event.release.tag_name }}
+        run: |
+          VERSION_LABEL=$(./ci/create-version-label.sh)
+          echo "::set-output name=value::$VERSION_LABEL"
+
+      - name: Set local app-config path
+        id: app-config-path
+        run: |
+          echo "::set-output name=value::./local.app-config.env"
+
+      - name: Build app config url
+        id: app-config-url
+        env:
+          ASSERT_URL_TEMPLATE: https://github.com/smartassert/worker-manager-deploy/releases/download/{{ version }}/app-config.env
+          SOURCE_URL_TEMPLATE: https://raw.githubusercontent.com/smartassert/worker-manager-deploy/{{ version }}/app-config.env
+          VERSION: ${{ steps.version.outputs.value }}
+        run: |
+          URL=$(./ci/create-app-config-url.sh)
+          if [ $? -ne 0 ]; then
+            echo "Failed to build app config url"
+            exit 1
+          fi
+
+          echo "::set-output name=value::$URL"
+
+      - name: Store app config
+        env:
+          URL: ${{ steps.app-config-url.outputs.value }}
+          FILE_PATH: ${{ steps.app-config-path.outputs.value }}
+        run: ./ci/store-http-resource.sh
+
+      - name: Read local app config
+        id: app-config
+        env:
+          ENV_FILE_PATH: ${{ steps.app-config-path.outputs.value }}
+        run: ./ci/read-env-file.sh
+
+      - name: Output app config
+        env:
+          WORKER_IMAGE: ${{ steps.app-config.outputs.WORKER_IMAGE }}
+          WORKER_MANAGER_VERSION: ${{ steps.app-config.outputs.WORKER_MANAGER_VERSION }}
+        run: |
+          echo WORKER_IMAGE $WORKER_IMAGE
+          echo WORKER_MANAGER_VERSION $WORKER_MANAGER_VERSION
+
+      - name: Set snapshot name
+        id: snapshot_name
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          PR_NUMBER: ${{ github.event.number }}
+          RELEASE_TAG_NAME: ${{ steps.version.outputs.value }}
+        run: ./ci/create-snapshot-name.sh
+
+      - name: Verify snapshot name
+        run: echo ${{ steps.snapshot_name.outputs.value }}
+
+      - name: Install packer
+        run: |
+          curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo apt-key add -
+          sudo apt-add-repository "deb [arch=amd64] https://apt.releases.hashicorp.com $(lsb_release -cs) main"
+          sudo apt-get update && sudo apt-get install packer
+
+      - name: Verify packer installation
+        run: |
+          packer --version
+          if [ $? -ne 0 ]; then exit 1; fi; exit 0;
+
+      - name: Verify image configuration
+        env:
+          DIGITALOCEAN_API_TOKEN: ${{ secrets.DIGITALOCEAN_API_TOKEN }}
+          SNAPSHOT_NAME: ${{ steps.snapshot_name.outputs.value }}
+          WORKER_MANAGER_VERSION: ${{ steps.app-config.outputs.WORKER_MANAGER_VERSION }}
+          WORKER_IMAGE: ${{ steps.app-config.outputs.WORKER_IMAGE }}
+        run: packer validate image.pkr.hcl
+
+      - name: Create image and snapshot
+        id: snapshot
+        env:
+          DIGITALOCEAN_API_TOKEN: ${{ secrets.DIGITALOCEAN_API_TOKEN }}
+          SNAPSHOT_NAME: ${{ steps.snapshot_name.outputs.value }}
+          WORKER_MANAGER_VERSION: ${{ steps.app-config.outputs.WORKER_MANAGER_VERSION }}
+          WORKER_IMAGE: ${{ steps.app-config.outputs.WORKER_IMAGE }}
+        run: |
+          packer build image.pkr.hcl | tee packer.log
+          ID=$(cat packer.log | tail -1 | grep -P -o 'ID: \d+' | tr -d 'ID: ')
+
+          echo "::set-output name=id::$ID"
+
+      - name: Verify snapshot exists
+        env:
+          DIGITALOCEAN_API_TOKEN: ${{ secrets.DIGITALOCEAN_API_TOKEN }}
+          ID: ${{ steps.snapshot.outputs.id }}
+        run: |
+          ID=$ID \
+          DIGITALOCEAN_API_TOKEN=$DIGITALOCEAN_API_TOKEN \
+          ./ci/verify-snapshot-exists.sh
+
+          if [ $? -ne 0 ]; then exit 1; fi; exit 0;
+
+      - name: Remove created image if not a release
+        if: ${{ github.event_name != 'release' }}
+        env:
+          DIGITALOCEAN_API_TOKEN: ${{ secrets.DIGITALOCEAN_API_TOKEN }}
+          ID: ${{ steps.snapshot.outputs.id }}
+        run: |
+          ID=$ID \
+          DIGITALOCEAN_API_TOKEN=$DIGITALOCEAN_API_TOKEN \
+          ./ci/delete-snapshot.sh
+
+          ID=$ID \
+          DIGITALOCEAN_API_TOKEN=$DIGITALOCEAN_API_TOKEN \
+          ./ci/verify-snapshot-not-exists.sh
+
+          if [ $? -ne 0 ]; then exit 1; fi; exit 0;
