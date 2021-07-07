@@ -98,7 +98,8 @@ jobs:
           WORKER_IMAGE: ${{ steps.app-config.outputs.WORKER_IMAGE }}
         run: packer validate image.pkr.hcl
 
-      - name: Create image
+      - name: Create image and snapshot
+        id: snapshot
         env:
           DIGITALOCEAN_API_TOKEN: ${{ secrets.DIGITALOCEAN_API_TOKEN }}
           SNAPSHOT_NAME: ${{ steps.snapshot_name.outputs.value }}
@@ -107,13 +108,32 @@ jobs:
         run: |
           packer build image.pkr.hcl | tee packer.log
           ID=$(cat packer.log | tail -1 | grep -P -o 'ID: \d+' | tr -d 'ID: ')
-          ./ci/verify-snapshot-exists.sh $ID ${{ secrets.DIGITALOCEAN_API_TOKEN }}
+
+          echo "::set-output name=id::$ID"
+
+      - name: Verify snapshot exists
+        env:
+          DIGITALOCEAN_API_TOKEN: ${{ secrets.DIGITALOCEAN_API_TOKEN }}
+          ID: ${{ steps.snapshot.outputs.id }}
+        run: |
+          ID=$ID \
+          DIGITALOCEAN_API_TOKEN=$DIGITALOCEAN_API_TOKEN \
+          ./ci/verify-snapshot-exists.sh
+
           if [ $? -ne 0 ]; then exit 1; fi; exit 0;
 
       - name: Remove created image if not a release
-        if: ${{ github.event_name != 'repository_dispatch' && github.event_name != 'release' }}
+        if: ${{ github.event_name != 'release' }}
+        env:
+          DIGITALOCEAN_API_TOKEN: ${{ secrets.DIGITALOCEAN_API_TOKEN }}
+          ID: ${{ steps.snapshot.outputs.id }}
         run: |
-          ID=$(cat packer.log | tail -1 | grep -P -o 'ID: \d+' | tr -d 'ID: ')
-          ./ci/delete-snapshot.sh $ID ${{ secrets.DIGITALOCEAN_API_TOKEN }}
-          ./ci/verify-snapshot-not-exists.sh $ID ${{ secrets.DIGITALOCEAN_API_TOKEN }}
+          ID=$ID \
+          DIGITALOCEAN_API_TOKEN=$DIGITALOCEAN_API_TOKEN \
+          ./ci/delete-snapshot.sh
+
+          ID=$ID \
+          DIGITALOCEAN_API_TOKEN=$DIGITALOCEAN_API_TOKEN \
+          ./ci/verify-snapshot-not-exists.sh
+
           if [ $? -ne 0 ]; then exit 1; fi; exit 0;
