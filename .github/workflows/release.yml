@@ -47,7 +47,9 @@ jobs:
           EVENT_NAME: ${{ github.event_name }}
           PR_NUMBER: ${{ github.event.number }}
           RELEASE_TAG_NAME: ${{ steps.version.outputs.value }}
-        run: ./ci/create-snapshot-name.sh
+        run: |
+          SNAPSHOT_NAME=$(./ci/create-snapshot-name.sh)
+          echo "::set-output name=value::$SNAPSHOT_NAME"
 
       - name: Verify snapshot name
         run: echo ${{ steps.snapshot_name.outputs.value }}
