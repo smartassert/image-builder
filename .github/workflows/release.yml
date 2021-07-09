@@ -25,39 +25,12 @@ jobs:
         env:
           RELEASE_TAG_NAME: ${{ github.event.release.tag_name }}
         run: |
-          VERSION_LABEL=$(./ci/create-version-label.sh)
-          echo "::set-output name=value::$VERSION_LABEL"
-
-      - name: Set local app-config path
-        id: app-config-path
-        run: |
-          echo "::set-output name=value::./local.app-config.env"
-
-      - name: Build app config url
-        id: app-config-url
-        env:
-          ASSERT_URL_TEMPLATE: https://github.com/smartassert/worker-manager-deploy/releases/download/{{ version }}/app-config.env
-          SOURCE_URL_TEMPLATE: https://raw.githubusercontent.com/smartassert/worker-manager-deploy/{{ version }}/app-config.env
-          VERSION: ${{ steps.version.outputs.value }}
-        run: |
-          URL=$(./ci/create-app-config-url.sh)
-          if [ $? -ne 0 ]; then
-            echo "Failed to build app config url"
-            exit 1
-          fi
-
-          echo "::set-output name=value::$URL"
-
-      - name: Store app config
-        env:
-          URL: ${{ steps.app-config-url.outputs.value }}
-          FILE_PATH: ${{ steps.app-config-path.outputs.value }}
-        run: ./ci/store-http-resource.sh
+          [[ ! -z "$RELEASE_TAG_NAME" ]] && echo "::set-output name=value::$RELEASE_TAG_NAME" || echo "::set-output name=value::master"
 
       - name: Read local app config
         id: app-config
         env:
-          ENV_FILE_PATH: ${{ steps.app-config-path.outputs.value }}
+          ENV_FILE_PATH: ./app-config.env
         run: ./ci/read-env-file.sh
 
       - name: Output app config
@@ -74,7 +47,9 @@ jobs:
           EVENT_NAME: ${{ github.event_name }}
           PR_NUMBER: ${{ github.event.number }}
           RELEASE_TAG_NAME: ${{ steps.version.outputs.value }}
-        run: ./ci/create-snapshot-name.sh
+        run: |
+          SNAPSHOT_NAME=$(./ci/create-snapshot-name.sh)
+          echo "::set-output name=value::$SNAPSHOT_NAME"
 
       - name: Verify snapshot name
         run: echo ${{ steps.snapshot_name.outputs.value }}
