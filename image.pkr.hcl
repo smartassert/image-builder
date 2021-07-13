@@ -15,11 +15,6 @@ variable "worker_manager_version" {
   default = env("WORKER_MANAGER_VERSION")
 }
 
-variable "worker_image" {
-  type = string
-  default = env("WORKER_IMAGE")
-}
-
 source "digitalocean" "worker_base" {
   api_token     = "${var.digitalocean_api_token}"
   image         = "ubuntu-20-04-x64"
@@ -66,7 +61,6 @@ build {
     environment_vars = [
       "DIGITALOCEAN_API_TOKEN=${var.digitalocean_api_token}",
       "WORKER_MANAGER_VERSION=${var.worker_manager_version}",
-      "WORKER_IMAGE=${var.worker_image}",
     ]
     scripts = ["./provision.sh"]
   }

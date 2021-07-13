@@ -35,10 +35,8 @@ jobs:
 
       - name: Output app config
         env:
-          WORKER_IMAGE: ${{ steps.app-config.outputs.WORKER_IMAGE }}
           WORKER_MANAGER_VERSION: ${{ steps.app-config.outputs.WORKER_MANAGER_VERSION }}
         run: |
-          echo WORKER_IMAGE $WORKER_IMAGE
           echo WORKER_MANAGER_VERSION $WORKER_MANAGER_VERSION
 
       - name: Set snapshot name
@@ -70,7 +68,6 @@ jobs:
           DIGITALOCEAN_API_TOKEN: ${{ secrets.DIGITALOCEAN_API_TOKEN }}
           SNAPSHOT_NAME: ${{ steps.snapshot_name.outputs.value }}
           WORKER_MANAGER_VERSION: ${{ steps.app-config.outputs.WORKER_MANAGER_VERSION }}
-          WORKER_IMAGE: ${{ steps.app-config.outputs.WORKER_IMAGE }}
         run: packer validate image.pkr.hcl
 
       - name: Create image and snapshot
@@ -79,7 +76,6 @@ jobs:
           DIGITALOCEAN_API_TOKEN: ${{ secrets.DIGITALOCEAN_API_TOKEN }}
           SNAPSHOT_NAME: ${{ steps.snapshot_name.outputs.value }}
           WORKER_MANAGER_VERSION: ${{ steps.app-config.outputs.WORKER_MANAGER_VERSION }}
-          WORKER_IMAGE: ${{ steps.app-config.outputs.WORKER_IMAGE }}
         run: |
           packer build image.pkr.hcl | tee packer.log
           ID=$(cat packer.log | tail -1 | grep -P -o 'ID: \d+' | tr -d 'ID: ')
