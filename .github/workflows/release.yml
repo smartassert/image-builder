@@ -27,15 +27,15 @@ jobs:
         run: |
           [[ ! -z "$RELEASE_TAG_NAME" ]] && echo "::set-output name=value::$RELEASE_TAG_NAME" || echo "::set-output name=value::master"
 
-      - name: Read local app config
-        id: app-config
+      - name: Read build config
+        id: build-config
         env:
-          ENV_FILE_PATH: ./app-config.env
+          ENV_FILE_PATH: ./build.env
         run: ./ci/read-env-file.sh
 
-      - name: Output app config
+      - name: Output build config
         env:
-          WORKER_MANAGER_VERSION: ${{ steps.app-config.outputs.WORKER_MANAGER_VERSION }}
+          WORKER_MANAGER_VERSION: ${{ steps.build-config.outputs.WORKER_MANAGER_VERSION }}
         run: |
           echo WORKER_MANAGER_VERSION $WORKER_MANAGER_VERSION
 
@@ -67,7 +67,7 @@ jobs:
         env:
           DIGITALOCEAN_API_TOKEN: ${{ secrets.DIGITALOCEAN_API_TOKEN }}
           SNAPSHOT_NAME: ${{ steps.snapshot_name.outputs.value }}
-          WORKER_MANAGER_VERSION: ${{ steps.app-config.outputs.WORKER_MANAGER_VERSION }}
+          WORKER_MANAGER_VERSION: ${{ steps.build-config.outputs.WORKER_MANAGER_VERSION }}
         run: packer validate image.pkr.hcl
 
       - name: Create image and snapshot
@@ -75,7 +75,7 @@ jobs:
         env:
           DIGITALOCEAN_API_TOKEN: ${{ secrets.DIGITALOCEAN_API_TOKEN }}
           SNAPSHOT_NAME: ${{ steps.snapshot_name.outputs.value }}
-          WORKER_MANAGER_VERSION: ${{ steps.app-config.outputs.WORKER_MANAGER_VERSION }}
+          WORKER_MANAGER_VERSION: ${{ steps.build-config.outputs.WORKER_MANAGER_VERSION }}
         run: |
           packer build image.pkr.hcl | tee packer.log
           ID=$(cat packer.log | tail -1 | grep -P -o 'ID: \d+' | tr -d 'ID: ')

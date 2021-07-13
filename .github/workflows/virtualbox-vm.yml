@@ -17,15 +17,15 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
-      - name: Read app config from env file
-        id: app-config
+      - name: Read build config
+        id: build-config
         env:
-          ENV_FILE_PATH: ./app-config.env
+          ENV_FILE_PATH: ./build.env
         run: ./ci/read-env-file.sh
 
-      - name: Output app config that was read from file
+      - name: Output build config
         env:
-          WORKER_MANAGER_VERSION: ${{ steps.app-config.outputs.WORKER_MANAGER_VERSION }}
+          WORKER_MANAGER_VERSION: ${{ steps.build-config.outputs.WORKER_MANAGER_VERSION }}
         run: printenv
 
       - name: Show package versions
@@ -52,5 +52,5 @@ jobs:
         env:
           HOST_PORT: 80
           DIGITALOCEAN_API_TOKEN: ${{ secrets.DIGITALOCEAN_API_TOKEN }}
-          WORKER_MANAGER_VERSION: ${{ steps.app-config.outputs.WORKER_MANAGER_VERSION }}
+          WORKER_MANAGER_VERSION: ${{ steps.build-config.outputs.WORKER_MANAGER_VERSION }}
         run: vagrant up
