@@ -1,6 +1,5 @@
 host_port = ENV["HOST_PORT"] || 8080
 digitalocean_access_token = ENV["DIGITALOCEAN_ACCESS_TOKEN"]
-worker_image = ENV["WORKER_IMAGE"]
 worker_manager_version = ENV["WORKER_MANAGER_VERSION"]
 
 Vagrant.configure("2") do |config|
@@ -17,7 +16,6 @@ Vagrant.configure("2") do |config|
   config.vm.provision "file", source: "./nginx/site.conf", destination: "~/nginx/site.conf"
   config.vm.provision "shell", path: "provision.sh", env: {
       "DIGITALOCEAN_ACCESS_TOKEN" => digitalocean_access_token,
-      "WORKER_IMAGE" => worker_image,
       "WORKER_MANAGER_VERSION" => worker_manager_version
   }
 end
