@@ -109,7 +109,9 @@ jobs:
           ./ci/delete-snapshot.sh
 
 #          cd app
-#          php bin/console app:snapshot:exists --id $ID
+          php bin/console app:snapshot:exists --id $ID
+          echo $?
+          exit 0
 #          FOO=$?
 #          echo "pre"
 #          echo $FOO
