@@ -45,19 +45,12 @@ jobs:
           COMMIT_HASH=$(git rev-parse HEAD)
           echo "::set-output name=value::$COMMIT_HASH"
 
-      - name: Get versions from build.env
-        id: build-config
-        env:
-          ENV_FILE_PATH: ./build.env
-        run: ./ci/read-env-file.sh
-
       - name: Create release notes
         if: ${{ steps.update.outputs.has_changes == 'true' }}
         id: release_notes
-        env:
-          WORKER_MANAGER_VERSION: ${{ steps.build-config.outputs.WORKER_MANAGER_VERSION }}
         run: |
           rm -f release-notes.md
+          export echo $(cat build.env | tr '\n' ' ')
           echo "- worker manager: $WORKER_MANAGER_VERSION" >> release-notes.md
 
       - name: Create release
