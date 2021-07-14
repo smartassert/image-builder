@@ -1,0 +1,67 @@
+name: VirtualBox VM debug
+
+on:
+  pull_request:
+
+jobs:
+  build:
+    name: Build debug
+    runs-on: macos-10.15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Setup php
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8
+
+      - name: Download dependencies
+        uses: php-actions/composer@v6
+        with:
+          args: --ignore-platform-reqs --quiet
+          working_dir: app
+
+      - name: Read build config
+        id: build-config
+        env:
+          ENV_FILE_PATH: ../build.env
+        run: |
+          cd app
+          php bin/console app:env-file:read \
+          --path $ENV_FILE_PATH \
+          --output-format '::set-output name={{ name }}::{{ value }}'
+
+      - name: Output build config
+        env:
+          WORKER_MANAGER_VERSION: ${{ steps.build-config.outputs.WORKER_MANAGER_VERSION }}
+        run: |
+          echo WORKER_MANAGER_VERSION $WORKER_MANAGER_VERSION
+
+#      - name: Show package versions
+#        run: |
+#          vagrant --version
+#          VBoxManage --version
+#
+#      - name: Cache multiple paths
+#        uses: actions/cache@v2
+#        with:
+#          path: |
+#            ~/.vagrant.d/boxes/focal-server-cloudimg-amd64-vagrant
+#          key: ${{ runner.os }}-${{ hashFiles('**/lockfiles') }}
+#
+#      - name: Validate Vagrantfile
+#        run: vagrant validate
+#
+#      - name: Lint provision.sh
+#        run: |
+#          brew install shellcheck
+#          shellcheck provision.sh
+#
+#      - name: Vagrant up
+#        env:
+#          HOST_PORT: 80
+#          DIGITALOCEAN_API_TOKEN: ${{ secrets.DIGITALOCEAN_API_TOKEN }}
+#          WORKER_MANAGER_VERSION: ${{ steps.build-config.outputs.WORKER_MANAGER_VERSION }}
+#        run: vagrant up
