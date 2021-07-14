@@ -30,7 +30,8 @@ jobs:
       - name: Download dependencies
         uses: php-actions/composer@v2
         with:
-          args: --ignore-platform-reqs
+          args: --ignore-platform-reqs --quiet
+          working_dir: app
 
       - name: Run PHPUnit unit tests
         run: composer test-unit
