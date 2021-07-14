@@ -15,7 +15,8 @@
         "symfony/yaml": "5.3.*"
     },
     "require-dev": {
-        "phpunit/phpunit": "^9.5"
+        "phpunit/phpunit": "^9.5",
+        "squizlabs/php_codesniffer": "^3.6"
     },
     "config": {
         "optimize-autoloader": true,
@@ -50,7 +51,8 @@
         "post-update-cmd": [
             "@auto-scripts"
         ],
-        "test-unit": "./vendor/bin/phpunit tests/Unit"
+        "test-unit": "./vendor/bin/phpunit tests/Unit",
+        "cs-phpcs": "./vendor/bin/phpcs"
     },
     "conflict": {
         "symfony/symfony": "*"
