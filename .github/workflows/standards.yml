@@ -59,6 +59,7 @@ jobs:
         uses: php-actions/composer@v2
         with:
           args: --ignore-platform-reqs --quiet
+          working_dir: app
 
       - name: Run
         run: composer cs-phpcs
