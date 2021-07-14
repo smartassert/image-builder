@@ -37,7 +37,7 @@ jobs:
           cd app
           php bin/console app:snapshot:create-name \
           --event-name $EVENT_NAME \
-          --pull-request-number $PULL_REQUEST_NUMBER \
+          --pull-request-number $PR_NUMBER \
           --release-version $RELEASE_VERSION
 
 #      - name: Set version
