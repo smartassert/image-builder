@@ -16,7 +16,7 @@ class SnapshotExistsCommandTest extends KernelTestCase
     /**
      * @dataProvider executeDataProvider
      *
-     * @param array<mixed>             $input
+     * @param array<mixed> $input
      */
     public function testExecute(ResponseInterface $httpResponse, array $input, int $expectedReturnCode): void
     {
