@@ -45,7 +45,7 @@ jobs:
 #          echo "::set-output name=value::$COMMIT_HASH"
 
       - name: Create release notes
-        if: ${{ steps.update.outputs.has_changes == 'true' }}
+#        if: ${{ steps.update.outputs.has_changes == 'true' }}
         id: release_notes
         run: |
           rm -f release-notes.md
