@@ -15,6 +15,7 @@
         "symfony/yaml": "5.3.*"
     },
     "require-dev": {
+        "friendsofphp/php-cs-fixer": "^3.0",
         "phpstan/phpstan": "^0.12.92",
         "phpstan/phpstan-phpunit": "^0.12.20",
         "phpstan/phpstan-symfony": "^0.12.38",
@@ -54,8 +55,14 @@
         "post-update-cmd": [
             "@auto-scripts"
         ],
-        "test-unit": "./vendor/bin/phpunit tests/Unit",
+        "cs-fixer-dry-run": "./vendor/bin/php-cs-fixer fix --dry-run --verbose --show-progress none",
+        "cs-fixer-fix": "./vendor/bin/php-cs-fixer fix --diff",
         "cs-phpcs": "./vendor/bin/phpcs",
+        "cs": [
+            "@cs-fixer-dry-run",
+            "@cs-phpcs"
+        ],
+        "test-unit": "./vendor/bin/phpunit tests/Unit",
         "static-analysis": "./vendor/bin/phpstan analyse --ansi"
     },
     "conflict": {
