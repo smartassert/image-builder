@@ -108,11 +108,11 @@ jobs:
           DIGITALOCEAN_API_TOKEN=$DIGITALOCEAN_API_TOKEN \
           ./ci/delete-snapshot.sh
 
-          cd app
-          php bin/console app:snapshot:exists --id $ID
-          FOO=$?
-          echo "pre"
-          echo $FOO
-          echo "post"
-
-          if [ $FOO -ne 0 ]; then exit 1; fi; exit 0;
+#          cd app
+#          php bin/console app:snapshot:exists --id $ID
+#          FOO=$?
+#          echo "pre"
+#          echo $FOO
+#          echo "post"
+#
+#          if [ $FOO -ne 0 ]; then exit 1; fi; exit 0;
