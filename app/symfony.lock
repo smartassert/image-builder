@@ -23,6 +23,15 @@
     "phpspec/prophecy": {
         "version": "1.13.0"
     },
+    "phpstan/phpstan": {
+        "version": "0.12.92"
+    },
+    "phpstan/phpstan-phpunit": {
+        "version": "0.12.20"
+    },
+    "phpstan/phpstan-symfony": {
+        "version": "0.12.38"
+    },
     "phpunit/php-code-coverage": {
         "version": "9.2.6"
     },

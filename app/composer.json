@@ -15,6 +15,9 @@
         "symfony/yaml": "5.3.*"
     },
     "require-dev": {
+        "phpstan/phpstan": "^0.12.92",
+        "phpstan/phpstan-phpunit": "^0.12.20",
+        "phpstan/phpstan-symfony": "^0.12.38",
         "phpunit/phpunit": "^9.5",
         "squizlabs/php_codesniffer": "^3.6"
     },
@@ -52,7 +55,8 @@
             "@auto-scripts"
         ],
         "test-unit": "./vendor/bin/phpunit tests/Unit",
-        "cs-phpcs": "./vendor/bin/phpcs"
+        "cs-phpcs": "./vendor/bin/phpcs",
+        "static-analysis": "./vendor/bin/phpstan analyse --ansi"
     },
     "conflict": {
         "symfony/symfony": "*"
