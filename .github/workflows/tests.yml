@@ -31,8 +31,6 @@ jobs:
         uses: php-actions/composer@v2
         with:
           args: --ignore-platform-reqs
-        run: |
-          echo "foo"
 
       - name: Run PHPUnit unit tests
         run: composer test-unit
