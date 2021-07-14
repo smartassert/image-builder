@@ -103,5 +103,5 @@ jobs:
           ID: ${{ steps.snapshot.outputs.id }}
         run: |
           cd app
-          php bin/console app:snapshot:delete --id
+          php bin/console app:snapshot:delete --id $ID
           php bin/console app:snapshot:exists --id $ID --expect-exists 0
