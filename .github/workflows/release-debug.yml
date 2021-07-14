@@ -39,7 +39,8 @@ jobs:
             php bin/console app:snapshot:create-name \
             --event-name $EVENT_NAME \
             --pull-request-number $PR_NUMBER \
-            --release-version $RELEASE_VERSION)
+            --release-version $RELEASE_VERSION
+          )
           echo "::set-output name=value::$SNAPSHOT_NAME"
 
 
