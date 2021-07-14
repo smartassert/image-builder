@@ -14,12 +14,13 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 
 #[AsCommand(
     name: SnapshotExistsCommand::NAME,
-    description: 'Verify that a snapshot exists. Returns 0 if exists, 1 if not exists and 2 if an error occurs.',
+    description: 'Verify that a snapshot exists.',
 )]
 class SnapshotExistsCommand extends Command
 {
     public const NAME = 'app:snapshot:exists';
     public const OPTION_ID = 'id';
+    public const OPTION_EXPECT_EXISTS = 'expect-exists';
 
     public function __construct(
         private SnapshotApi $snapshotApi,
@@ -32,6 +33,7 @@ class SnapshotExistsCommand extends Command
     {
         $this
             ->addOption(self::OPTION_ID, null, InputOption::VALUE_REQUIRED, 'Snapshot ID')
+            ->addOption(self::OPTION_EXPECT_EXISTS, null, InputOption::VALUE_OPTIONAL, 'Expect existence?', true)
         ;
     }
 
@@ -39,14 +41,15 @@ class SnapshotExistsCommand extends Command
     {
         $id = $input->getOption(self::OPTION_ID);
         $id = is_string($id) ? $id : 'invalid';
+        $expectExists = (bool) $input->getOption(self::OPTION_EXPECT_EXISTS);
 
         try {
             $this->snapshotApi->getById($id);
 
-            return Command::SUCCESS;
+            return (int) !$expectExists;
         } catch (RuntimeException $runtimeException) {
             if (404 === $runtimeException->getCode()) {
-                return Command::FAILURE;
+                return (int) $expectExists;
             }
 
             $exception = $runtimeException;

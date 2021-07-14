@@ -16,15 +16,14 @@ class SnapshotExistsCommandTest extends KernelTestCase
     /**
      * @dataProvider executeDataProvider
      *
-     * @param array<ResponseInterface> $httpFixtures
      * @param array<mixed>             $input
      */
-    public function testExecute(array $httpFixtures, array $input, int $expectedReturnCode): void
+    public function testExecute(ResponseInterface $httpResponse, array $input, int $expectedReturnCode): void
     {
         $container = self::getContainer();
         $mockHandler = $container->get(MockHandler::class);
         if ($mockHandler instanceof MockHandler) {
-            $mockHandler->append(...$httpFixtures);
+            $mockHandler->append($httpResponse);
         }
 
         $command = self::getContainer()->get(SnapshotExistsCommand::class);
@@ -43,41 +42,86 @@ class SnapshotExistsCommandTest extends KernelTestCase
      */
     public function executeDataProvider(): array
     {
+        $notExistsResponse = new Response(404);
+        $existsResponse = new Response(
+            200,
+            [
+                'content-type' => 'application/json; charset=utf-8',
+            ],
+            (string) json_encode([
+                'snapshot' => [],
+            ])
+        );
+
         return [
             'invalid api token' => [
-                'httpFixtures' => [
-                    new Response(401),
-                ],
+                'response' => new Response(401),
                 'input' => [
                     '--id' => '123',
                 ],
                 'expectedReturnCode' => Command::INVALID,
             ],
-            'snapshot not exists' => [
-                'httpFixtures' => [
-                    new Response(404),
-                ],
+            'not exists, expect exists (default)' => [
+                'response' => $notExistsResponse,
                 'input' => [
                     '--id' => '123',
                 ],
                 'expectedReturnCode' => Command::FAILURE,
             ],
-            'snapshot exists' => [
-                'httpFixtures' => [
-                    new Response(
-                        200,
-                        [
-                            'content-type' => 'application/json; charset=utf-8',
-                        ],
-                        (string) json_encode([
-                            'snapshot' => [],
-                        ])
-                    ),
+            'not exists, expect not exists as false' => [
+                'response' => $notExistsResponse,
+                'input' => [
+                    '--id' => '123',
+                    '--expect-exists' => false,
                 ],
+                'expectedReturnCode' => Command::SUCCESS,
+            ],
+            'not exists, expect not exists as zero' => [
+                'response' => $notExistsResponse,
+                'input' => [
+                    '--id' => '123',
+                    '--expect-exists' => 0,
+                ],
+                'expectedReturnCode' => Command::SUCCESS,
+            ],
+            'not exists, expect not exists as quoted zero' => [
+                'response' => $notExistsResponse,
+                'input' => [
+                    '--id' => '123',
+                    '--expect-exists' => '0',
+                ],
+                'expectedReturnCode' => Command::SUCCESS,
+            ],
+            'exists, expect exists (default)' => [
+                'response' => $existsResponse,
                 'input' => [
                     '--id' => '123',
                 ],
                 'expectedReturnCode' => Command::SUCCESS,
+            ],
+            'exists, expect not exists as false' => [
+                'response' => $existsResponse,
+                'input' => [
+                    '--id' => '123',
+                    '--expect-exists' => false,
+                ],
+                'expectedReturnCode' => Command::FAILURE,
+            ],
+            'exists, expect not exists as zero' => [
+                'response' => $existsResponse,
+                'input' => [
+                    '--id' => '123',
+                    '--expect-exists' => 0,
+                ],
+                'expectedReturnCode' => Command::FAILURE,
+            ],
+            'exists, expect not exists as quoted zero' => [
+                'response' => $existsResponse,
+                'input' => [
+                    '--id' => '123',
+                    '--expect-exists' => '0',
+                ],
+                'expectedReturnCode' => Command::FAILURE,
             ],
         ];
     }
