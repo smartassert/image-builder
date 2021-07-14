@@ -20,6 +20,17 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
+      - name: Setup php
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8
+
+      - name: Download dependencies
+        uses: php-actions/composer@v6
+        with:
+          args: --ignore-platform-reqs --quiet
+          working_dir: app
+
       - name: Set version
         id: version
         env:
@@ -32,9 +43,15 @@ jobs:
         env:
           EVENT_NAME: ${{ github.event_name }}
           PR_NUMBER: ${{ github.event.number }}
-          RELEASE_TAG_NAME: ${{ steps.version.outputs.value }}
+          RELEASE_VERSION: ${{ steps.version.outputs.value }}
         run: |
-          SNAPSHOT_NAME=$(./ci/create-snapshot-name.sh)
+          cd app
+          SNAPSHOT_NAME=$(
+            php bin/console app:snapshot:create-name \
+            --event-name $EVENT_NAME \
+            --pull-request-number $PR_NUMBER \
+            --release-version $RELEASE_VERSION
+          )
           echo "::set-output name=value::$SNAPSHOT_NAME"
 
       - name: Verify snapshot name
@@ -76,11 +93,8 @@ jobs:
           DIGITALOCEAN_API_TOKEN: ${{ secrets.DIGITALOCEAN_API_TOKEN }}
           ID: ${{ steps.snapshot.outputs.id }}
         run: |
-          ID=$ID \
-          DIGITALOCEAN_API_TOKEN=$DIGITALOCEAN_API_TOKEN \
-          ./ci/verify-snapshot-exists.sh
-
-          if [ $? -ne 0 ]; then exit 1; fi; exit 0;
+          cd app
+          php bin/console app:snapshot:exists --id $ID --expect-exists 1
 
       - name: Remove created image if not a release
         if: ${{ github.event_name != 'release' }}
@@ -88,12 +102,6 @@ jobs:
           DIGITALOCEAN_API_TOKEN: ${{ secrets.DIGITALOCEAN_API_TOKEN }}
           ID: ${{ steps.snapshot.outputs.id }}
         run: |
-          ID=$ID \
-          DIGITALOCEAN_API_TOKEN=$DIGITALOCEAN_API_TOKEN \
-          ./ci/delete-snapshot.sh
-
-          ID=$ID \
-          DIGITALOCEAN_API_TOKEN=$DIGITALOCEAN_API_TOKEN \
-          ./ci/verify-snapshot-not-exists.sh
-
-          if [ $? -ne 0 ]; then exit 1; fi; exit 0;
+          cd app
+          php bin/console app:snapshot:delete --id $ID
+          php bin/console app:snapshot:exists --id $ID --expect-exists 0
