@@ -65,7 +65,7 @@ class SnapshotCreateNameCommandTest extends KernelTestCase
             'release, quoted version' => [
                 'input' => [
                     '--' . SnapshotCreateNameCommand::OPTION_EVENT_NAME => 'release',
-                    '--' . SnapshotCreateNameCommand::OPTION_RELEASE_VERSION => "0.456",
+                    '--' . SnapshotCreateNameCommand::OPTION_RELEASE_VERSION => '"0.456"',
                 ],
                 'expectedReturnCode' => Command::SUCCESS,
                 'expectedOutput' => 'release-0.456',
