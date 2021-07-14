@@ -32,11 +32,13 @@ jobs:
         env:
           EVENT_NAME: ${{ github.event_name }}
           PR_NUMBER: ${{ github.event.number }}
-          RELEASE_TAG_NAME: ${{ steps.version.outputs.value }}
-          FOO: ${{ toJson(github) }}
+          RELEASE_VERSION: ${{ steps.version.outputs.value }}
         run: |
           cd app
-          php bin/console app:snapshot:create-name
+          php bin/console app:snapshot:create-name \
+          --event-name $EVENT_NAME \
+          --pull-request-number $PULL_REQUEST_NUMBER \
+          --release-version $RELEASE_VERSION
 
 #      - name: Set version
 #        id: version

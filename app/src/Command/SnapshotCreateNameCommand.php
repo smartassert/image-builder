@@ -4,48 +4,79 @@ namespace App\Command;
 
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Style\SymfonyStyle;
 
 #[AsCommand(
-    name: 'app:snapshot:create-name',
+    name: SnapshotCreateNameCommand::NAME,
     description: 'Create a snapshot name',
 )]
 class SnapshotCreateNameCommand extends Command
 {
-    public function __construct(string $name = null, private string $foo)
-    {
-        parent::__construct($name);
-    }
+    public const NAME = 'app:snapshot:create-name';
+    public const OPTION_EVENT_NAME = 'event-name';
+    public const OPTION_PULL_REQUEST_NUMBER = 'pull-request-number';
+    public const OPTION_RELEASE_VERSION = 'release-version';
+
+    private const EVENT_NAME_PUSH = 'push';
+    private const EVENT_NAME_PULL_REQUEST = 'pull-request';
+    private const EVENT_NAME_PULL_RELEASE = 'release';
+    private const NAME_DEFAULT = 'master';
+    private const NAME_PULL_REQUEST = 'pull-request-%s';
+    private const NAME_RELEASE = 'release-%s';
 
     protected function configure(): void
     {
         $this
-            ->addArgument('arg1', InputArgument::OPTIONAL, 'Argument description')
-            ->addOption('option1', null, InputOption::VALUE_NONE, 'Option description')
+            ->addOption(
+                self::OPTION_EVENT_NAME,
+                null,
+                InputOption::VALUE_OPTIONAL,
+                'Github event name'
+            )
+            ->addOption(
+                self::OPTION_PULL_REQUEST_NUMBER,
+                null,
+                InputOption::VALUE_OPTIONAL,
+                'Github pull request number'
+            )
+            ->addOption(
+                self::OPTION_RELEASE_VERSION,
+                null,
+                InputOption::VALUE_OPTIONAL,
+                'Release version'
+            )
         ;
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        var_dump($this->foo);
+        $eventName = $input->getOption('event-name');
 
-//        $io = new SymfonyStyle($input, $output);
-//        $arg1 = $input->getArgument('arg1');
-//
-//        if ($arg1) {
-//            $io->note(sprintf('You passed an argument: %s', $arg1));
-//        }
-//
-//        if ($input->getOption('option1')) {
-//            // ...
-//        }
-//
-//        $io->success('You have a new command! Now make it your own! Pass --help to see your options.');
+        if (self::EVENT_NAME_PUSH === $eventName) {
+            $output->write(self::NAME_DEFAULT);
 
-        return Command::SUCCESS;
+            return Command::SUCCESS;
+        }
+
+        if (self::EVENT_NAME_PULL_REQUEST === $eventName) {
+            $pullRequestNumber = $input->getOption('pull-request-number');
+
+            $output->write(sprintf(self::NAME_PULL_REQUEST, $pullRequestNumber));
+
+            return Command::SUCCESS;
+        }
+
+        if (self::EVENT_NAME_PULL_RELEASE === $eventName) {
+            $releaseVersion = $input->getOption('release-version');
+            $releaseVersion = str_replace('"', '', $releaseVersion);
+
+            $output->write(sprintf(self::NAME_RELEASE, $releaseVersion));
+
+            return Command::SUCCESS;
+        }
+
+        return Command::FAILURE;
     }
 }
