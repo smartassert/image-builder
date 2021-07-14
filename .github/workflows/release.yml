@@ -1,15 +1,15 @@
 name: Release
 
 on:
-  push:
-    branches:
-      - main
+#  push:
+#    branches:
+#      - main
   pull_request:
-    branches:
-      - main
-  release:
-    types:
-      - published
+#    branches:
+#      - main
+#  release:
+#    types:
+#      - published
 
 jobs:
   build:
@@ -93,9 +93,8 @@ jobs:
           DIGITALOCEAN_API_TOKEN: ${{ secrets.DIGITALOCEAN_API_TOKEN }}
           ID: ${{ steps.snapshot.outputs.id }}
         run: |
-          ID=$ID \
-          DIGITALOCEAN_API_TOKEN=$DIGITALOCEAN_API_TOKEN \
-          ./ci/verify-snapshot-exists.sh
+          cd app
+          php bin/console app:snapshot:exists --id $ID
 
           if [ $? -ne 0 ]; then exit 1; fi; exit 0;
 
@@ -109,8 +108,7 @@ jobs:
           DIGITALOCEAN_API_TOKEN=$DIGITALOCEAN_API_TOKEN \
           ./ci/delete-snapshot.sh
 
-          ID=$ID \
-          DIGITALOCEAN_API_TOKEN=$DIGITALOCEAN_API_TOKEN \
-          ./ci/verify-snapshot-not-exists.sh
+          cd app
+          php bin/console app:snapshot:exists --id $ID
 
-          if [ $? -ne 0 ]; then exit 1; fi; exit 0;
+          if [ $? -ne 0 ]; then exit 0; fi; exit 1;
