@@ -110,5 +110,9 @@ jobs:
 
           cd app
           php bin/console app:snapshot:exists --id $ID
+          FOO=$?
+          echo "pre"
+          echo $FOO
+          echo "post"
 
-          if [ $? -ne 0 ]; then exit 0; fi; exit 1;
+          if [ $FOO -ne 0 ]; then exit 1; fi; exit 0;
