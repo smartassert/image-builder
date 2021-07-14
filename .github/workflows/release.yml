@@ -102,9 +102,6 @@ jobs:
           DIGITALOCEAN_API_TOKEN: ${{ secrets.DIGITALOCEAN_API_TOKEN }}
           ID: ${{ steps.snapshot.outputs.id }}
         run: |
-          ID=$ID \
-          DIGITALOCEAN_API_TOKEN=$DIGITALOCEAN_API_TOKEN \
-          ./ci/delete-snapshot.sh
-
           cd app
+          php bin/console app:snapshot:delete --id $ID
           php bin/console app:snapshot:exists --id $ID --expect-exists 0
