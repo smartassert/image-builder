@@ -33,7 +33,7 @@ jobs:
       - name: Read build config
         id: build-config
         env:
-          ENV_FILE_PATH: ./build.env
+          ENV_FILE_PATH: ../build.env
         run: |
           cd app
           php bin/console app:env-file:read \
