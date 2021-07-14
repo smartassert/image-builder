@@ -35,11 +35,6 @@ jobs:
           RELEASE_VERSION: ${{ steps.version.outputs.value }}
         run: |
           cd app
-          php bin/console app:snapshot:create-name \
-          --event-name $EVENT_NAME \
-          --pull-request-number $PR_NUMBER \
-          --release-version $RELEASE_VERSION
-
           SNAPSHOT_NAME=$(
             php bin/console app:snapshot:create-name \
             --event-name $EVENT_NAME \
