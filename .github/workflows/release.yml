@@ -93,11 +93,8 @@ jobs:
           DIGITALOCEAN_API_TOKEN: ${{ secrets.DIGITALOCEAN_API_TOKEN }}
           ID: ${{ steps.snapshot.outputs.id }}
         run: |
-          ID=$ID \
-          DIGITALOCEAN_API_TOKEN=$DIGITALOCEAN_API_TOKEN \
-          ./ci/verify-snapshot-exists.sh
-
-          if [ $? -ne 0 ]; then exit 1; fi; exit 0;
+          cd app
+          php bin/console app:snapshot:exists --id $ID --expect-exists 1
 
       - name: Remove created image if not a release
         if: ${{ github.event_name != 'release' }}
@@ -109,8 +106,5 @@ jobs:
           DIGITALOCEAN_API_TOKEN=$DIGITALOCEAN_API_TOKEN \
           ./ci/delete-snapshot.sh
 
-          ID=$ID \
-          DIGITALOCEAN_API_TOKEN=$DIGITALOCEAN_API_TOKEN \
-          ./ci/verify-snapshot-not-exists.sh
-
-          if [ $? -ne 0 ]; then exit 1; fi; exit 0;
+          cd app
+          php bin/console app:snapshot:exists --id $ID --expect-exists 0
