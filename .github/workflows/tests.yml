@@ -8,7 +8,7 @@ on:
 
 jobs:
   unit:
-    name: Unit tests - PHP ${{ matrix.php-versions }} ${{ matrix.operating-system }}
+    name: PHPUnit tests - PHP ${{ matrix.php-versions }} ${{ matrix.operating-system }}
     strategy:
       matrix:
         operating-system: [ubuntu-latest]
@@ -30,7 +30,5 @@ jobs:
           args: --ignore-platform-reqs --quiet
           working_dir: app
 
-      - name: Run PHPUnit unit tests
-        run: |
-          cd app
-          composer test-unit
+      - name: Run tests
+        run: cd app && composer test
