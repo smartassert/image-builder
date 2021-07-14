@@ -47,9 +47,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Change to app directory
-        run: cd app
-
       - name: Setup php
         uses: shivammathur/setup-php@v2
         with:
@@ -62,4 +59,6 @@ jobs:
           working_dir: app
 
       - name: Run
-        run: composer cs-phpcs
+        run: |
+          cd app
+          composer cs-phpcs
