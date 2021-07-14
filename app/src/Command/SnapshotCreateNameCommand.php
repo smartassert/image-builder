@@ -20,7 +20,7 @@ class SnapshotCreateNameCommand extends Command
     public const OPTION_RELEASE_VERSION = 'release-version';
 
     private const EVENT_NAME_PUSH = 'push';
-    private const EVENT_NAME_PULL_REQUEST = 'pull-request';
+    private const EVENT_NAME_PULL_REQUEST = 'pull_request';
     private const EVENT_NAME_PULL_RELEASE = 'release';
     private const NAME_DEFAULT = 'master';
     private const NAME_PULL_REQUEST = 'pull-request-%s';

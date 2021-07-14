@@ -50,7 +50,7 @@ class SnapshotCreateNameCommandTest extends KernelTestCase
             ],
             'pull request, integer pull request number' => [
                 'input' => [
-                    '--' . SnapshotCreateNameCommand::OPTION_EVENT_NAME => 'pull-request',
+                    '--' . SnapshotCreateNameCommand::OPTION_EVENT_NAME => 'pull_request',
                     '--' . SnapshotCreateNameCommand::OPTION_PULL_REQUEST_NUMBER => 29,
                 ],
                 'expectedReturnCode' => Command::SUCCESS,
@@ -58,7 +58,7 @@ class SnapshotCreateNameCommandTest extends KernelTestCase
             ],
             'pull request, string pull request number' => [
                 'input' => [
-                    '--' . SnapshotCreateNameCommand::OPTION_EVENT_NAME => 'pull-request',
+                    '--' . SnapshotCreateNameCommand::OPTION_EVENT_NAME => 'pull_request',
                     '--' . SnapshotCreateNameCommand::OPTION_PULL_REQUEST_NUMBER => '30',
                 ],
                 'expectedReturnCode' => Command::SUCCESS,
