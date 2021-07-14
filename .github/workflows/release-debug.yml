@@ -33,7 +33,7 @@ jobs:
           EVENT_NAME: ${{ github.event_name }}
           PR_NUMBER: ${{ github.event.number }}
           RELEASE_TAG_NAME: ${{ steps.version.outputs.value }}
-          FOO: ${{ github }}
+          FOO: ${{ toJson(github) }}
         run: |
           cd app
           php bin/console app:snapshot:create-name
