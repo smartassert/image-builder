@@ -40,6 +40,17 @@ jobs:
           --pull-request-number $PR_NUMBER \
           --release-version $RELEASE_VERSION
 
+          SNAPSHOT_NAME=$(
+            php bin/console app:snapshot:create-name \
+            --event-name $EVENT_NAME \
+            --pull-request-number $PR_NUMBER \
+            --release-version $RELEASE_VERSION)
+          echo "::set-output name=value::$SNAPSHOT_NAME"
+
+
+      - name: Verify snapshot name
+        run: echo ${{ steps.snapshot_name.outputs.value }}
+
 #      - name: Set version
 #        id: version
 #        env:
