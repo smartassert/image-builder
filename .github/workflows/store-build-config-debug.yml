@@ -1,0 +1,98 @@
+name: Store build config debug
+
+on:
+  pull_request:
+
+jobs:
+  build:
+    name: Store build config debug
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          token: ${{ secrets.PAT_TOKEN_SELF }}
+
+      - name: Setup php
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8
+
+      - name: Download dependencies
+        uses: php-actions/composer@v6
+        with:
+          args: --ignore-platform-reqs --quiet
+          working_dir: app
+
+#      - name: Update build.env
+#        id: update
+#        env:
+#          WORKER_MANAGER_VERSION: ${{ github.event.client_payload.worker_manager_version }}
+#        run: |
+#          cp build.env build.old
+#          rm -f build.env
+#          echo "WORKER_MANAGER_VERSION=$WORKER_MANAGER_VERSION" >> build.env
+#
+#          if cmp --quiet build.env build.old ; then
+#            echo "::set-output name=has_changes::false"
+#          else
+#            echo "::set-output name=has_changes::true"
+#          fi
+#
+#          rm build.old
+#
+#      - name: Commit changes
+#        if: ${{ steps.update.outputs.has_changes == 'true' }}
+#        uses: stefanzweifel/git-auto-commit-action@v4
+#        with:
+#          commit_message: "Automatic build.env for worker manager release ${{ github.event.client_payload.worker_manager_version }}"
+#
+#      - name: Get latest commit hash
+#        id: commit_hash
+#        if: ${{ steps.update.outputs.has_changes == 'true' }}
+#        run: |
+#          COMMIT_HASH=$(git rev-parse HEAD)
+#          echo "::set-output name=value::$COMMIT_HASH"
+#
+#      - name: Get versions from build.env
+#        id: build-config
+#        env:
+#          ENV_FILE_PATH: ./build.env
+#        run: ./ci/read-env-file.sh
+
+      - name: Read build config
+        id: build-config
+        env:
+          ENV_FILE_PATH: ../build.env
+        run: |
+          cd app
+          php bin/console app:env-file:read \
+          --path $ENV_FILE_PATH \
+          --output-format '::set-output name={{ name }}::{{ value }}'
+
+      - name: Output build config
+        env:
+          WORKER_MANAGER_VERSION: ${{ steps.build-config.outputs.WORKER_MANAGER_VERSION }}
+        run: |
+          echo WORKER_MANAGER_VERSION $WORKER_MANAGER_VERSION
+
+#      - name: Create release notes
+#        if: ${{ steps.update.outputs.has_changes == 'true' }}
+#        id: release_notes
+#        env:
+#          WORKER_MANAGER_VERSION: ${{ steps.build-config.outputs.WORKER_MANAGER_VERSION }}
+#        run: |
+#          rm -f release-notes.md
+#          echo "- worker manager: $WORKER_MANAGER_VERSION" >> release-notes.md
+#
+#      - name: Create release
+#        if: ${{ steps.update.outputs.has_changes == 'true' }}
+#        env:
+#          GITHUB_TOKEN: ${{ secrets.PAT_TOKEN_SELF }}
+#          TAG: ${{ github.event.client_payload.worker_version }}
+#          TARGET: ${{ steps.commit_hash.outputs.value }}
+#          TITLE: "Automatic release ${{ github.event.client_payload.worker_manager_version }}"
+#          NOTES: ${{ steps.release_notes.outputs.value }}
+#        run: |
+#          gh release create $TAG --target $TARGET --title "$TITLE" --notes-file ./release-notes.md
