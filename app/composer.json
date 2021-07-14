@@ -4,7 +4,7 @@
     "minimum-stability": "stable",
     "prefer-stable": true,
     "require": {
-        "php": ">=7.2.5",
+        "php": ">=8",
         "ext-ctype": "*",
         "ext-iconv": "*",
         "symfony/console": "5.3.*",
@@ -63,8 +63,18 @@
             "@cs-fixer-dry-run",
             "@cs-phpcs"
         ],
+        "static-analysis": "./vendor/bin/phpstan analyse --ansi",
         "test-unit": "./vendor/bin/phpunit tests/Unit",
-        "static-analysis": "./vendor/bin/phpstan analyse --ansi"
+        "test-functional": "./vendor/bin/phpunit tests/Functional",
+        "test": [
+            "@test-unit",
+            "@test-functional"
+        ],
+        "ci": [
+            "@cs",
+            "@static-analysis",
+            "@test"
+        ]
     },
     "conflict": {
         "symfony/symfony": "*"

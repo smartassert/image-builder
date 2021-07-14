@@ -20,6 +20,17 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
+      - name: Setup php
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php-versions }}
+
+      - name: Download dependencies
+        uses: php-actions/composer@v6
+        with:
+          args: --ignore-platform-reqs --quiet
+          working_dir: app
+
       - name: Set version
         id: version
         env:
@@ -44,9 +55,15 @@ jobs:
         env:
           EVENT_NAME: ${{ github.event_name }}
           PR_NUMBER: ${{ github.event.number }}
-          RELEASE_TAG_NAME: ${{ steps.version.outputs.value }}
+          RELEASE_VERSION: ${{ steps.version.outputs.value }}
         run: |
-          SNAPSHOT_NAME=$(./ci/create-snapshot-name.sh)
+          cd app
+          SNAPSHOT_NAME=$(
+            php bin/console app:snapshot:create-name \
+            --event-name $EVENT_NAME \
+            --pull-request-number $PR_NUMBER \
+            --release-version $RELEASE_VERSION
+          )
           echo "::set-output name=value::$SNAPSHOT_NAME"
 
       - name: Verify snapshot name
