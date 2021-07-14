@@ -62,6 +62,7 @@ class SnapshotCreateNameCommand extends Command
 
         if (self::EVENT_NAME_PULL_REQUEST === $eventName) {
             $pullRequestNumber = $input->getOption('pull-request-number');
+            $pullRequestNumber = is_scalar($pullRequestNumber) ? (string) $pullRequestNumber : null;
 
             $output->write(sprintf(self::NAME_PULL_REQUEST, $pullRequestNumber));
 
@@ -70,6 +71,7 @@ class SnapshotCreateNameCommand extends Command
 
         if (self::EVENT_NAME_PULL_RELEASE === $eventName) {
             $releaseVersion = $input->getOption('release-version');
+            $releaseVersion = is_scalar($releaseVersion) ? (string) $releaseVersion : '';
             $releaseVersion = str_replace('"', '', $releaseVersion);
 
             $output->write(sprintf(self::NAME_RELEASE, $releaseVersion));

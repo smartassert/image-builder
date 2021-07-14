@@ -12,8 +12,10 @@ class SnapshotCreateNameCommandTest extends KernelTestCase
 {
     /**
      * @dataProvider executeDataProvider
+     *
+     * @param array<mixed> $input
      */
-    public function testExecute(array $input, int $expectedReturnCode, string $expectedOutput)
+    public function testExecute(array $input, int $expectedReturnCode, string $expectedOutput): void
     {
         $kernel = static::createKernel();
         $application = new Application($kernel);
@@ -46,7 +48,7 @@ class SnapshotCreateNameCommandTest extends KernelTestCase
                 'expectedReturnCode' => Command::SUCCESS,
                 'expectedOutput' => 'master',
             ],
-            'pull request' => [
+            'pull request, integer pull request number' => [
                 'input' => [
                     '--' . SnapshotCreateNameCommand::OPTION_EVENT_NAME => 'pull-request',
                     '--' . SnapshotCreateNameCommand::OPTION_PULL_REQUEST_NUMBER => 29,
@@ -54,7 +56,15 @@ class SnapshotCreateNameCommandTest extends KernelTestCase
                 'expectedReturnCode' => Command::SUCCESS,
                 'expectedOutput' => 'pull-request-29',
             ],
-            'release, unquoted version' => [
+            'pull request, string pull request number' => [
+                'input' => [
+                    '--' . SnapshotCreateNameCommand::OPTION_EVENT_NAME => 'pull-request',
+                    '--' . SnapshotCreateNameCommand::OPTION_PULL_REQUEST_NUMBER => '30',
+                ],
+                'expectedReturnCode' => Command::SUCCESS,
+                'expectedOutput' => 'pull-request-30',
+            ],
+            'release, float version' => [
                 'input' => [
                     '--' . SnapshotCreateNameCommand::OPTION_EVENT_NAME => 'release',
                     '--' . SnapshotCreateNameCommand::OPTION_RELEASE_VERSION => 0.123,
@@ -62,13 +72,21 @@ class SnapshotCreateNameCommandTest extends KernelTestCase
                 'expectedReturnCode' => Command::SUCCESS,
                 'expectedOutput' => 'release-0.123',
             ],
-            'release, quoted version' => [
+            'release, string version unquoted' => [
                 'input' => [
                     '--' . SnapshotCreateNameCommand::OPTION_EVENT_NAME => 'release',
-                    '--' . SnapshotCreateNameCommand::OPTION_RELEASE_VERSION => '"0.456"',
+                    '--' . SnapshotCreateNameCommand::OPTION_RELEASE_VERSION => '0.456',
                 ],
                 'expectedReturnCode' => Command::SUCCESS,
                 'expectedOutput' => 'release-0.456',
+            ],
+            'release, string version quoted' => [
+                'input' => [
+                    '--' . SnapshotCreateNameCommand::OPTION_EVENT_NAME => 'release',
+                    '--' . SnapshotCreateNameCommand::OPTION_RELEASE_VERSION => '"0.789"',
+                ],
+                'expectedReturnCode' => Command::SUCCESS,
+                'expectedOutput' => 'release-0.789',
             ],
         ];
     }
