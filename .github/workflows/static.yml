@@ -28,7 +28,7 @@ jobs:
           php-version: ${{ matrix.php-versions }}
 
       - name: Download dependencies
-        uses: php-actions/composer@v2
+        uses: php-actions/composer@v6
         with:
           args: --ignore-platform-reqs --quiet
           working_dir: app
