@@ -47,4 +47,7 @@ jobs:
         env:
           HOST_PORT: 80
           DIGITALOCEAN_API_TOKEN: ${{ secrets.DIGITALOCEAN_API_TOKEN }}
-        run: (export echo $(cat build.env | tr '\n' ' '); vagrant up)
+        run: |
+          export echo $(cat build.env | tr '\n' ' '
+          printenv
+          vagrant up
