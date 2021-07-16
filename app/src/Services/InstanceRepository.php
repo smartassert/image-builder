@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Model\Instance;
+use App\Model\InstanceCollection;
 use DigitalOceanV2\Api\Droplet as DropletApi;
 use DigitalOceanV2\Exception\ExceptionInterface;
 
@@ -16,10 +17,8 @@ class InstanceRepository
 
     /**
      * @throws ExceptionInterface
-     *
-     * @return Instance[]
      */
-    public function findAll(): array
+    public function findAll(): InstanceCollection
     {
         $dropletEntities = $this->dropletApi->getAll($this->dropletTag);
 
@@ -28,6 +27,6 @@ class InstanceRepository
             $instances[] = new Instance($dropletEntity);
         }
 
-        return $instances;
+        return new InstanceCollection($instances);
     }
 }
