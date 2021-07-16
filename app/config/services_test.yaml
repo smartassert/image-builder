@@ -20,3 +20,6 @@ services:
 
     App\Tests\Services\HttpResponseFactory:
         public: true
+
+    App\Services\InstanceCollectionHydrator:
+        public: true
