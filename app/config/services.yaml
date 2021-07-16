@@ -63,3 +63,7 @@ services:
     App\Services\InstanceCreator:
         arguments:
             $instanceName: '%env(DIGITALOCEAN_DROPLET_NAME_PREFIX)%-%env(WORKER_MANAGER_VERSION)%'
+
+    App\Services\InstanceRepository:
+        arguments:
+            $dropletTag: '%env(DIGITALOCEAN_DROPLET_TAG)%'
