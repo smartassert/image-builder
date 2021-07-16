@@ -3,9 +3,9 @@
 namespace App\Tests\Functional\Command;
 
 use App\Command\InstanceCreateCommand;
+use App\Tests\Services\HttpResponseFactory;
 use DigitalOceanV2\Exception\RuntimeException;
 use GuzzleHttp\Handler\MockHandler;
-use GuzzleHttp\Psr7\Response;
 use Psr\Http\Message\ResponseInterface;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\Console\Command\Command;
@@ -15,6 +15,7 @@ use Symfony\Component\Console\Output\BufferedOutput;
 class InstanceCreateCommandTest extends KernelTestCase
 {
     private InstanceCreateCommand $command;
+    private HttpResponseFactory $httpResponseFactory;
 
     protected function setUp(): void
     {
@@ -23,19 +24,25 @@ class InstanceCreateCommandTest extends KernelTestCase
         $command = self::getContainer()->get(InstanceCreateCommand::class);
         \assert($command instanceof InstanceCreateCommand);
         $this->command = $command;
+
+        $httpResponseFactory = self::getContainer()->get(HttpResponseFactory::class);
+        \assert($httpResponseFactory instanceof HttpResponseFactory);
+        $this->httpResponseFactory = $httpResponseFactory;
     }
 
     /**
      * @dataProvider executeThrowsExceptionDataProvider
      *
+     * @param array<mixed>             $responseData
      * @param class-string<\Throwable> $expectedExceptionClass
      */
     public function testExecuteThrowsException(
-        ResponseInterface $httpResponse,
+        array $responseData,
         string $expectedExceptionClass,
         string $expectedExceptionMessage,
         int $expectedExceptionCode
     ): void {
+        $httpResponse = $this->httpResponseFactory->createFromArray($responseData);
         $this->setHttpResponse($httpResponse);
 
         self::expectException($expectedExceptionClass);
@@ -52,7 +59,9 @@ class InstanceCreateCommandTest extends KernelTestCase
     {
         return [
             'invalid api token' => [
-                'response' => new Response(401),
+                'responseData' => [
+                    HttpResponseFactory::KEY_STATUS_CODE => 401,
+                ],
                 'expectedExceptionClass' => RuntimeException::class,
                 'expectedExceptionMessage' => 'Unauthorized',
                 'expectedExceptionCode' => 401,
@@ -62,12 +71,15 @@ class InstanceCreateCommandTest extends KernelTestCase
 
     /**
      * @dataProvider executeDataProvider
+     *
+     * @param array<mixed> $responseData
      */
     public function testExecuteSuccess(
-        ResponseInterface $httpResponse,
+        array $responseData,
         int $expectedReturnCode,
         string $expectedOutput
     ): void {
+        $httpResponse = $this->httpResponseFactory->createFromArray($responseData);
         $this->setHttpResponse($httpResponse);
 
         $output = new BufferedOutput();
@@ -85,17 +97,17 @@ class InstanceCreateCommandTest extends KernelTestCase
     {
         return [
             'created' => [
-                'response' => new Response(
-                    200,
-                    [
+                'responseData' => [
+                    HttpResponseFactory::KEY_STATUS_CODE => 200,
+                    HttpResponseFactory::KEY_HEADERS => [
                         'content-type' => 'application/json; charset=utf-8',
                     ],
-                    (string) json_encode([
+                    HttpResponseFactory::KEY_BODY => (string) json_encode([
                         'droplet' => [
                             'id' => 789,
                         ],
-                    ])
-                ),
+                    ]),
+                ],
                 'expectedReturnCode' => Command::SUCCESS,
                 'expectedOutput' => '789',
             ],
