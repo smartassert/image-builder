@@ -4,15 +4,16 @@ namespace App\Tests\Functional\Services;
 
 use App\Model\Instance;
 use App\Services\InstanceCreator;
+use App\Tests\Services\HttpResponseFactory;
 use DigitalOceanV2\Entity\Droplet as DropletEntity;
 use GuzzleHttp\Handler\MockHandler;
-use GuzzleHttp\Psr7\Response;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
 class InstanceCreatorTest extends KernelTestCase
 {
     private InstanceCreator $instanceCreator;
     private MockHandler $mockHandler;
+    private HttpResponseFactory $httpResponseFactory;
 
     protected function setUp(): void
     {
@@ -25,6 +26,10 @@ class InstanceCreatorTest extends KernelTestCase
         $mockHandler = self::getContainer()->get(MockHandler::class);
         \assert($mockHandler instanceof MockHandler);
         $this->mockHandler = $mockHandler;
+
+        $httpResponseFactory = self::getContainer()->get(HttpResponseFactory::class);
+        \assert($httpResponseFactory instanceof HttpResponseFactory);
+        $this->httpResponseFactory = $httpResponseFactory;
     }
 
     public function testCreate(): void
@@ -33,17 +38,19 @@ class InstanceCreatorTest extends KernelTestCase
             'id' => 123,
         ];
 
-        $successResponse = new Response(
-            202,
-            [
+        $successResponseData = [
+            HttpResponseFactory::KEY_STATUS_CODE => 202,
+            HttpResponseFactory::KEY_HEADERS => [
                 'content-type' => 'application/json; charset=utf-8',
             ],
-            (string) json_encode([
+            HttpResponseFactory::KEY_BODY => (string) json_encode([
                 'droplet' => $dropletData,
-            ])
-        );
+            ]),
+        ];
 
-        $this->mockHandler->append($successResponse);
+        $this->mockHandler->append(
+            $this->httpResponseFactory->createFromArray($successResponseData)
+        );
         $instance = $this->instanceCreator->create();
 
         self::assertInstanceOf(Instance::class, $instance);

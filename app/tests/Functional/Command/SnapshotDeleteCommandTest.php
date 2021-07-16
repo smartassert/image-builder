@@ -3,9 +3,8 @@
 namespace App\Tests\Functional\Command;
 
 use App\Command\SnapshotDeleteCommand;
+use App\Tests\Services\HttpResponseFactory;
 use GuzzleHttp\Handler\MockHandler;
-use GuzzleHttp\Psr7\Response;
-use Psr\Http\Message\ResponseInterface;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\ArrayInput;
@@ -13,18 +12,33 @@ use Symfony\Component\Console\Output\BufferedOutput;
 
 class SnapshotDeleteCommandTest extends KernelTestCase
 {
+    private MockHandler $mockHandler;
+    private HttpResponseFactory $httpResponseFactory;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $mockHandler = self::getContainer()->get(MockHandler::class);
+        \assert($mockHandler instanceof MockHandler);
+        $this->mockHandler = $mockHandler;
+
+        $httpResponseFactory = self::getContainer()->get(HttpResponseFactory::class);
+        \assert($httpResponseFactory instanceof HttpResponseFactory);
+        $this->httpResponseFactory = $httpResponseFactory;
+    }
+
     /**
      * @dataProvider executeDataProvider
      *
+     * @param array<mixed> $httpResponseData
      * @param array<mixed> $input
      */
-    public function testExecute(ResponseInterface $httpResponse, array $input, int $expectedReturnCode): void
+    public function testExecute(array $httpResponseData, array $input, int $expectedReturnCode): void
     {
-        $container = self::getContainer();
-        $mockHandler = $container->get(MockHandler::class);
-        if ($mockHandler instanceof MockHandler) {
-            $mockHandler->append($httpResponse);
-        }
+        $this->mockHandler->append(
+            $this->httpResponseFactory->createFromArray($httpResponseData)
+        );
 
         $command = self::getContainer()->get(SnapshotDeleteCommand::class);
         \assert($command instanceof SnapshotDeleteCommand);
@@ -42,26 +56,29 @@ class SnapshotDeleteCommandTest extends KernelTestCase
      */
     public function executeDataProvider(): array
     {
-        $successResponse = new Response(204);
-        $notExistsResponse = new Response(404);
-
         return [
             'invalid api token' => [
-                'response' => new Response(401),
+                'httpResponseData' => [
+                    HttpResponseFactory::KEY_STATUS_CODE => 401,
+                ],
                 'input' => [
                     '--id' => '123',
                 ],
                 'expectedReturnCode' => Command::INVALID,
             ],
             'not exists' => [
-                'response' => $notExistsResponse,
+                'httpResponseData' => [
+                    HttpResponseFactory::KEY_STATUS_CODE => 404,
+                ],
                 'input' => [
                     '--id' => '123',
                 ],
                 'expectedReturnCode' => Command::SUCCESS,
             ],
             'success' => [
-                'response' => $successResponse,
+                'httpResponseData' => [
+                    HttpResponseFactory::KEY_STATUS_CODE => 202,
+                ],
                 'input' => [
                     '--id' => '123',
                 ],

@@ -27,17 +27,26 @@ services:
         class: GuzzleHttp\HandlerStack
         factory: ['GuzzleHttp\HandlerStack', 'create']
 
-    GuzzleHttp\Client:
+    Psr\Http\Client\ClientInterface:
         class: GuzzleHttp\Client
         arguments:
             $config:
                 handler: '@GuzzleHttp\HandlerStack'
 
+    Psr\Http\Message\RequestFactoryInterface:
+        class: GuzzleHttp\Psr7\HttpFactory
+
+    Psr\Http\Message\ResponseFactoryInterface:
+        class: GuzzleHttp\Psr7\HttpFactory
+
+    Psr\Http\Message\StreamFactoryInterface:
+        class: GuzzleHttp\Psr7\HttpFactory
+
     DigitalOceanV2\Client:
         class: DigitalOceanV2\Client
         factory: ['DigitalOceanV2\Client', 'createWithHttpClient']
         arguments:
-            $httpClient: '@GuzzleHttp\Client'
+            $httpClient: '@Psr\Http\Client\ClientInterface'
         calls:
             - authenticate: ['%env(DIGITALOCEAN_API_TOKEN)%']
 
