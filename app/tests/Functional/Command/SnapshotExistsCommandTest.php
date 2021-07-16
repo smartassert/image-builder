@@ -3,9 +3,8 @@
 namespace App\Tests\Functional\Command;
 
 use App\Command\SnapshotExistsCommand;
+use App\Tests\Services\HttpResponseFactory;
 use GuzzleHttp\Handler\MockHandler;
-use GuzzleHttp\Psr7\Response;
-use Psr\Http\Message\ResponseInterface;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\ArrayInput;
@@ -13,18 +12,33 @@ use Symfony\Component\Console\Output\BufferedOutput;
 
 class SnapshotExistsCommandTest extends KernelTestCase
 {
+    private MockHandler $mockHandler;
+    private HttpResponseFactory $httpResponseFactory;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $mockHandler = self::getContainer()->get(MockHandler::class);
+        \assert($mockHandler instanceof MockHandler);
+        $this->mockHandler = $mockHandler;
+
+        $httpResponseFactory = self::getContainer()->get(HttpResponseFactory::class);
+        \assert($httpResponseFactory instanceof HttpResponseFactory);
+        $this->httpResponseFactory = $httpResponseFactory;
+    }
+
     /**
      * @dataProvider executeDataProvider
      *
+     * @param array<mixed> $httpResponseData
      * @param array<mixed> $input
      */
-    public function testExecute(ResponseInterface $httpResponse, array $input, int $expectedReturnCode): void
+    public function testExecute(array $httpResponseData, array $input, int $expectedReturnCode): void
     {
-        $container = self::getContainer();
-        $mockHandler = $container->get(MockHandler::class);
-        if ($mockHandler instanceof MockHandler) {
-            $mockHandler->append($httpResponse);
-        }
+        $this->mockHandler->append(
+            $this->httpResponseFactory->createFromArray($httpResponseData)
+        );
 
         $command = self::getContainer()->get(SnapshotExistsCommand::class);
         \assert($command instanceof SnapshotExistsCommand);
@@ -42,34 +56,39 @@ class SnapshotExistsCommandTest extends KernelTestCase
      */
     public function executeDataProvider(): array
     {
-        $notExistsResponse = new Response(404);
-        $existsResponse = new Response(
-            200,
-            [
+        $notExistsResponseData = [
+            HttpResponseFactory::KEY_STATUS_CODE => 404,
+        ];
+
+        $existsResponseData = [
+            HttpResponseFactory::KEY_STATUS_CODE => 200,
+            HttpResponseFactory::KEY_HEADERS => [
                 'content-type' => 'application/json; charset=utf-8',
             ],
-            (string) json_encode([
+            HttpResponseFactory::KEY_BODY => (string) json_encode([
                 'snapshot' => [],
-            ])
-        );
+            ]),
+        ];
 
         return [
             'invalid api token' => [
-                'response' => new Response(401),
+                'httpResponseData' => [
+                    HttpResponseFactory::KEY_STATUS_CODE => 401,
+                ],
                 'input' => [
                     '--id' => '123',
                 ],
                 'expectedReturnCode' => Command::INVALID,
             ],
             'not exists, expect exists (default)' => [
-                'response' => $notExistsResponse,
+                'httpResponseData' => $notExistsResponseData,
                 'input' => [
                     '--id' => '123',
                 ],
                 'expectedReturnCode' => Command::FAILURE,
             ],
             'not exists, expect not exists as false' => [
-                'response' => $notExistsResponse,
+                'httpResponseData' => $notExistsResponseData,
                 'input' => [
                     '--id' => '123',
                     '--expect-exists' => false,
@@ -77,7 +96,7 @@ class SnapshotExistsCommandTest extends KernelTestCase
                 'expectedReturnCode' => Command::SUCCESS,
             ],
             'not exists, expect not exists as zero' => [
-                'response' => $notExistsResponse,
+                'httpResponseData' => $notExistsResponseData,
                 'input' => [
                     '--id' => '123',
                     '--expect-exists' => 0,
@@ -85,7 +104,7 @@ class SnapshotExistsCommandTest extends KernelTestCase
                 'expectedReturnCode' => Command::SUCCESS,
             ],
             'not exists, expect not exists as quoted zero' => [
-                'response' => $notExistsResponse,
+                'httpResponseData' => $notExistsResponseData,
                 'input' => [
                     '--id' => '123',
                     '--expect-exists' => '0',
@@ -93,14 +112,14 @@ class SnapshotExistsCommandTest extends KernelTestCase
                 'expectedReturnCode' => Command::SUCCESS,
             ],
             'exists, expect exists (default)' => [
-                'response' => $existsResponse,
+                'httpResponseData' => $existsResponseData,
                 'input' => [
                     '--id' => '123',
                 ],
                 'expectedReturnCode' => Command::SUCCESS,
             ],
             'exists, expect not exists as false' => [
-                'response' => $existsResponse,
+                'httpResponseData' => $existsResponseData,
                 'input' => [
                     '--id' => '123',
                     '--expect-exists' => false,
@@ -108,7 +127,7 @@ class SnapshotExistsCommandTest extends KernelTestCase
                 'expectedReturnCode' => Command::FAILURE,
             ],
             'exists, expect not exists as zero' => [
-                'response' => $existsResponse,
+                'httpResponseData' => $existsResponseData,
                 'input' => [
                     '--id' => '123',
                     '--expect-exists' => 0,
@@ -116,7 +135,7 @@ class SnapshotExistsCommandTest extends KernelTestCase
                 'expectedReturnCode' => Command::FAILURE,
             ],
             'exists, expect not exists as quoted zero' => [
-                'response' => $existsResponse,
+                'httpResponseData' => $existsResponseData,
                 'input' => [
                     '--id' => '123',
                     '--expect-exists' => '0',
