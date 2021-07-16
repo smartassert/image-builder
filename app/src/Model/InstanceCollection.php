@@ -5,7 +5,7 @@ namespace App\Model;
 /**
  * @implements \IteratorAggregate<Instance>
  */
-class InstanceCollection implements \IteratorAggregate
+class InstanceCollection implements \IteratorAggregate, \Countable
 {
     /**
      * @var Instance[]
@@ -25,5 +25,10 @@ class InstanceCollection implements \IteratorAggregate
     public function getIterator(): \Traversable
     {
         return new \ArrayIterator($this->instances);
+    }
+
+    public function count(): int
+    {
+        return count($this->instances);
     }
 }
