@@ -72,19 +72,21 @@ class InstanceCreateCommandTest extends KernelTestCase
     /**
      * @dataProvider executeDataProvider
      *
-     * @param array<mixed> $responseData
+     * @param array<mixed> $input
+     * @param array<mixed> $httpResponseData
      */
     public function testExecuteSuccess(
-        array $responseData,
+        array $input,
+        array $httpResponseData,
         int $expectedReturnCode,
         string $expectedOutput
     ): void {
-        $httpResponse = $this->httpResponseFactory->createFromArray($responseData);
+        $httpResponse = $this->httpResponseFactory->createFromArray($httpResponseData);
         $this->setHttpResponse($httpResponse);
 
         $output = new BufferedOutput();
 
-        $commandReturnCode = $this->command->run(new ArrayInput([]), $output);
+        $commandReturnCode = $this->command->run(new ArrayInput($input), $output);
 
         self::assertSame($expectedReturnCode, $commandReturnCode);
         self::assertSame($expectedOutput, $output->fetch());
@@ -96,8 +98,9 @@ class InstanceCreateCommandTest extends KernelTestCase
     public function executeDataProvider(): array
     {
         return [
-            'created' => [
-                'responseData' => [
+            'created, no template' => [
+                'input' => [],
+                'httpResponseData' => [
                     HttpResponseFactory::KEY_STATUS_CODE => 200,
                     HttpResponseFactory::KEY_HEADERS => [
                         'content-type' => 'application/json; charset=utf-8',
@@ -110,6 +113,24 @@ class InstanceCreateCommandTest extends KernelTestCase
                 ],
                 'expectedReturnCode' => Command::SUCCESS,
                 'expectedOutput' => '789',
+            ],
+            'created, template to set github action step output' => [
+                'input' => [
+                    '--output-template' => '::set-output name=value::{{ id }}',
+                ],
+                'httpResponseData' => [
+                    HttpResponseFactory::KEY_STATUS_CODE => 200,
+                    HttpResponseFactory::KEY_HEADERS => [
+                        'content-type' => 'application/json; charset=utf-8',
+                    ],
+                    HttpResponseFactory::KEY_BODY => (string) json_encode([
+                        'droplet' => [
+                            'id' => 123,
+                        ],
+                    ]),
+                ],
+                'expectedReturnCode' => Command::SUCCESS,
+                'expectedOutput' => '::set-output name=value::123',
             ],
         ];
     }
