@@ -41,5 +41,25 @@ services:
         calls:
             - authenticate: ['%env(DIGITALOCEAN_API_TOKEN)%']
 
+    DigitalOceanV2\Api\Droplet:
+        class: DigitalOceanV2\Api\Droplet
+
     DigitalOceanV2\Api\Snapshot:
         class: DigitalOceanV2\Api\Snapshot
+
+    SmartAssert\DigitalOceanDropletConfiguration\Factory:
+        arguments:
+            $defaults:
+                region: '%env(DIGITALOCEAN_DROPLET_REGION)%'
+                size: '%env(DIGITALOCEAN_DROPLET_SIZE)%'
+                image: '%env(WORKER_MANAGER_IMAGE)%'
+                tags:
+                    - '%env(DIGITALOCEAN_DROPLET_TAG)%'
+
+    App\Services\CommandExceptionRenderer:
+        arguments:
+            $projectDirectory: '%kernel.project_dir%'
+
+    App\Services\InstanceCreator:
+        arguments:
+            $instanceName: '%env(DIGITALOCEAN_DROPLET_NAME_PREFIX)%-%env(WORKER_MANAGER_VERSION)%'
