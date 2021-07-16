@@ -50,6 +50,12 @@
     "guzzlehttp/psr7": {
         "version": "2.0.0"
     },
+    "hamcrest/hamcrest-php": {
+        "version": "v2.0.1"
+    },
+    "mockery/mockery": {
+        "version": "1.4.3"
+    },
     "myclabs/deep-copy": {
         "version": "1.10.2"
     },
@@ -92,8 +98,14 @@
     "phpspec/prophecy": {
         "version": "1.13.0"
     },
+    "phpstan/extension-installer": {
+        "version": "1.1.0"
+    },
     "phpstan/phpstan": {
         "version": "0.12.92"
+    },
+    "phpstan/phpstan-mockery": {
+        "version": "0.12.14"
     },
     "phpstan/phpstan-phpunit": {
         "version": "0.12.20"
@@ -201,6 +213,9 @@
     },
     "sebastian/version": {
         "version": "3.0.2"
+    },
+    "smartassert/digitalocean-droplet-configuration": {
+        "version": "0.1"
     },
     "squizlabs/php_codesniffer": {
         "version": "3.6",
