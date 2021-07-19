@@ -31,4 +31,21 @@ class InstanceCollection implements \IteratorAggregate, \Countable
     {
         return count($this->instances);
     }
+
+    public function getLatest(): ?Instance
+    {
+        $latest = null;
+        $latestVersion = null;
+
+        foreach ($this->instances as $instance) {
+            $instanceVersion = $instance->getVersion();
+
+            if (null !== $instanceVersion && $instanceVersion > $latestVersion) {
+                $latestVersion = $instanceVersion;
+                $latest = $instance;
+            }
+        }
+
+        return $latest;
+    }
 }
