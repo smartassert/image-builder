@@ -16,16 +16,6 @@ class InstanceHydrator
     /**
      * @throws ClientExceptionInterface
      */
-    public function hydrateVersion(Instance $instance): Instance
-    {
-        return $instance->withVersion(
-            $this->instanceClient->getVersion($instance)
-        );
-    }
-
-    /**
-     * @throws ClientExceptionInterface
-     */
     public function hydrate(Instance $instance): Instance
     {
         $status = $this->instanceClient->getStatus($instance);
