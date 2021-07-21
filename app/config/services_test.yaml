@@ -30,3 +30,6 @@ services:
 
     App\Services\FloatingIpManager:
         public: true
+
+    App\Services\ActionRepository:
+        public: true
