@@ -7,6 +7,7 @@ use DigitalOceanV2\Entity\Droplet;
 class Instance
 {
     private ?string $version = null;
+    private ?int $messageQueueSize = null;
 
     public function __construct(private Droplet $droplet)
     {
@@ -31,6 +32,19 @@ class Instance
     {
         $new = clone $this;
         $new->version = $version;
+
+        return $new;
+    }
+
+    public function getMessageQueueSize(): ?int
+    {
+        return $this->messageQueueSize;
+    }
+
+    public function withMessageQueueSize(int $messageQueueSize): self
+    {
+        $new = clone $this;
+        $new->messageQueueSize = $messageQueueSize;
 
         return $new;
     }
