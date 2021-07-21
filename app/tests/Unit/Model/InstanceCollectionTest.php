@@ -4,7 +4,7 @@ namespace App\Tests\Unit\Model;
 
 use App\Model\Instance;
 use App\Model\InstanceCollection;
-use DigitalOceanV2\Entity\Droplet;
+use App\Tests\Services\InstanceFactory;
 use PHPUnit\Framework\TestCase;
 
 class InstanceCollectionTest extends TestCase
@@ -22,29 +22,11 @@ class InstanceCollectionTest extends TestCase
      */
     public function getLatestDataProvider(): array
     {
-        $instanceWithoutVersion = new Instance(
-            new Droplet([
-                'id' => 'no-version',
-            ])
-        );
+        $instanceWithoutVersion = InstanceFactory::create(['id' => 'no-version']);
 
-        $instance01 = (new Instance(
-            new Droplet([
-                'id' => 'version-01',
-            ])
-        ))->withVersion('0.1');
-
-        $instance02 = (new Instance(
-            new Droplet([
-                'id' => 'version-02',
-            ])
-        ))->withVersion('0.2');
-
-        $instance03 = (new Instance(
-            new Droplet([
-                'id' => 'version-03',
-            ])
-        ))->withVersion('0.3');
+        $instance01 = InstanceFactory::create(['id' => 'version-01'], '0.1');
+        $instance02 = InstanceFactory::create(['id' => 'version-02'], '0.2');
+        $instance03 = InstanceFactory::create(['id' => 'version-03'], '0.3');
 
         return [
             'empty' => [

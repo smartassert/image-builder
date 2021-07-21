@@ -33,16 +33,18 @@ class InstanceCollectionHydratorTest extends KernelTestCase
         $this->httpResponseFactory = $httpResponseFactory;
     }
 
-    public function testHydrateVersions(): void
+    public function testHydrate(): void
     {
         $instanceCollectionData = [
             123 => [
                 'ipAddress' => '127.0.0.1',
                 'version' => '0.1',
+                'message-queue-size' => 14,
             ],
             456 => [
                 'ipAddress' => '127.0.0.2',
                 'version' => '0.2',
+                'message-queue-size' => 7,
             ],
         ];
 
@@ -51,17 +53,22 @@ class InstanceCollectionHydratorTest extends KernelTestCase
             $instances[] = new Instance($this->createDroplet($dropletId, $instanceData['ipAddress']));
             $this->mockHandler->append($this->httpResponseFactory->createFromArray([
                 HttpResponseFactory::KEY_STATUS_CODE => 200,
-                HttpResponseFactory::KEY_BODY => $instanceData['version'],
+                HttpResponseFactory::KEY_BODY => json_encode([
+                    'version' => $instanceData['version'],
+                    'message-queue-size' => $instanceData['message-queue-size'],
+                ]),
             ]));
         }
 
         $instanceCollection = new InstanceCollection($instances);
-        $hydratedCollection = $this->instanceCollectionHydrator->hydrateVersions($instanceCollection);
+        $hydratedCollection = $this->instanceCollectionHydrator->hydrate($instanceCollection);
 
         foreach ($hydratedCollection as $hydratedInstance) {
             $expectedData = $instanceCollectionData[$hydratedInstance->getId()];
             $expectedVersion = $expectedData['version'];
+            $expectedMessageQueueSize = $expectedData['message-queue-size'];
             self::assertSame($expectedVersion, $hydratedInstance->getVersion());
+            self::assertSame($expectedMessageQueueSize, $hydratedInstance->getMessageQueueSize());
         }
     }
 
