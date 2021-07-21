@@ -33,38 +33,6 @@ class InstanceCollectionHydratorTest extends KernelTestCase
         $this->httpResponseFactory = $httpResponseFactory;
     }
 
-    public function testHydrateVersions(): void
-    {
-        $instanceCollectionData = [
-            123 => [
-                'ipAddress' => '127.0.0.1',
-                'version' => '0.1',
-            ],
-            456 => [
-                'ipAddress' => '127.0.0.2',
-                'version' => '0.2',
-            ],
-        ];
-
-        $instances = [];
-        foreach ($instanceCollectionData as $dropletId => $instanceData) {
-            $instances[] = new Instance($this->createDroplet($dropletId, $instanceData['ipAddress']));
-            $this->mockHandler->append($this->httpResponseFactory->createFromArray([
-                HttpResponseFactory::KEY_STATUS_CODE => 200,
-                HttpResponseFactory::KEY_BODY => $instanceData['version'],
-            ]));
-        }
-
-        $instanceCollection = new InstanceCollection($instances);
-        $hydratedCollection = $this->instanceCollectionHydrator->hydrateVersions($instanceCollection);
-
-        foreach ($hydratedCollection as $hydratedInstance) {
-            $expectedData = $instanceCollectionData[$hydratedInstance->getId()];
-            $expectedVersion = $expectedData['version'];
-            self::assertSame($expectedVersion, $hydratedInstance->getVersion());
-        }
-    }
-
     public function testHydrate(): void
     {
         $instanceCollectionData = [

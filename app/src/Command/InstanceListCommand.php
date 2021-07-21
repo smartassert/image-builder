@@ -6,7 +6,6 @@ use App\Services\CommandExceptionRenderer;
 use App\Services\InstanceCollectionHydrator;
 use App\Services\InstanceRepository;
 use DigitalOceanV2\Exception\ExceptionInterface;
-use Psr\Http\Client\ClientExceptionInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -22,7 +21,7 @@ class InstanceListCommand extends Command
 {
     public const NAME = 'app:instance:list';
     public const OPTION_OUTPUT_TEMPLATE = 'output-template';
-    public const DEFAULT_OUTPUT_TEMPLATE = '{{ id }}: {{ version }}';
+    public const DEFAULT_OUTPUT_TEMPLATE = '{{ instance-json }}';
 
     public function __construct(
         private InstanceRepository $instanceRepository,
@@ -49,7 +48,6 @@ class InstanceListCommand extends Command
     }
 
     /**
-     * @throws ClientExceptionInterface
      * @throws ExceptionInterface
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
@@ -59,8 +57,8 @@ class InstanceListCommand extends Command
 
         try {
             $instances = $this->instanceRepository->findAll();
-            $instances = $this->instanceCollectionHydrator->hydrateVersions($instances);
-        } catch (ExceptionInterface | ClientExceptionInterface $e) {
+            $instances = $this->instanceCollectionHydrator->hydrate($instances);
+        } catch (ExceptionInterface $e) {
             $io = new SymfonyStyle($input, $output);
             $io->error($this->commandExceptionRenderer->render($e));
 
@@ -72,14 +70,12 @@ class InstanceListCommand extends Command
         foreach ($instances as $instanceIndex => $instance) {
             $output->write(
                 str_replace(
-                    [
-                        '{{ id }}',
-                        '{{ version }}',
-                    ],
-                    [
-                        $instance->getId(),
-                        $instance->getVersion(),
-                    ],
+                    '{{ instance-json }}',
+                    (string) json_encode([
+                        'id' => $instance->getId(),
+                        'version' => $instance->getVersion(),
+                        'message-queue-size' => $instance->getMessageQueueSize(),
+                    ]),
                     $outputTemplate
                 ),
                 $instanceIndex < ($instancesCount - 1)

@@ -12,20 +12,6 @@ class InstanceCollectionHydrator
     ) {
     }
 
-    /**
-     * @throws ClientExceptionInterface
-     */
-    public function hydrateVersions(InstanceCollection $instanceCollection): InstanceCollection
-    {
-        $hydratedInstances = [];
-
-        foreach ($instanceCollection as $instance) {
-            $hydratedInstances[] = $this->instanceHydrator->hydrateVersion($instance);
-        }
-
-        return new InstanceCollection($hydratedInstances);
-    }
-
     public function hydrate(InstanceCollection $collection): InstanceCollection
     {
         $hydratedInstances = [];

@@ -134,13 +134,16 @@ class InstanceListCommandTest extends KernelTestCase
                             ],
                         ]),
                     ],
-                    'droplet version' => [
+                    'droplet status' => [
                         HttpResponseFactory::KEY_STATUS_CODE => 200,
-                        HttpResponseFactory::KEY_BODY => '0.1',
+                        HttpResponseFactory::KEY_BODY => json_encode([
+                            'version' => '0.1',
+                            'message-queue-size' => 5,
+                        ]),
                     ],
                 ],
                 'expectedReturnCode' => Command::SUCCESS,
-                'expectedOutput' => '123: 0.1',
+                'expectedOutput' => '{"id":123,"version":"0.1","message-queue-size":5}',
             ],
             'many instances, no template' => [
                 'input' => [],
@@ -164,65 +167,32 @@ class InstanceListCommandTest extends KernelTestCase
                             ],
                         ]),
                     ],
-                    'droplet 123 version' => [
+                    'droplet 123' => [
                         HttpResponseFactory::KEY_STATUS_CODE => 200,
-                        HttpResponseFactory::KEY_BODY => '0.1',
-                    ],
-                    'droplet 456 version' => [
-                        HttpResponseFactory::KEY_STATUS_CODE => 200,
-                        HttpResponseFactory::KEY_BODY => '0.2',
-                    ],
-                    'droplet 789 version' => [
-                        HttpResponseFactory::KEY_STATUS_CODE => 200,
-                        HttpResponseFactory::KEY_BODY => '0.3',
-                    ],
-                ],
-                'expectedReturnCode' => Command::SUCCESS,
-                'expectedOutput' => '123: 0.1' . "\n" .
-                    '456: 0.2' . "\n" .
-                    '789: 0.3',
-            ],
-            'many instances, template to set github action step output' => [
-                'input' => [
-                    '--output-template' => '::set-output name={{ id }}::{{ version }}',
-                ],
-                'httpResponseDataCollection' => [
-                    'droplets' => [
-                        HttpResponseFactory::KEY_STATUS_CODE => 200,
-                        HttpResponseFactory::KEY_HEADERS => [
-                            'content-type' => 'application/json; charset=utf-8',
-                        ],
-                        HttpResponseFactory::KEY_BODY => (string) json_encode([
-                            'droplets' => [
-                                [
-                                    'id' => 123,
-                                ],
-                                [
-                                    'id' => 456,
-                                ],
-                                [
-                                    'id' => 789,
-                                ],
-                            ],
+                        HttpResponseFactory::KEY_BODY => json_encode([
+                            'version' => '0.1',
+                            'message-queue-size' => 3,
                         ]),
                     ],
-                    'droplet 123 version' => [
+                    'droplet 456' => [
                         HttpResponseFactory::KEY_STATUS_CODE => 200,
-                        HttpResponseFactory::KEY_BODY => '0.1',
+                        HttpResponseFactory::KEY_BODY => json_encode([
+                            'version' => '0.2',
+                            'message-queue-size' => 7,
+                        ]),
                     ],
-                    'droplet 456 version' => [
+                    'droplet 789' => [
                         HttpResponseFactory::KEY_STATUS_CODE => 200,
-                        HttpResponseFactory::KEY_BODY => '0.2',
-                    ],
-                    'droplet 789 version' => [
-                        HttpResponseFactory::KEY_STATUS_CODE => 200,
-                        HttpResponseFactory::KEY_BODY => '0.3',
+                        HttpResponseFactory::KEY_BODY => json_encode([
+                            'version' => '0.3',
+                            'message-queue-size' => 0,
+                        ]),
                     ],
                 ],
                 'expectedReturnCode' => Command::SUCCESS,
-                'expectedOutput' => '::set-output name=123::0.1' . "\n" .
-                    '::set-output name=456::0.2' . "\n" .
-                    '::set-output name=789::0.3'
+                'expectedOutput' => '{"id":123,"version":"0.1","message-queue-size":3}' . "\n" .
+                    '{"id":456,"version":"0.2","message-queue-size":7}' . "\n" .
+                    '{"id":789,"version":"0.3","message-queue-size":0}',
             ],
         ];
     }
