@@ -5,7 +5,7 @@ namespace App\Tests\Functional\Services;
 use App\Model\Instance;
 use App\Services\InstanceRepository;
 use App\Tests\Services\HttpResponseFactory;
-use DigitalOceanV2\Entity\Droplet as DropletEntity;
+use App\Tests\Services\InstanceFactory;
 use GuzzleHttp\Handler\MockHandler;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
@@ -80,9 +80,7 @@ class InstanceRepositoryTest extends KernelTestCase
                     ],
                 ]),
                 'expectedInstances' => [
-                    new Instance(new DropletEntity([
-                        'id' => 123,
-                    ])),
+                    InstanceFactory::create(['id' => 123]),
                 ],
             ],
             'many' => [
@@ -100,15 +98,9 @@ class InstanceRepositoryTest extends KernelTestCase
                     ],
                 ]),
                 'expectedInstances' => [
-                    new Instance(new DropletEntity([
-                        'id' => 123,
-                    ])),
-                    new Instance(new DropletEntity([
-                        'id' => 456,
-                    ])),
-                    new Instance(new DropletEntity([
-                        'id' => 789,
-                    ])),
+                    InstanceFactory::create(['id' => 123]),
+                    InstanceFactory::create(['id' => 456]),
+                    InstanceFactory::create(['id' => 789]),
                 ],
             ],
         ];

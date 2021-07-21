@@ -2,11 +2,10 @@
 
 namespace App\Tests\Functional\Services;
 
-use App\Model\Instance;
 use App\Model\InstanceStatus;
 use App\Services\InstanceClient;
 use App\Tests\Services\HttpResponseFactory;
-use DigitalOceanV2\Entity\Droplet as DropletEntity;
+use App\Tests\Services\InstanceFactory;
 use GuzzleHttp\Handler\MockHandler;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
@@ -42,20 +41,9 @@ class InstanceClientTest extends KernelTestCase
             HttpResponseFactory::KEY_BODY => $version,
         ]));
 
-        $dropletData = [
+        $instance = InstanceFactory::create([
             'id' => 123,
-            'networks' => [
-                'v4' => [
-                    [
-                        'type' => 'public',
-                        'ip_address' => '127.0.0.1',
-                    ],
-                ],
-            ],
-        ];
-
-        $dropletEntity = new DropletEntity($dropletData);
-        $instance = new Instance($dropletEntity);
+        ]);
 
         self::assertSame($version, $this->instanceClient->getVersion($instance));
     }
@@ -70,12 +58,7 @@ class InstanceClientTest extends KernelTestCase
             HttpResponseFactory::KEY_BODY => $responseBody,
         ]));
 
-        $dropletData = [
-            'id' => 123,
-        ];
-
-        $dropletEntity = new DropletEntity($dropletData);
-        $instance = new Instance($dropletEntity);
+        $instance = InstanceFactory::create(['id' => 123]);
 
         self::assertNull($this->instanceClient->getStatus($instance));
     }
@@ -126,12 +109,7 @@ class InstanceClientTest extends KernelTestCase
             HttpResponseFactory::KEY_BODY => $responseBody,
         ]));
 
-        $dropletData = [
-            'id' => 123,
-        ];
-
-        $dropletEntity = new DropletEntity($dropletData);
-        $instance = new Instance($dropletEntity);
+        $instance = InstanceFactory::create(['id' => 123]);
 
         self::assertEquals($expectedInstanceStatus, $this->instanceClient->getStatus($instance));
     }

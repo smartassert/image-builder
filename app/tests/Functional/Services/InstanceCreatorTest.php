@@ -5,7 +5,7 @@ namespace App\Tests\Functional\Services;
 use App\Model\Instance;
 use App\Services\InstanceCreator;
 use App\Tests\Services\HttpResponseFactory;
-use DigitalOceanV2\Entity\Droplet as DropletEntity;
+use App\Tests\Services\InstanceFactory;
 use GuzzleHttp\Handler\MockHandler;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
@@ -55,9 +55,7 @@ class InstanceCreatorTest extends KernelTestCase
 
         self::assertInstanceOf(Instance::class, $instance);
         self::assertEquals(
-            new Instance(
-                new DropletEntity($dropletData)
-            ),
+            $instance = InstanceFactory::create($dropletData),
             $instance
         );
     }

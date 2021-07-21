@@ -2,10 +2,9 @@
 
 namespace App\Tests\Functional\Services;
 
-use App\Model\Instance;
 use App\Services\InstanceHydrator;
 use App\Tests\Services\HttpResponseFactory;
-use DigitalOceanV2\Entity\Droplet as DropletEntity;
+use App\Tests\Services\InstanceFactory;
 use GuzzleHttp\Handler\MockHandler;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
@@ -45,12 +44,7 @@ class InstanceHydratorTest extends KernelTestCase
             ]),
         ]));
 
-        $dropletData = [
-            'id' => 123,
-        ];
-
-        $dropletEntity = new DropletEntity($dropletData);
-        $instance = new Instance($dropletEntity);
+        $instance = InstanceFactory::create(['id' => 123]);
 
         self::assertNull($instance->getVersion());
         self::assertNull($instance->getMessageQueueSize());

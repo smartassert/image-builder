@@ -6,8 +6,8 @@ use App\Model\FloatingIpAssignmentAction;
 use App\Model\Instance;
 use App\Services\FloatingIpManager;
 use App\Tests\Services\HttpResponseFactory;
+use App\Tests\Services\InstanceFactory;
 use DigitalOceanV2\Entity\Action as ActionEntity;
-use DigitalOceanV2\Entity\Droplet as DropletEntity;
 use GuzzleHttp\Handler\MockHandler;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
@@ -60,17 +60,8 @@ class FloatingIpManagerTest extends KernelTestCase
      */
     public function assignDataProvider(): array
     {
-        $instance123 = new Instance(
-            new DropletEntity([
-                'id' => 123,
-            ]),
-        );
-
-        $instance456 = new Instance(
-            new DropletEntity([
-                'id' => 456,
-            ]),
-        );
+        $instance123 = InstanceFactory::create(['id' => 123]);
+        $instance456 = InstanceFactory::create(['id' => 456]);
 
         return [
             'no existing floating IP' => [
