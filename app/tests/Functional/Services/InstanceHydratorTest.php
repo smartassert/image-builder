@@ -61,4 +61,32 @@ class InstanceHydratorTest extends KernelTestCase
         $instance = $this->instanceHydrator->hydrateVersion($instance);
         self::assertSame($version, $instance->getVersion());
     }
+
+    public function testHydrate(): void
+    {
+        $version = 'version-string';
+        $messageQueueSize = 8;
+
+        $this->mockHandler->append($this->httpResponseFactory->createFromArray([
+            HttpResponseFactory::KEY_STATUS_CODE => 200,
+            HttpResponseFactory::KEY_BODY => json_encode([
+                'version' => $version,
+                'message-queue-size' => $messageQueueSize,
+            ]),
+        ]));
+
+        $dropletData = [
+            'id' => 123,
+        ];
+
+        $dropletEntity = new DropletEntity($dropletData);
+        $instance = new Instance($dropletEntity);
+
+        self::assertNull($instance->getVersion());
+        self::assertNull($instance->getMessageQueueSize());
+
+        $instance = $this->instanceHydrator->hydrate($instance);
+        self::assertSame($version, $instance->getVersion());
+        self::assertSame($messageQueueSize, $instance->getMessageQueueSize());
+    }
 }
