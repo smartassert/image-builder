@@ -2,10 +2,10 @@
 
 namespace App\Tests\Functional\Services;
 
-use App\Model\Instance;
+use App\Model\InstanceStatus;
 use App\Services\InstanceClient;
 use App\Tests\Services\HttpResponseFactory;
-use DigitalOceanV2\Entity\Droplet as DropletEntity;
+use App\Tests\Services\InstanceFactory;
 use GuzzleHttp\Handler\MockHandler;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
@@ -41,21 +41,92 @@ class InstanceClientTest extends KernelTestCase
             HttpResponseFactory::KEY_BODY => $version,
         ]));
 
-        $dropletData = [
+        $instance = InstanceFactory::create([
             'id' => 123,
-            'networks' => [
-                'v4' => [
-                    [
-                        'type' => 'public',
-                        'ip_address' => '127.0.0.1',
-                    ],
-                ],
-            ],
-        ];
-
-        $dropletEntity = new DropletEntity($dropletData);
-        $instance = new Instance($dropletEntity);
+        ]);
 
         self::assertSame($version, $this->instanceClient->getVersion($instance));
+    }
+
+    /**
+     * @dataProvider getStatusReturnsNullDataProvider
+     */
+    public function testGetStatusReturnsNull(string $responseBody): void
+    {
+        $this->mockHandler->append($this->httpResponseFactory->createFromArray([
+            HttpResponseFactory::KEY_STATUS_CODE => 200,
+            HttpResponseFactory::KEY_BODY => $responseBody,
+        ]));
+
+        $instance = InstanceFactory::create(['id' => 123]);
+
+        self::assertNull($this->instanceClient->getStatus($instance));
+    }
+
+    /**
+     * @return array<mixed>
+     */
+    public function getStatusReturnsNullDataProvider(): array
+    {
+        return [
+            'response not an array' => [
+                'responseBody' => 'string',
+            ],
+            'version not present' => [
+                'responseBody' => json_encode([
+                    'message-queue-size' => 2,
+                ]),
+            ],
+            'version not a string' => [
+                'responseBody' => json_encode([
+                    'version' => true,
+                    'message-queue-size' => 2,
+                ]),
+            ],
+            'message-queue-size not present' => [
+                'responseBody' => json_encode([
+                    'version' => '0.8',
+                ]),
+            ],
+            'message-queue-size not an integer' => [
+                'responseBody' => json_encode([
+                    'version' => '0.8',
+                    'message-queue-size' => true,
+                ]),
+            ],
+        ];
+    }
+
+    /**
+     * @dataProvider getStatusReturnInstanceStatusDataProvider
+     */
+    public function testGetStatusReturnsInstanceStatus(
+        string $responseBody,
+        InstanceStatus $expectedInstanceStatus
+    ): void {
+        $this->mockHandler->append($this->httpResponseFactory->createFromArray([
+            HttpResponseFactory::KEY_STATUS_CODE => 200,
+            HttpResponseFactory::KEY_BODY => $responseBody,
+        ]));
+
+        $instance = InstanceFactory::create(['id' => 123]);
+
+        self::assertEquals($expectedInstanceStatus, $this->instanceClient->getStatus($instance));
+    }
+
+    /**
+     * @return array<mixed>
+     */
+    public function getStatusReturnInstanceStatusDataProvider(): array
+    {
+        return [
+            'default' => [
+                'responseBody' => json_encode([
+                    'version' => '0.8',
+                    'message-queue-size' => 12,
+                ]),
+                'expectedInstanceStatus' => new InstanceStatus('0.8', 12),
+            ],
+        ];
     }
 }

@@ -12,15 +12,16 @@ class InstanceCollectionHydrator
     ) {
     }
 
-    /**
-     * @throws ClientExceptionInterface
-     */
-    public function hydrateVersions(InstanceCollection $instanceCollection): InstanceCollection
+    public function hydrate(InstanceCollection $collection): InstanceCollection
     {
         $hydratedInstances = [];
 
-        foreach ($instanceCollection as $instance) {
-            $hydratedInstances[] = $this->instanceHydrator->hydrateVersion($instance);
+        foreach ($collection as $instance) {
+            try {
+                $hydratedInstances[] = $this->instanceHydrator->hydrate($instance);
+            } catch (ClientExceptionInterface) {
+                // Intentionally ignore HTTP exceptions
+            }
         }
 
         return new InstanceCollection($hydratedInstances);
