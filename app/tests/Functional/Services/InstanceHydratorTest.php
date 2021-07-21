@@ -2,10 +2,9 @@
 
 namespace App\Tests\Functional\Services;
 
-use App\Model\Instance;
 use App\Services\InstanceHydrator;
 use App\Tests\Services\HttpResponseFactory;
-use DigitalOceanV2\Entity\Droplet as DropletEntity;
+use App\Tests\Services\InstanceFactory;
 use GuzzleHttp\Handler\MockHandler;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
@@ -32,33 +31,26 @@ class InstanceHydratorTest extends KernelTestCase
         $this->httpResponseFactory = $httpResponseFactory;
     }
 
-    public function testHydrateVersion(): void
+    public function testHydrate(): void
     {
         $version = 'version-string';
+        $messageQueueSize = 8;
 
         $this->mockHandler->append($this->httpResponseFactory->createFromArray([
             HttpResponseFactory::KEY_STATUS_CODE => 200,
-            HttpResponseFactory::KEY_BODY => $version,
+            HttpResponseFactory::KEY_BODY => json_encode([
+                'version' => $version,
+                'message-queue-size' => $messageQueueSize,
+            ]),
         ]));
 
-        $dropletData = [
-            'id' => 123,
-            'networks' => [
-                'v4' => [
-                    [
-                        'type' => 'public',
-                        'ip_address' => '127.0.0.1',
-                    ],
-                ],
-            ],
-        ];
-
-        $dropletEntity = new DropletEntity($dropletData);
-        $instance = new Instance($dropletEntity);
+        $instance = InstanceFactory::create(['id' => 123]);
 
         self::assertNull($instance->getVersion());
+        self::assertNull($instance->getMessageQueueSize());
 
-        $instance = $this->instanceHydrator->hydrateVersion($instance);
+        $instance = $this->instanceHydrator->hydrate($instance);
         self::assertSame($version, $instance->getVersion());
+        self::assertSame($messageQueueSize, $instance->getMessageQueueSize());
     }
 }

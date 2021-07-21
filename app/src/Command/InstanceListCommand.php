@@ -6,7 +6,6 @@ use App\Services\CommandExceptionRenderer;
 use App\Services\InstanceCollectionHydrator;
 use App\Services\InstanceRepository;
 use DigitalOceanV2\Exception\ExceptionInterface;
-use Psr\Http\Client\ClientExceptionInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -21,8 +20,7 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 class InstanceListCommand extends Command
 {
     public const NAME = 'app:instance:list';
-    public const OPTION_OUTPUT_TEMPLATE = 'output-template';
-    public const DEFAULT_OUTPUT_TEMPLATE = '{{ id }}: {{ version }}';
+    public const OPTION_PRETTY_PRINT = 'pretty-print';
 
     public function __construct(
         private InstanceRepository $instanceRepository,
@@ -37,54 +35,45 @@ class InstanceListCommand extends Command
     {
         $this
             ->addOption(
-                self::OPTION_OUTPUT_TEMPLATE,
+                self::OPTION_PRETTY_PRINT,
                 null,
-                InputOption::VALUE_REQUIRED,
-                'Template (per instance) into which to render the output. Allowed placeholders:' . "\n" .
-                '{{ id }} - instance id' . "\n" .
-                '{{ version }} - instance version' . "\n",
-                self::DEFAULT_OUTPUT_TEMPLATE
+                InputOption::VALUE_OPTIONAL,
+                '',
+                false
             )
         ;
     }
 
     /**
-     * @throws ClientExceptionInterface
      * @throws ExceptionInterface
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $outputTemplate = $input->getOption(self::OPTION_OUTPUT_TEMPLATE);
-        $outputTemplate = is_string($outputTemplate) ? $outputTemplate : self::DEFAULT_OUTPUT_TEMPLATE;
-
         try {
             $instances = $this->instanceRepository->findAll();
-            $instances = $this->instanceCollectionHydrator->hydrateVersions($instances);
-        } catch (ExceptionInterface | ClientExceptionInterface $e) {
+            $instances = $this->instanceCollectionHydrator->hydrate($instances);
+        } catch (ExceptionInterface $e) {
             $io = new SymfonyStyle($input, $output);
             $io->error($this->commandExceptionRenderer->render($e));
 
             throw $e;
         }
 
-        $instancesCount = count($instances);
+        $collectionData = [];
 
-        foreach ($instances as $instanceIndex => $instance) {
-            $output->write(
-                str_replace(
-                    [
-                        '{{ id }}',
-                        '{{ version }}',
-                    ],
-                    [
-                        $instance->getId(),
-                        $instance->getVersion(),
-                    ],
-                    $outputTemplate
-                ),
-                $instanceIndex < ($instancesCount - 1)
-            );
+        foreach ($instances as $instance) {
+            $collectionData[] = [
+                'id' => $instance->getId(),
+                'version' => $instance->getVersion(),
+                'message-queue-size' => $instance->getMessageQueueSize(),
+            ];
         }
+
+        $prettyPrint = $input->getOption(self::OPTION_PRETTY_PRINT);
+        $prettyPrint = is_scalar($prettyPrint) && $prettyPrint;
+        $jsonEncodeFlags = $prettyPrint ? JSON_PRETTY_PRINT : 0;
+
+        $output->write((string) json_encode($collectionData, $jsonEncodeFlags));
 
         return Command::SUCCESS;
     }

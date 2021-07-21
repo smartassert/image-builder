@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Model\Instance;
+use App\Model\InstanceStatus;
 use Psr\Http\Client\ClientExceptionInterface;
 
 class InstanceHydrator
@@ -15,10 +16,14 @@ class InstanceHydrator
     /**
      * @throws ClientExceptionInterface
      */
-    public function hydrateVersion(Instance $instance): Instance
+    public function hydrate(Instance $instance): Instance
     {
-        return $instance->withVersion(
-            $this->instanceClient->getVersion($instance)
-        );
+        $status = $this->instanceClient->getStatus($instance);
+        if ($status instanceof InstanceStatus) {
+            $instance = $instance->withVersion($status->getVersion());
+            $instance = $instance->withMessageQueueSize($status->getMessageQueueSize());
+        }
+
+        return $instance;
     }
 }
