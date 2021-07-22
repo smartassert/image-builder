@@ -57,7 +57,7 @@ jobs:
         if: ${{ steps.update.outputs.has_changes == 'true' }}
         env:
           GITHUB_TOKEN: ${{ secrets.PAT_TOKEN_SELF }}
-          TAG: ${{ github.event.client_payload.worker_version }}
+          TAG: ${{ github.event.client_payload.worker_manager_version }}
           TARGET: ${{ steps.commit_hash.outputs.value }}
           TITLE: "Automatic release ${{ github.event.client_payload.worker_manager_version }}"
           NOTES: ${{ steps.release_notes.outputs.value }}
