@@ -1,4 +1,4 @@
-name: Update snapshot
+name: Update worker manager image
 
 on:
   workflow_dispatch:
@@ -12,7 +12,7 @@ on:
 
 jobs:
   commit:
-    name: Update snapshot
+    name: Update
     runs-on: ubuntu-latest
 
     steps:
@@ -21,11 +21,10 @@ jobs:
         with:
           token: ${{ secrets.PAT_TOKEN_SELF }}
 
-      - name: Store snapshot ID
-        id: update
+      - name: Store
         env:
-          ID: ${{ github.event.inputs.snapshot_id }}
-        run:  echo "SNAPSHOT=$ID" > snapshot.env
+          ID: ${{ github.event.inputs.image }}
+        run:  echo "WORKER_MANAGER_IMAGE=$ID" > worker-manager-image.env
 
       - name: Commit changes
         uses: stefanzweifel/git-auto-commit-action@v4
