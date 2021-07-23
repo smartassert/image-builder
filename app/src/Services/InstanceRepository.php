@@ -6,6 +6,7 @@ use App\Model\Instance;
 use App\Model\InstanceCollection;
 use DigitalOceanV2\Api\Droplet as DropletApi;
 use DigitalOceanV2\Exception\ExceptionInterface;
+use DigitalOceanV2\Exception\RuntimeException;
 
 class InstanceRepository
 {
@@ -34,12 +35,28 @@ class InstanceRepository
     /**
      * @throws ExceptionInterface
      */
-    public function find(): ?Instance
+    public function findCurrent(): ?Instance
     {
         $droplets = $this->dropletApi->getAll($this->instanceTag);
 
         return 0 === count($droplets)
             ? null
             : new Instance($droplets[0]);
+    }
+
+    /**
+     * @throws ExceptionInterface
+     */
+    public function find(int $id): ?Instance
+    {
+        try {
+            return new Instance($this->dropletApi->getById($id));
+        } catch (ExceptionInterface $exception) {
+            if ($exception instanceof RuntimeException && 404 === $exception->getCode()) {
+                return null;
+            }
+
+            throw $exception;
+        }
     }
 }
