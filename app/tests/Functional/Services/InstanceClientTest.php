@@ -146,7 +146,6 @@ class InstanceClientTest extends KernelTestCase
             HttpResponseFactory::KEY_BODY => $httpResponseBody,
         ]));
 
-
         self::assertEquals($expectedInstanceHealth, $this->instanceClient->getHealth($instance));
     }
 
