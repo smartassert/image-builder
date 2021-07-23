@@ -1,0 +1,20 @@
+name: Commit latest snapshot
+
+on:
+  workflow_dispatch:
+    inputs:
+      snapshot_id:
+        description: ID of the snapshot to store
+        required: true
+
+jobs:
+  commit:
+    name: Commit latest snapshot
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Debug - which branch are we on?
+        run: git status
