@@ -5,7 +5,8 @@
 # https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
 parameters:
     instance_collection_tag: '%env(DIGITALOCEAN_DROPLET_TAG)%'
-    instance_tag: '%env(DIGITALOCEAN_DROPLET_TAG)%-%env(WORKER_MANAGER_IMAGE)%'
+    worker_manager_image: '%env(WORKER_MANAGER_IMAGE)%'
+    instance_tag: '%env(DIGITALOCEAN_DROPLET_TAG)%-%worker_manager_image%'
 
 services:
     # default configuration for services in *this* file
@@ -69,7 +70,7 @@ services:
             $defaults:
                 region: '%env(DIGITALOCEAN_DROPLET_REGION)%'
                 size: '%env(DIGITALOCEAN_DROPLET_SIZE)%'
-                image: '%env(WORKER_MANAGER_IMAGE)%'
+                image: '%worker_manager_image%'
                 tags:
                     - '%instance_collection_tag%'
                     - '%instance_tag%'
@@ -86,3 +87,7 @@ services:
         arguments:
             $instanceCollectionTag: '%instance_collection_tag%'
             $instanceTag: '%instance_tag%'
+
+    App\Services\ImageRepository:
+        arguments:
+            $imageName: '%worker_manager_image%'
