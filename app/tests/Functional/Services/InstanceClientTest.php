@@ -2,6 +2,9 @@
 
 namespace App\Tests\Functional\Services;
 
+use App\Model\Instance;
+use App\Model\InstanceHealth;
+use App\Model\InstanceServiceAvailabilityInterface;
 use App\Model\InstanceStatus;
 use App\Services\InstanceClient;
 use App\Tests\Services\HttpResponseFactory;
@@ -126,6 +129,50 @@ class InstanceClientTest extends KernelTestCase
                     'message-queue-size' => 12,
                 ]),
                 'expectedInstanceStatus' => new InstanceStatus('0.8', 12),
+            ],
+        ];
+    }
+
+    /**
+     * @dataProvider getHealthDataProvider
+     */
+    public function testGetHealth(
+        string $httpResponseBody,
+        Instance $instance,
+        ?InstanceHealth $expectedInstanceHealth
+    ): void {
+        $this->mockHandler->append($this->httpResponseFactory->createFromArray([
+            HttpResponseFactory::KEY_STATUS_CODE => 200,
+            HttpResponseFactory::KEY_BODY => $httpResponseBody,
+        ]));
+
+
+        self::assertEquals($expectedInstanceHealth, $this->instanceClient->getHealth($instance));
+    }
+
+    /**
+     * @return array<mixed>
+     */
+    public function getHealthDataProvider(): array
+    {
+        $instance = InstanceFactory::create(['id' => 123,]);
+
+        return [
+            'response data is not an array' => [
+                'responseBody' => json_encode(true),
+                'instance' => $instance,
+                'expectedInstanceStatus' => null,
+            ],
+            'response data is valid' => [
+                'responseBody' => json_encode([
+                    'service1' => InstanceServiceAvailabilityInterface::AVAILABILITY_AVAILABLE,
+                    'service2' => InstanceServiceAvailabilityInterface::AVAILABILITY_AVAILABLE,
+                ]),
+                'instance' => $instance,
+                'expectedInstanceStatus' => new InstanceHealth([
+                    'service1' => InstanceServiceAvailabilityInterface::AVAILABILITY_AVAILABLE,
+                    'service2' => InstanceServiceAvailabilityInterface::AVAILABILITY_AVAILABLE,
+                ]),
             ],
         ];
     }
