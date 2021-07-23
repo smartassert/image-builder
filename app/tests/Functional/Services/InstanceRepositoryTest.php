@@ -107,9 +107,9 @@ class InstanceRepositoryTest extends KernelTestCase
     }
 
     /**
-     * @dataProvider findDataProvider
+     * @dataProvider findCurrentDataProvider
      */
-    public function testFind(string $httpResponseBody, ?Instance $expectedInstance): void
+    public function testFindCurrent(string $httpResponseBody, ?Instance $expectedInstance): void
     {
         $this->mockHandler->append(
             $this->httpResponseFactory->createFromArray([
@@ -121,14 +121,14 @@ class InstanceRepositoryTest extends KernelTestCase
             ])
         );
 
-        $instance = $this->instanceRepository->find();
+        $instance = $this->instanceRepository->findCurrent();
         self::assertEquals($expectedInstance, $instance);
     }
 
     /**
      * @return array<mixed>
      */
-    public function findDataProvider(): array
+    public function findCurrentDataProvider(): array
     {
         return [
             'not found' => [

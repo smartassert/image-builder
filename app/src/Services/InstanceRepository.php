@@ -34,7 +34,7 @@ class InstanceRepository
     /**
      * @throws ExceptionInterface
      */
-    public function find(): ?Instance
+    public function findCurrent(): ?Instance
     {
         $droplets = $this->dropletApi->getAll($this->instanceTag);
 
