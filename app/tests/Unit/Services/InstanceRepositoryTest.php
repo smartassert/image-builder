@@ -32,7 +32,8 @@ class InstanceRepositoryTest extends TestCase
 
         $instanceRepository = new InstanceRepository(
             $dropletApi,
-            'worker-manager'
+            'worker-manager',
+            'worker-manager-123456'
         );
 
         $instances = $instanceRepository->findAll();
