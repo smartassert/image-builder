@@ -106,10 +106,10 @@ jobs:
           php bin/console app:snapshot:delete --id $ID
           php bin/console app:snapshot:exists --id $ID --expect-exists 0
 
-      - name: Trigger update snapshot workflow if a release
+      - name: Trigger update worker manager image workflow if a release
         if: ${{ github.event_name == 'release' }}
         uses: benc-uk/workflow-dispatch@v1
         with:
-          workflow: Update snapshot
+          workflow: Update worker manager image
           token: ${{ secrets.PAT_TOKEN_SELF }}
-          inputs: '{ "snapshot_id": "${{ steps.snapshot.outputs.id }}", "commit_message": "Automatic snapshot.env for release ${{ github.event.release.tag_name }} ${{ steps.snapshot.outputs.id }}" }'
+          inputs: '{ "image": "${{ steps.snapshot.outputs.id }}", "commit_message": "Automatic worker-manager-image.env for release ${{ github.event.release.tag_name }} ${{ steps.snapshot.outputs.id }}" }'
