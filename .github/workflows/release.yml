@@ -112,4 +112,4 @@ jobs:
         with:
           workflow: Update snapshot
           token: ${{ secrets.PAT_TOKEN_SELF }}
-          inputs: '{ "snapshot_id": "${{ steps.snapshot.outputs.id }}", "release_tag": "${{ steps.version.outputs.value }}" }'
+          inputs: '{ "snapshot_id": "${{ steps.snapshot.outputs.id }}", "commit_message": "Automatic snapshot.env for release ${{ github.event.release.tag_name }} ${{ steps.snapshot.outputs.id }}" }'
