@@ -98,7 +98,7 @@ class InstanceCreateCommandTest extends KernelTestCase
     public function executeDataProvider(): array
     {
         return [
-            'created, no template' => [
+            'created' => [
                 'input' => [],
                 'httpResponseData' => [
                     HttpResponseFactory::KEY_STATUS_CODE => 200,
@@ -113,24 +113,6 @@ class InstanceCreateCommandTest extends KernelTestCase
                 ],
                 'expectedReturnCode' => Command::SUCCESS,
                 'expectedOutput' => '789',
-            ],
-            'created, template to set github action step output' => [
-                'input' => [
-                    '--output-template' => '::set-output name=value::{{ id }}',
-                ],
-                'httpResponseData' => [
-                    HttpResponseFactory::KEY_STATUS_CODE => 200,
-                    HttpResponseFactory::KEY_HEADERS => [
-                        'content-type' => 'application/json; charset=utf-8',
-                    ],
-                    HttpResponseFactory::KEY_BODY => (string) json_encode([
-                        'droplet' => [
-                            'id' => 123,
-                        ],
-                    ]),
-                ],
-                'expectedReturnCode' => Command::SUCCESS,
-                'expectedOutput' => '::set-output name=value::123',
             ],
         ];
     }
