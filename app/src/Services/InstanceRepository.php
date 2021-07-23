@@ -11,7 +11,8 @@ class InstanceRepository
 {
     public function __construct(
         private DropletApi $dropletApi,
-        private string $dropletTag
+        private string $instanceCollectionTag,
+        private string $instanceTag,
     ) {
     }
 
@@ -20,7 +21,7 @@ class InstanceRepository
      */
     public function findAll(): InstanceCollection
     {
-        $dropletEntities = $this->dropletApi->getAll($this->dropletTag);
+        $dropletEntities = $this->dropletApi->getAll($this->instanceCollectionTag);
 
         $instances = [];
         foreach ($dropletEntities as $dropletEntity) {
@@ -28,5 +29,17 @@ class InstanceRepository
         }
 
         return new InstanceCollection($instances);
+    }
+
+    /**
+     * @throws ExceptionInterface
+     */
+    public function find(): ?Instance
+    {
+        $droplets = $this->dropletApi->getAll($this->instanceTag);
+
+        return 0 === count($droplets)
+            ? null
+            : new Instance($droplets[0]);
     }
 }
