@@ -149,4 +149,50 @@ class InstanceRepositoryTest extends KernelTestCase
             ],
         ];
     }
+
+    /**
+     * @dataProvider findDataProvider
+     *
+     * @param array<mixed> $httpResponseData
+     */
+    public function testFind(array $httpResponseData, int $id, ?Instance $expectedInstance): void
+    {
+        $this->mockHandler->append(
+            $this->httpResponseFactory->createFromArray($httpResponseData)
+        );
+
+        $instance = $this->instanceRepository->find($id);
+        self::assertEquals($expectedInstance, $instance);
+    }
+
+    /**
+     * @return array<mixed>
+     */
+    public function findDataProvider(): array
+    {
+        return [
+            'not found' => [
+                'httpResponseData' => [
+                    HttpResponseFactory::KEY_STATUS_CODE => 404,
+                ],
+                'id' => 0,
+                'expectedImage' => null,
+            ],
+            'found' => [
+                'httpResponseData' => [
+                    HttpResponseFactory::KEY_STATUS_CODE => 200,
+                    HttpResponseFactory::KEY_HEADERS => [
+                        'content-type' => 'application/json; charset=utf-8',
+                    ],
+                    HttpResponseFactory::KEY_BODY => (string) json_encode([
+                        'droplet' => [
+                            'id' => 123,
+                        ],
+                    ]),
+                ],
+                'id' => 123,
+                'expectedImage' => InstanceFactory::create(['id' => 123]),
+            ],
+        ];
+    }
 }
