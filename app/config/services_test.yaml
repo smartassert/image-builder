@@ -28,3 +28,8 @@ services:
 
     App\Services\ActionRepository:
         public: true
+
+    App\Services\ImageRepository:
+        public: true
+        arguments:
+            $imageName: '%worker_manager_image%'
