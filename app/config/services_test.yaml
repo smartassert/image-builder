@@ -13,11 +13,6 @@ services:
         arguments:
             $handler: '@GuzzleHttp\Handler\MockHandler'
 
-    App\Services\InstanceRepository:
-        public: true
-        arguments:
-            $dropletTag: '%env(DIGITALOCEAN_DROPLET_TAG)%'
-
     App\Tests\Services\HttpResponseFactory:
         public: true
 
