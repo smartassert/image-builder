@@ -155,7 +155,7 @@ class InstanceClientTest extends KernelTestCase
      */
     public function getHealthDataProvider(): array
     {
-        $instance = InstanceFactory::create(['id' => 123,]);
+        $instance = InstanceFactory::create(['id' => 123]);
 
         return [
             'response data is not an array' => [
