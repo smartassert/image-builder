@@ -18,34 +18,8 @@ on:
         required: false
 
 jobs:
-  setup:
-    name: Dump Github Context Setup
-    runs-on: ubuntu-latest
-    outputs:
-      label: ${{ steps.label.outputs.value }}
-    steps:
-      - name: Create label
-        id: label
-        env:
-          EVENT_NAME: ${{ github.event_name }}
-          PULL_REQUEST_NUMBER: ${{ github.event.pull_request.number }}
-        run: |
-          LABEL="unknown"
-
-          if [ "$EVENT_NAME" = "pull_request" ]; then
-              LABEL="pull request $PULL_REQUEST_NUMBER"
-          elif [ "$EVENT_NAME" = "push" ]; then
-              LABEL="push to to-be-completed-when-examining-push-event"
-          elif [ "$EVENT_NAME" = "release" ]; then
-              LABEL="release to-be-completed-when-examining-release-event"
-          elif [ "$EVENT_NAME" = "workflow_dispatch" ]; then
-              LABEL="workflow dispatch"
-          fi
-
-          echo "::set-output name=value::$LABEL"
-
   main:
-    name: Dump Github Context (${{ needs.setup.outputs.label }})
+    name: Dump Github Context
     runs-on: ubuntu-latest
     needs: setup
 
