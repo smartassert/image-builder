@@ -1,0 +1,31 @@
+name: Create instance
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "10 * * * *"
+
+jobs:
+  commit:
+    name: Create instance
+    runs-on: ubuntu-latest
+    env:
+      DIGITALOCEAN_API_TOKEN: ${{ secrets.DIGITALOCEAN_API_TOKEN }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Check snapshot exists
+        run:
+          export echo $(cat worker-manager-image.env | tr '\n' ' ')
+          cd app
+
+          php bin/console app:snapshot:exists --id $WORKER_MANAGER_IMAGE --expect-exists 1
+
+      - name: Create
+        run:
+          export echo $(cat worker-manager-image.env | tr '\n' ' ')
+          cd app
+
+          php bin/console app:instance:create
