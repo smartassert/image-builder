@@ -73,16 +73,19 @@ class InstanceCreateCommandTest extends KernelTestCase
      * @dataProvider executeDataProvider
      *
      * @param array<mixed> $input
-     * @param array<mixed> $httpResponseData
+     * @param array<mixed> $httpResponseDataCollection
      */
     public function testExecuteSuccess(
         array $input,
-        array $httpResponseData,
+        array $httpResponseDataCollection,
         int $expectedReturnCode,
         string $expectedOutput
     ): void {
-        $httpResponse = $this->httpResponseFactory->createFromArray($httpResponseData);
-        $this->setHttpResponse($httpResponse);
+        foreach ($httpResponseDataCollection as $httpResponseData) {
+            $this->setHttpResponse(
+                $this->httpResponseFactory->createFromArray($httpResponseData)
+            );
+        }
 
         $output = new BufferedOutput();
 
@@ -98,18 +101,49 @@ class InstanceCreateCommandTest extends KernelTestCase
     public function executeDataProvider(): array
     {
         return [
+            'already exists' => [
+                'input' => [],
+                'httpResponseDataCollection' => [
+                    [
+                        HttpResponseFactory::KEY_STATUS_CODE => 200,
+                        HttpResponseFactory::KEY_HEADERS => [
+                            'content-type' => 'application/json; charset=utf-8',
+                        ],
+                        HttpResponseFactory::KEY_BODY => (string) json_encode([
+                            'droplets' => [
+                                [
+                                    'id' => 789,
+                                ]
+                            ],
+                        ]),
+                    ],
+                ],
+                'expectedReturnCode' => Command::SUCCESS,
+                'expectedOutput' => '789',
+            ],
             'created' => [
                 'input' => [],
-                'httpResponseData' => [
-                    HttpResponseFactory::KEY_STATUS_CODE => 200,
-                    HttpResponseFactory::KEY_HEADERS => [
-                        'content-type' => 'application/json; charset=utf-8',
-                    ],
-                    HttpResponseFactory::KEY_BODY => (string) json_encode([
-                        'droplet' => [
-                            'id' => 789,
+                'httpResponseDataCollection' => [
+                    [
+                        HttpResponseFactory::KEY_STATUS_CODE => 200,
+                        HttpResponseFactory::KEY_HEADERS => [
+                            'content-type' => 'application/json; charset=utf-8',
                         ],
-                    ]),
+                        HttpResponseFactory::KEY_BODY => (string) json_encode([
+                            'droplets' => [],
+                        ]),
+                    ],
+                    [
+                        HttpResponseFactory::KEY_STATUS_CODE => 200,
+                        HttpResponseFactory::KEY_HEADERS => [
+                            'content-type' => 'application/json; charset=utf-8',
+                        ],
+                        HttpResponseFactory::KEY_BODY => (string) json_encode([
+                            'droplet' => [
+                                'id' => 789,
+                            ],
+                        ]),
+                    ],
                 ],
                 'expectedReturnCode' => Command::SUCCESS,
                 'expectedOutput' => '789',
