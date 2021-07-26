@@ -2,6 +2,8 @@ name: Debug - Dump Github Context
 
 on:
   push:
+    branches:
+      - main
   pull_request:
   release:
     types:
