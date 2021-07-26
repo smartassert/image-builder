@@ -4,6 +4,7 @@ namespace App\Command;
 
 use App\Services\CommandExceptionRenderer;
 use App\Services\InstanceCreator;
+use App\Services\InstanceRepository;
 use DigitalOceanV2\Exception\ExceptionInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -20,6 +21,7 @@ class InstanceCreateCommand extends Command
     public const NAME = 'app:instance:create';
 
     public function __construct(
+        private InstanceRepository $instanceRepository,
         private InstanceCreator $instanceCreator,
         private CommandExceptionRenderer $commandExceptionRenderer,
     ) {
@@ -32,7 +34,10 @@ class InstanceCreateCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         try {
-            $instance = $this->instanceCreator->create();
+            $instance = $this->instanceRepository->findCurrent();
+            if (null === $instance) {
+                $instance = $this->instanceCreator->create();
+            }
         } catch (ExceptionInterface $e) {
             $io = new SymfonyStyle($input, $output);
             $io->error($this->commandExceptionRenderer->render($e));
