@@ -1,0 +1,33 @@
+name: Debug - Dump Github Context
+
+on:
+  push:
+  pull_request:
+  release:
+    types:
+      - published
+  workflow_dispatch:
+    inputs:
+      required_input:
+        description: Required input
+        required: true
+      optional_input:
+        description: Optional input
+        required: false
+
+jobs:
+  build:
+    name: Dump Github Context
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Examine current branch
+        run: git branch
+
+      - name: Dump GitHub context
+        env:
+          GITHUB_CONTEXT: ${{ toJson(github) }}
+        run: echo "$GITHUB_CONTEXT"
