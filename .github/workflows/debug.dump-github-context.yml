@@ -40,7 +40,6 @@ jobs:
               LABEL="release to-be-completed-when-examining-release-event"
           elif [ "$EVENT_NAME" = "workflow_dispatch" ]; then
               LABEL="workflow dispatch"
-          else
           fi
 
           echo "::set-output name=value::$LABEL"
