@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Model\Instance;
+use App\Model\InstanceHealth;
 use App\Model\InstanceStatus;
 use Psr\Http\Client\ClientExceptionInterface;
 use Psr\Http\Client\ClientInterface;
@@ -42,6 +43,24 @@ class InstanceClient
 
         if (is_array($responseData)) {
             return $this->createInstanceStatus($responseData);
+        }
+
+        return null;
+    }
+
+    /**
+     * @throws ClientExceptionInterface
+     */
+    public function getHealth(Instance $instance): ?InstanceHealth
+    {
+        $url = $instance->getUrl() . '/health-check';
+        $request = $this->requestFactory->createRequest('GET', $url);
+
+        $response = $this->httpClient->sendRequest($request);
+        $responseData = json_decode($response->getBody()->getContents(), true);
+
+        if (is_array($responseData)) {
+            return new InstanceHealth($responseData);
         }
 
         return null;
