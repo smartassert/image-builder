@@ -21,7 +21,6 @@ jobs:
   main:
     name: Dump Github Context
     runs-on: ubuntu-latest
-    needs: setup
 
     steps:
       - name: Checkout
