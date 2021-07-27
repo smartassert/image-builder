@@ -37,4 +37,5 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.PAT_TOKEN_SELF }}
           RUN_ID: ${{ github.event.workflow_run.id }}
-        run: gh run rerun $RUN_ID
+          REPO: ${{ github.event.repository }}
+        run: gh run rerun $RUN_ID --repo $REPO
