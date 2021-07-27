@@ -16,7 +16,15 @@ on:
       optional_input:
         description: Optional input
         required: false
-  workflow_run: 
+  workflow_run:
+    workflows:
+      - Coding Standards
+      - Release
+      - Static Analysis
+      - Store build config
+      - Tests
+      - Update worker manager image
+      - VirtualBox VM
 
 jobs:
   main:
