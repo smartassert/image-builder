@@ -29,8 +29,14 @@ jobs:
           CREATED_AT_DATE: ${{ github.event.workflow_run.created_at }}
           UPDATED_AT_DATE: ${{ github.event.workflow_run.updated_at }}
         run: |
-          DURATION=$(DATE1=$CREATED_AT_DATE DATE2=$UPDATED_AT_DATE ./.github/workflows/scripts/timestamp-diff.sh)
-          SHOULD_RETRY=$(DURATION=$DURATION MAXIMUM=$MAXIMUM_DURATION ./.github/workflows/scripts/duration-less-than-maximum.sh)
+          CREATED_AT_TIMESTAMP=$(date --date $CREATED_AT +%s)
+          UPDATED_AT_TIMESTAMP=$(date --date $UPDATED_AT +%s)
+          DURATION=$(($UPDATED_AT_TIMESTAMP - $CREATED_AT_TIMESTAMP))
+
+          SHOULD_RETRY="false"
+          if [ $DURATION -lt $MAXIMUM ] || [ $DURATION = $MAXIMUM ]; then
+            SHOULD_RETRY="true"
+          fi
 
           echo "::set-output name=value::$SHOULD_RETRY"
 
