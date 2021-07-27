@@ -30,7 +30,7 @@ jobs:
           UPDATED_AT_DATE: ${{ github.event.workflow_run.updated_at }}
         run: |
           DURATION=$(DATE1=$CREATED_AT_DATE DATE2=$UPDATED_AT_DATE ./.github/workflows/scripts/timestamp-diff.sh)
-          SHOULD_RETRY=$(DURATION=$DURATION MAXIMUM_DURATION=$MAXIMUM_DURATION ./.github/workflows/scripts/duration-less-than-maximum.sh)
+          SHOULD_RETRY=$(DURATION=$DURATION MAXIMUM=$MAXIMUM_DURATION ./.github/workflows/scripts/duration-less-than-maximum.sh)
 
           echo "::set-output name=value::$SHOULD_RETRY"
 
