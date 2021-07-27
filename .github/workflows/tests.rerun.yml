@@ -34,7 +34,7 @@ jobs:
           DURATION=$(($UPDATED_AT_TIMESTAMP - $CREATED_AT_TIMESTAMP))
 
           SHOULD_RETRY="false"
-          if [ $DURATION -lt $MAXIMUM ] || [ $DURATION = $MAXIMUM ]; then
+          if [ $DURATION -lt $MAXIMUM_DURATION ] || [ $DURATION = $MAXIMUM_DURATION ]; then
             SHOULD_RETRY="true"
           fi
 
