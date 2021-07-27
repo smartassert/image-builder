@@ -1,0 +1,46 @@
+name: Tests - Rerun
+
+on:
+  workflow_run:
+    workflows:
+      - Tests
+    types:
+      - completed
+
+jobs:
+  on-failure:
+    name: Re-run workflow on failure
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'failure' }}
+
+    steps:
+      - name: Dump context
+        env:
+          GITHUB_CONTEXT: ${{ toJson(github) }}
+        run: echo "$GITHUB_CONTEXT"
+
+      - name: Should retry?
+        id: should-retry
+        env:
+          MAXIMUM_DURATION: 300
+          CREATED_AT: ${{ github.event.workflow_run.created_at }}
+          UPDATED_AT: ${{ github.event.workflow_run.updated_at }}
+        run: |
+          CREATED_AT_TIMESTAMP=$(date --date $CREATED_AT +%s)
+          UPDATED_AT_TIMESTAMP=$(date --date $UPDATED_AT +%s)
+          DURATION=$(($UPDATED_AT_TIMESTAMP - $CREATED_AT_TIMESTAMP))
+
+          SHOULD_RETRY="false"
+          if [ $DURATION -lt $MAXIMUM_DURATION ] || [ $DURATION = $MAXIMUM_DURATION ]; then
+            SHOULD_RETRY="true"
+          fi
+
+          echo "::set-output name=value::$SHOULD_RETRY"
+
+      - name: Retry if allowed
+        if: ${{ steps.should-retry.outputs.value == 'true' }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.PAT_TOKEN_SELF }}
+          RUN_ID: ${{ github.event.workflow_run.id }}
+          REPO: ${{ github.repository }}
+        run: gh run rerun $RUN_ID --repo $REPO
