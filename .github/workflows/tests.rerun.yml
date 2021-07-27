@@ -14,9 +14,6 @@ jobs:
     if: ${{ github.event.workflow_run.conclusion == 'failure' }}
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-
       - name: Dump context
         env:
           GITHUB_CONTEXT: ${{ toJson(github) }}
