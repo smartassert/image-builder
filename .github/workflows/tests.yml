@@ -31,4 +31,6 @@ jobs:
           working_dir: app
 
       - name: Run tests
-        run: cd app && composer test
+        run: |
+          exit 1
+          cd app && composer test
