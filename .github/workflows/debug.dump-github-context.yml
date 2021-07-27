@@ -16,6 +16,7 @@ on:
       optional_input:
         description: Optional input
         required: false
+  workflow_run: 
 
 jobs:
   main:
