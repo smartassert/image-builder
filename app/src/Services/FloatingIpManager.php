@@ -32,11 +32,11 @@ class FloatingIpManager
             );
         }
 
-        $actionEntity = $this->reAssign($instance, $existingFloatingIp);
+        $actionEntity = $this->reAssign($instance, $existingFloatingIp->ip);
 
         return (
             new FloatingIpAssignmentAction(
-                $existingFloatingIp,
+                $existingFloatingIp->ip,
                 $instance
             )
         )->withActionEntity($actionEntity);

@@ -4,6 +4,7 @@ namespace App\Tests\Functional\Services;
 
 use App\Services\FloatingIpRepository;
 use App\Tests\Services\HttpResponseFactory;
+use DigitalOceanV2\Entity\FloatingIp as FloatingIpEntity;
 use GuzzleHttp\Handler\MockHandler;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
@@ -35,7 +36,7 @@ class FloatingIpRepositoryTest extends KernelTestCase
      *
      * @param array<mixed> $floatingIpResponseData
      */
-    public function testFind(array $floatingIpResponseData, ?string $expectedIp): void
+    public function testFind(array $floatingIpResponseData, ?FloatingIpEntity $expectedIp): void
     {
         $this->mockHandler->append(
             $this->httpResponseFactory->createFromArray([
@@ -49,7 +50,7 @@ class FloatingIpRepositoryTest extends KernelTestCase
             ])
         );
 
-        self::assertSame($expectedIp, $this->floatingIpRepository->find());
+        self::assertEquals($expectedIp, $this->floatingIpRepository->find());
     }
 
     /**
@@ -83,7 +84,15 @@ class FloatingIpRepositoryTest extends KernelTestCase
                         ],
                     ],
                 ],
-                'expectedIp' => '127.0.0.200',
+                'expectedIp' => new FloatingIpEntity([
+                    'ip' => '127.0.0.200',
+                    'droplet' => (object) [
+                        'id' => 123,
+                        'tags' => [
+                            'worker-manager',
+                        ],
+                    ],
+                ]),
             ],
             'two, first assigned to an instance' => [
                 'floatingIpResponseData' => [
@@ -104,7 +113,15 @@ class FloatingIpRepositoryTest extends KernelTestCase
                         ],
                     ],
                 ],
-                'expectedIp' => '127.0.0.300',
+                'expectedIp' => new FloatingIpEntity([
+                    'ip' => '127.0.0.300',
+                    'droplet' => (object) [
+                        'id' => 123,
+                        'tags' => [
+                            'worker-manager',
+                        ],
+                    ],
+                ]),
             ],
             'two, second assigned to an instance' => [
                 'floatingIpResponseData' => [
@@ -125,7 +142,15 @@ class FloatingIpRepositoryTest extends KernelTestCase
                         ],
                     ],
                 ],
-                'expectedIp' => '127.0.0.401',
+                'expectedIp' => new FloatingIpEntity([
+                    'ip' => '127.0.0.401',
+                    'droplet' => (object) [
+                        'id' => 465,
+                        'tags' => [
+                            'worker-manager',
+                        ],
+                    ],
+                ]),
             ],
         ];
     }

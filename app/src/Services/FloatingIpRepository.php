@@ -4,6 +4,7 @@ namespace App\Services;
 
 use DigitalOceanV2\Api\FloatingIp as FloatingIpApi;
 use DigitalOceanV2\Entity\Droplet as DropletEntity;
+use DigitalOceanV2\Entity\FloatingIp as FloatingIpEntity;
 use DigitalOceanV2\Exception\ExceptionInterface;
 
 class FloatingIpRepository
@@ -19,7 +20,7 @@ class FloatingIpRepository
      *
      * @throws ExceptionInterface
      */
-    public function find(): ?string
+    public function find(): ?FloatingIpEntity
     {
         $floatingIpEntities = $this->floatingIpApi->getAll();
 
@@ -28,7 +29,7 @@ class FloatingIpRepository
 
             if ($assignee instanceof DropletEntity) {
                 if (in_array($this->dropletTag, $assignee->tags)) {
-                    return $floatingIpEntity->ip;
+                    return $floatingIpEntity;
                 }
             }
         }
