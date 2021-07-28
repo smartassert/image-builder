@@ -2,6 +2,7 @@
 
 namespace App\Tests\Functional\Services;
 
+use App\Model\AssignedIp;
 use App\Services\FloatingIpRepository;
 use App\Tests\Services\HttpResponseFactory;
 use DigitalOceanV2\Entity\FloatingIp as FloatingIpEntity;
@@ -36,7 +37,7 @@ class FloatingIpRepositoryTest extends KernelTestCase
      *
      * @param array<mixed> $floatingIpResponseData
      */
-    public function testFind(array $floatingIpResponseData, ?FloatingIpEntity $expectedIp): void
+    public function testFind(array $floatingIpResponseData, ?AssignedIp $expectedAssignedIp): void
     {
         $this->mockHandler->append(
             $this->httpResponseFactory->createFromArray([
@@ -50,7 +51,7 @@ class FloatingIpRepositoryTest extends KernelTestCase
             ])
         );
 
-        self::assertEquals($expectedIp, $this->floatingIpRepository->find());
+        self::assertEquals($expectedAssignedIp, $this->floatingIpRepository->find());
     }
 
     /**
@@ -61,7 +62,7 @@ class FloatingIpRepositoryTest extends KernelTestCase
         return [
             'none' => [
                 'floatingIpResponseData' => [],
-                'expectedIp' => null,
+                'expectedAssignedIp' => null,
             ],
             'one, not assigned to anything' => [
                 'floatingIpResponseData' => [
@@ -70,7 +71,7 @@ class FloatingIpRepositoryTest extends KernelTestCase
                         'droplet' => null,
                     ],
                 ],
-                'expectedIp' => null,
+                'expectedAssignedIp' => null,
             ],
             'one, assigned to an instance' => [
                 'floatingIpResponseData' => [
@@ -84,15 +85,17 @@ class FloatingIpRepositoryTest extends KernelTestCase
                         ],
                     ],
                 ],
-                'expectedIp' => new FloatingIpEntity([
-                    'ip' => '127.0.0.200',
-                    'droplet' => (object) [
-                        'id' => 123,
-                        'tags' => [
-                            'worker-manager',
+                'expectedAssignedIp' => new AssignedIp(
+                    new FloatingIpEntity([
+                        'ip' => '127.0.0.200',
+                        'droplet' => (object) [
+                            'id' => 123,
+                            'tags' => [
+                                'worker-manager',
+                            ],
                         ],
-                    ],
-                ]),
+                    ])
+                ),
             ],
             'two, first assigned to an instance' => [
                 'floatingIpResponseData' => [
@@ -113,15 +116,17 @@ class FloatingIpRepositoryTest extends KernelTestCase
                         ],
                     ],
                 ],
-                'expectedIp' => new FloatingIpEntity([
-                    'ip' => '127.0.0.300',
-                    'droplet' => (object) [
-                        'id' => 123,
-                        'tags' => [
-                            'worker-manager',
+                'expectedAssignedIp' => new AssignedIp(
+                    new FloatingIpEntity([
+                        'ip' => '127.0.0.300',
+                        'droplet' => (object) [
+                            'id' => 123,
+                            'tags' => [
+                                'worker-manager',
+                            ],
                         ],
-                    ],
-                ]),
+                    ])
+                ),
             ],
             'two, second assigned to an instance' => [
                 'floatingIpResponseData' => [
@@ -142,15 +147,17 @@ class FloatingIpRepositoryTest extends KernelTestCase
                         ],
                     ],
                 ],
-                'expectedIp' => new FloatingIpEntity([
-                    'ip' => '127.0.0.401',
-                    'droplet' => (object) [
-                        'id' => 465,
-                        'tags' => [
-                            'worker-manager',
+                'expectedAssignedIp' => new AssignedIp(
+                    new FloatingIpEntity([
+                        'ip' => '127.0.0.401',
+                        'droplet' => (object) [
+                            'id' => 465,
+                            'tags' => [
+                                'worker-manager',
+                            ],
                         ],
-                    ],
-                ]),
+                    ])
+                ),
             ],
         ];
     }
