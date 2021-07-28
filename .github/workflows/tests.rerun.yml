@@ -69,10 +69,8 @@ jobs:
           COMMENT: ${{ steps.comment.outputs.comment }}
           GITHUB_TOKEN: ${{ secrets.PAT_TOKEN_SELF }}
         run: |
-          echo $PULL_REQUESTS
-
           PULL_REQUEST_NUMBERS=$(echo $PULL_REQUESTS | jq ".[].number")
 
           for PULL_REQUEST_NUMBER in $PULL_REQUEST_NUMBERS; do
-            echo $PULL_REQUEST_NUMBER
+            gh pr comment $PULL_REQUEST_NUMBER --body "$COMMENT"
           done
