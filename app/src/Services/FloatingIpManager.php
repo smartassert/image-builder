@@ -2,7 +2,6 @@
 
 namespace App\Services;
 
-use App\Model\FloatingIpAssignmentAction;
 use App\Model\Instance;
 use DigitalOceanV2\Api\FloatingIp as FloatingIpApi;
 use DigitalOceanV2\Entity\Action as ActionEntity;
@@ -15,31 +14,6 @@ class FloatingIpManager
         private FloatingIpRepository $floatingIpRepository,
         private FloatingIpApi $floatingIpApi
     ) {
-    }
-
-    /**
-     * @throws ExceptionInterface
-     */
-    public function assign(Instance $instance): FloatingIpAssignmentAction
-    {
-        $existingFloatingIp = $this->floatingIpRepository->find();
-        if (null === $existingFloatingIp) {
-            $floatingIpEntity = $this->create($instance);
-
-            return new FloatingIpAssignmentAction(
-                $floatingIpEntity->ip,
-                $instance
-            );
-        }
-
-        $actionEntity = $this->reAssign($instance, $existingFloatingIp->ip);
-
-        return (
-            new FloatingIpAssignmentAction(
-                $existingFloatingIp->ip,
-                $instance
-            )
-        )->withActionEntity($actionEntity);
     }
 
     /**
