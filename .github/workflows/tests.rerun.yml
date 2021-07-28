@@ -19,10 +19,14 @@ jobs:
           GITHUB_CONTEXT: ${{ toJson(github) }}
         run: echo "$GITHUB_CONTEXT"
 
+      - name: Set maximum duration
+        id: maximum-duration
+        run: echo "::set-output name=value::300"
+
       - name: Should retry?
         id: should-retry
         env:
-          MAXIMUM_DURATION: 300
+          MAXIMUM_DURATION: ${{ steps.maximum_duration.outputs.value }}
           CREATED_AT: ${{ github.event.workflow_run.created_at }}
           UPDATED_AT: ${{ github.event.workflow_run.updated_at }}
         run: |
@@ -35,12 +39,38 @@ jobs:
             SHOULD_RETRY="true"
           fi
 
-          echo "::set-output name=value::$SHOULD_RETRY"
+          echo "::set-output name=duration::$DURATION"
+          echo "::set-output name=decision::$SHOULD_RETRY"
 
       - name: Retry if allowed
-        if: ${{ steps.should-retry.outputs.value == 'true' }}
+        if: ${{ steps.should-retry.outputs.decision == 'true' }}
         env:
           GITHUB_TOKEN: ${{ secrets.PAT_TOKEN_SELF }}
           RUN_ID: ${{ github.event.workflow_run.id }}
           REPO: ${{ github.repository }}
         run: gh run rerun $RUN_ID --repo $REPO
+
+      - name: Build comment
+        id: comment
+        if: ${{ steps.should-retry.outputs.decision == 'true' }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.PAT_TOKEN_SELF }}
+          MAXIMUM_DURATION: ${{ steps.maximum_duration.outputs.value }}
+          DURATION: ${{ steps.should-retry.outputs.duration }}
+          WORKFLOW: ${{ github.event.workflow.name }}
+        run: |
+          COMMENT="Retrying \"$WORKFLOW\". Duration: $DURATION. Maximum duration: $MAXIMUM_DURATION"
+          echo "::set-output name=comment::$COMMENT"
+
+      - name: Comment on related PRs
+        if: ${{ steps.should-retry.outputs.decision == 'true' }}
+        env:
+          PULL_REQUESTS: ${{ toJson(github.event.workflow_run.pull_requests) }}
+          COMMENT: ${{ steps.comment.outputs.comment }}
+          GITHUB_TOKEN: ${{ secrets.PAT_TOKEN_SELF }}
+        run: |
+          PULL_REQUEST_NUMBERS=$(echo $PULL_REQUESTS | jq ".[].number")
+
+          for $PULL_REQUEST_NUMBER in $PULL_REQUEST_NUMBERS; do
+            gh pr comment $PULL_REQUEST_NUMBER --body $COMMENT
+          done
