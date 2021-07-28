@@ -59,6 +59,17 @@ class Instance
         return sprintf('http://%s', $ip);
     }
 
+    public function hasIp(string $ip): bool
+    {
+        foreach ($this->droplet->networks as $network) {
+            if ($ip === $network->ipAddress) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     private function getFirstPublicV4IpAddress(): ?string
     {
         foreach ($this->droplet->networks as $network) {
