@@ -68,6 +68,7 @@ jobs:
           PULL_REQUESTS: ${{ toJson(github.event.workflow_run.pull_requests) }}
           COMMENT: ${{ steps.comment.outputs.comment }}
           GITHUB_TOKEN: ${{ secrets.PAT_TOKEN_SELF }}
+          REPO: ${{ github.repository }}
         run: |
           PULL_REQUEST_NUMBERS=$(echo $PULL_REQUESTS | jq ".[].number")
 
