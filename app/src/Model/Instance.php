@@ -70,6 +70,20 @@ class Instance
         return false;
     }
 
+    public function getLabel(): string
+    {
+        $tagsComponent = implode(', ', $this->droplet->tags);
+        if ('' === $tagsComponent) {
+            $tagsComponent = '[no tags]';
+        }
+
+        return sprintf(
+            '%s (%s)',
+            $this->getId(),
+            $tagsComponent,
+        );
+    }
+
     private function getFirstPublicV4IpAddress(): ?string
     {
         foreach ($this->droplet->networks as $network) {

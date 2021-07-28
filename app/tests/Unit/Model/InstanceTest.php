@@ -79,4 +79,47 @@ class InstanceTest extends TestCase
             ],
         ];
     }
+
+    /**
+     * @dataProvider getLabelDataProvider
+     */
+    public function testGetLabel(Instance $instance, string $expectedLabel): void
+    {
+        self::assertSame($expectedLabel, $instance->getLabel());
+    }
+
+    /**
+     * @return array<mixed>
+     */
+    public function getLabelDataProvider(): array
+    {
+        return [
+            'no tags' => [
+                'instance' => InstanceFactory::create([
+                    'id' => 123,
+                ]),
+                'expectedLabel' => '123 ([no tags])',
+            ],
+            'single tag' => [
+                'instance' => InstanceFactory::create([
+                    'id' => 456,
+                    'tags' => [
+                        'tag1',
+                    ],
+                ]),
+                'expectedLabel' => '456 (tag1)',
+            ],
+            'multiple tags' => [
+                'instance' => InstanceFactory::create([
+                    'id' => 789,
+                    'tags' => [
+                        'tag1',
+                        'tag2',
+                        'tag3',
+                    ],
+                ]),
+                'expectedLabel' => '789 (tag1, tag2, tag3)',
+            ],
+        ];
+    }
 }
