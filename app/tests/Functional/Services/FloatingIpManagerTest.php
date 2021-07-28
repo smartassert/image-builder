@@ -186,4 +186,53 @@ class FloatingIpManagerTest extends KernelTestCase
             ],
         ];
     }
+
+    /**
+     * @dataProvider reAssignDataProvider
+     *
+     * @param array<mixed> $httpResponseData
+     */
+    public function testReAssign(
+        array $httpResponseData,
+        Instance $instance,
+        string $ip,
+        ActionEntity $expectedActionEntity
+    ): void {
+        $this->mockHandler->append(
+            $this->httpResponseFactory->createFromArray($httpResponseData)
+        );
+
+        $action = $this->floatingIpManager->reAssign($instance, $ip);
+
+        self::assertEquals($expectedActionEntity, $action);
+    }
+
+    /**
+     * @return array<mixed>
+     */
+    public function reAssignDataProvider(): array
+    {
+        return [
+            'success' => [
+                'httpResponseData' => [
+                    HttpResponseFactory::KEY_STATUS_CODE => 202,
+                    HttpResponseFactory::KEY_HEADERS => [
+                        'content-type' => 'application/json; charset=utf-8',
+                    ],
+                    HttpResponseFactory::KEY_BODY => (string) json_encode([
+                        'action' => [
+                            'id' => 001,
+                            'type' => 'assign_ip',
+                        ],
+                    ]),
+                ],
+                'instance' => InstanceFactory::create(['id' => 123]),
+                'ip' => '127.0.0.1',
+                'expectedActionEntity' => new ActionEntity([
+                    'id' => 001,
+                    'type' => 'assign_ip',
+                ])
+            ],
+        ];
+    }
 }
