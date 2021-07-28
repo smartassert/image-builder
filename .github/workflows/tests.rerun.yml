@@ -73,5 +73,5 @@ jobs:
           PULL_REQUEST_NUMBERS=$(echo $PULL_REQUESTS | jq ".[].number")
 
           for PULL_REQUEST_NUMBER in $PULL_REQUEST_NUMBERS; do
-            gh pr comment $PULL_REQUEST_NUMBER --body "$COMMENT"
+            gh pr comment $PULL_REQUEST_NUMBER --repo $REPO --body "$COMMENT"
           done
