@@ -20,6 +20,7 @@ services:
         public: true
 
     App\Services\FloatingIpRepository:
+        public: true
         arguments:
             $dropletTag: '%env(DIGITALOCEAN_DROPLET_TAG)%'
 

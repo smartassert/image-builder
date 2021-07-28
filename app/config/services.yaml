@@ -91,3 +91,7 @@ services:
     App\Services\ImageRepository:
         arguments:
             $imageName: '%worker_manager_image%'
+
+    App\Services\FloatingIpRepository:
+        arguments:
+            $dropletTag: '%env(DIGITALOCEAN_DROPLET_TAG)%'

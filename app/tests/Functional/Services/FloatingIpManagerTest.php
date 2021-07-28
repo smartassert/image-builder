@@ -2,6 +2,7 @@
 
 namespace App\Tests\Functional\Services;
 
+use App\Model\AssignedIp;
 use App\Model\Instance;
 use App\Services\FloatingIpManager;
 use App\Tests\Services\HttpResponseFactory;
@@ -42,7 +43,7 @@ class FloatingIpManagerTest extends KernelTestCase
     public function testCreate(
         array $httpResponseData,
         Instance $instance,
-        FloatingIpEntity $expectedFloatingIp
+        AssignedIp $expectedAssignedIp
     ): void {
         $this->mockHandler->append(
             $this->httpResponseFactory->createFromArray($httpResponseData)
@@ -50,7 +51,7 @@ class FloatingIpManagerTest extends KernelTestCase
 
         $floatingIP = $this->floatingIpManager->create($instance);
 
-        self::assertEquals($expectedFloatingIp, $floatingIP);
+        self::assertEquals($expectedAssignedIp, $floatingIP);
     }
 
     /**
@@ -72,9 +73,11 @@ class FloatingIpManagerTest extends KernelTestCase
                     ]),
                 ],
                 'instance' => InstanceFactory::create(['id' => 123]),
-                'expectedFloatingIp' => new FloatingIpEntity([
-                    'ip' => '127.0.0.100',
-                ]),
+                'expectedAssignedIp' => (new AssignedIp(
+                    new FloatingIpEntity([
+                        'ip' => '127.0.0.100',
+                    ])
+                ))->withInstance(InstanceFactory::create(['id' => 123])),
             ],
         ];
     }

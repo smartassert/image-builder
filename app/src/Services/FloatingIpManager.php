@@ -2,16 +2,15 @@
 
 namespace App\Services;
 
+use App\Model\AssignedIp;
 use App\Model\Instance;
 use DigitalOceanV2\Api\FloatingIp as FloatingIpApi;
 use DigitalOceanV2\Entity\Action as ActionEntity;
-use DigitalOceanV2\Entity\FloatingIp as FloatingIpEntity;
 use DigitalOceanV2\Exception\ExceptionInterface;
 
 class FloatingIpManager
 {
     public function __construct(
-        private FloatingIpRepository $floatingIpRepository,
         private FloatingIpApi $floatingIpApi
     ) {
     }
@@ -19,9 +18,13 @@ class FloatingIpManager
     /**
      * @throws ExceptionInterface
      */
-    public function create(Instance $instance): FloatingIpEntity
+    public function create(Instance $instance): AssignedIp
     {
-        return $this->floatingIpApi->createAssigned($instance->getId());
+        $floatingIpEntity = $this->floatingIpApi->createAssigned($instance->getId());
+
+        return (new AssignedIp($floatingIpEntity))
+            ->withInstance($instance)
+        ;
     }
 
     /**
