@@ -7,6 +7,8 @@ parameters:
     instance_collection_tag: '%env(DIGITALOCEAN_DROPLET_TAG)%'
     worker_manager_image: '%env(WORKER_MANAGER_IMAGE)%'
     instance_tag: '%env(DIGITALOCEAN_DROPLET_TAG)%-%worker_manager_image%'
+    ip_create_assignment_timeout_in_seconds: '%env(IP_CREATE_ASSIGNMENT_TIMEOUT_IN_SECONDS)%'
+    ip_create_assignment_retry_in_seconds: '%env(IP_CREATE_ASSIGNMENT_RETRY_IN_SECONDS)%'
 
 services:
     # default configuration for services in *this* file
@@ -26,6 +28,11 @@ services:
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
+    App\Command\IpCreateCommand:
+        arguments:
+            $assigmentTimeoutInSeconds: '%ip_create_assignment_timeout_in_seconds%'
+            $assignmentRetryInSeconds: '%ip_create_assignment_retry_in_seconds%'
+
     GuzzleHttp\HandlerStack:
         class: GuzzleHttp\HandlerStack
         factory: ['GuzzleHttp\HandlerStack', 'create']
