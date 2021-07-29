@@ -32,11 +32,10 @@ class ActionRunnerTest extends KernelTestCase
      */
     public function testRunSuccessSimple(
         Decider $decider,
-        callable $action,
         int $maximumDurationInMicroseconds,
         int $retryPeriodInMicroseconds
     ): void {
-        $this->fooService->run($decider, $action, $maximumDurationInMicroseconds, $retryPeriodInMicroseconds);
+        $this->fooService->run($decider, $maximumDurationInMicroseconds, $retryPeriodInMicroseconds);
         self::expectNotToPerformAssertions();
     }
 
@@ -50,26 +49,30 @@ class ActionRunnerTest extends KernelTestCase
 
         return [
             'immediate success' => [
-                'decider' => new Decider(function () {
-                    return true;
-                }),
-                'action' => function () {
-                },
+                'decider' => new Decider(
+                    function () {
+                        return true;
+                    },
+                    function () {
+                    }
+                ),
                 'maximumDurationInMicroSeconds' => 1000,
                 'retryPeriodInMicroseconds' => 10,
             ],
             'delayed success, basic' => [
-                'decider' => new Decider(function () use ($delayedSuccessLimit, &$delayedSuccessCount) {
-                    if ($delayedSuccessCount < $delayedSuccessLimit) {
-                        ++$delayedSuccessCount;
+                'decider' => new Decider(
+                    function () use ($delayedSuccessLimit, &$delayedSuccessCount) {
+                        if ($delayedSuccessCount < $delayedSuccessLimit) {
+                            ++$delayedSuccessCount;
 
-                        return false;
+                            return false;
+                        }
+
+                        return true;
+                    },
+                    function () {
                     }
-
-                    return true;
-                }),
-                'action' => function () {
-                },
+                ),
                 'maximumDurationInMicroSeconds' => 1000,
                 'retryPeriodInMicroseconds' => 10,
             ],
@@ -150,33 +153,35 @@ class ActionRunnerTest extends KernelTestCase
         $instance = $instanceRepository->findCurrent();
         \assert($instance instanceof Instance);
 
-        $decider = new Decider(function (Instance $instance) use ($expectedIp) {
-            return $instance->hasIp($expectedIp);
-        });
-
-        $action = function () use ($instance, $instanceRepository) {
-            return $instanceRepository->find($instance->getId());
-        };
+        $decider = new Decider(
+            function (Instance $instance) use ($expectedIp) {
+                return $instance->hasIp($expectedIp);
+            },
+            function () use ($instance, $instanceRepository) {
+                return $instanceRepository->find($instance->getId());
+            }
+        );
 
         $maximumDurationInMicroseconds = (int) (self::MICROSECONDS_PER_SECOND * 10);
         $retryPeriodInMicroseconds = (int) (self::MICROSECONDS_PER_SECOND * 0.1);
 
-        $this->fooService->run($decider, $action, $maximumDurationInMicroseconds, $retryPeriodInMicroseconds);
+        $this->fooService->run($decider, $maximumDurationInMicroseconds, $retryPeriodInMicroseconds);
 
         self::assertCount(0, $mockHandler);
     }
 
     public function testRunFailure(): void
     {
-        $decider = new Decider(function () {
-            return false;
-        });
-
-        $action = function () {
-        };
+        $decider = new Decider(
+            function () {
+                return false;
+            },
+            function () {
+            }
+        );
 
         self::expectException(ActionTimeoutException::class);
 
-        $this->fooService->run($decider, $action, 10, 1);
+        $this->fooService->run($decider, 10, 1);
     }
 }
