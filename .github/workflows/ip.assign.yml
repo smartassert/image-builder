@@ -23,6 +23,9 @@ jobs:
         id: worker-manager-image
         run:
           export echo $(cat worker-manager-image.env | tr '\n' ' ')
+
+          printenv
+
           echo "::set-output name=id::$WORKER_MANAGER_IMAGE"
 
       - name: "Temp: examine worker manager image variable"
