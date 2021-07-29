@@ -1,0 +1,32 @@
+name: Assign IP to Current Instance
+
+on:
+  pull_request:
+    branches:
+      - github-49
+  workflow_dispatch:
+  schedule:
+    - cron: "20 * * * *"
+
+jobs:
+  commit:
+    name: Assign IP
+    runs-on: ubuntu-latest
+    env:
+      DIGITALOCEAN_API_TOKEN: ${{ secrets.DIGITALOCEAN_API_TOKEN }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Expose worker manager image variable
+        id: worker-manager-image
+        run:
+          export echo $(cat worker-manager-image.env | tr '\n' ' ')
+          echo "::set-output name=id::$WORKER_MANAGER_IMAGE"
+
+      - name: "Temp: examine worker manager image variable"
+        env:
+          WORKER_MANAGER_IMAGE: ${{ steps.worker-manager-image.outputs.id }}
+        run: |
+          echo $WORKER_MANAGER_IMAGE
