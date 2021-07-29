@@ -11,13 +11,13 @@ class ActionRunner
      * @throws ActionTimeoutException
      */
     public function run(
-        ActionHandler $decider,
+        ActionHandler $handler,
         int $maximumDurationInMicroseconds,
         int $retryPeriodInMicroseconds
     ): void {
         $duration = 0;
 
-        while (false === ($decision = $decider()) && $duration < $maximumDurationInMicroseconds) {
+        while (false === ($decision = $handler()) && $duration < $maximumDurationInMicroseconds) {
             usleep($retryPeriodInMicroseconds);
             $duration += $retryPeriodInMicroseconds;
         }

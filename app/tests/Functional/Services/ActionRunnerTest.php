@@ -16,15 +16,15 @@ class ActionRunnerTest extends KernelTestCase
 {
     private const MICROSECONDS_PER_SECOND = 1000000;
 
-    private ActionRunner $fooService;
+    private ActionRunner $actionRunner;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $fooService = self::getContainer()->get(ActionRunner::class);
-        \assert($fooService instanceof ActionRunner);
-        $this->fooService = $fooService;
+        $actionRunner = self::getContainer()->get(ActionRunner::class);
+        \assert($actionRunner instanceof ActionRunner);
+        $this->actionRunner = $actionRunner;
     }
 
     /**
@@ -35,7 +35,7 @@ class ActionRunnerTest extends KernelTestCase
         int $maximumDurationInMicroseconds,
         int $retryPeriodInMicroseconds
     ): void {
-        $this->fooService->run($decider, $maximumDurationInMicroseconds, $retryPeriodInMicroseconds);
+        $this->actionRunner->run($decider, $maximumDurationInMicroseconds, $retryPeriodInMicroseconds);
         self::expectNotToPerformAssertions();
     }
 
@@ -165,7 +165,7 @@ class ActionRunnerTest extends KernelTestCase
         $maximumDurationInMicroseconds = (int) (self::MICROSECONDS_PER_SECOND * 10);
         $retryPeriodInMicroseconds = (int) (self::MICROSECONDS_PER_SECOND * 0.1);
 
-        $this->fooService->run($decider, $maximumDurationInMicroseconds, $retryPeriodInMicroseconds);
+        $this->actionRunner->run($decider, $maximumDurationInMicroseconds, $retryPeriodInMicroseconds);
 
         self::assertCount(0, $mockHandler);
     }
@@ -182,6 +182,6 @@ class ActionRunnerTest extends KernelTestCase
 
         self::expectException(ActionTimeoutException::class);
 
-        $this->fooService->run($decider, 10, 1);
+        $this->actionRunner->run($decider, 10, 1);
     }
 }
