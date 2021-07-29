@@ -34,3 +34,6 @@ services:
         public: true
         arguments:
             $imageName: '%worker_manager_image%'
+
+    App\Services\ActionRunner:
+        public: true
