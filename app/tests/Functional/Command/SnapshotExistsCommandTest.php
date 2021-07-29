@@ -75,22 +75,17 @@ class SnapshotExistsCommandTest extends KernelTestCase
                 'httpResponseData' => [
                     HttpResponseFactory::KEY_STATUS_CODE => 401,
                 ],
-                'input' => [
-                    '--id' => '123',
-                ],
+                'input' => [],
                 'expectedReturnCode' => Command::INVALID,
             ],
             'not exists, expect exists (default)' => [
                 'httpResponseData' => $notExistsResponseData,
-                'input' => [
-                    '--id' => '123',
-                ],
+                'input' => [],
                 'expectedReturnCode' => Command::FAILURE,
             ],
             'not exists, expect not exists as false' => [
                 'httpResponseData' => $notExistsResponseData,
                 'input' => [
-                    '--id' => '123',
                     '--expect-exists' => false,
                 ],
                 'expectedReturnCode' => Command::SUCCESS,
@@ -98,7 +93,6 @@ class SnapshotExistsCommandTest extends KernelTestCase
             'not exists, expect not exists as zero' => [
                 'httpResponseData' => $notExistsResponseData,
                 'input' => [
-                    '--id' => '123',
                     '--expect-exists' => 0,
                 ],
                 'expectedReturnCode' => Command::SUCCESS,
@@ -106,22 +100,18 @@ class SnapshotExistsCommandTest extends KernelTestCase
             'not exists, expect not exists as quoted zero' => [
                 'httpResponseData' => $notExistsResponseData,
                 'input' => [
-                    '--id' => '123',
                     '--expect-exists' => '0',
                 ],
                 'expectedReturnCode' => Command::SUCCESS,
             ],
             'exists, expect exists (default)' => [
                 'httpResponseData' => $existsResponseData,
-                'input' => [
-                    '--id' => '123',
-                ],
+                'input' => [],
                 'expectedReturnCode' => Command::SUCCESS,
             ],
             'exists, expect not exists as false' => [
                 'httpResponseData' => $existsResponseData,
                 'input' => [
-                    '--id' => '123',
                     '--expect-exists' => false,
                 ],
                 'expectedReturnCode' => Command::FAILURE,
@@ -129,7 +119,6 @@ class SnapshotExistsCommandTest extends KernelTestCase
             'exists, expect not exists as zero' => [
                 'httpResponseData' => $existsResponseData,
                 'input' => [
-                    '--id' => '123',
                     '--expect-exists' => 0,
                 ],
                 'expectedReturnCode' => Command::FAILURE,
@@ -137,7 +126,6 @@ class SnapshotExistsCommandTest extends KernelTestCase
             'exists, expect not exists as quoted zero' => [
                 'httpResponseData' => $existsResponseData,
                 'input' => [
-                    '--id' => '123',
                     '--expect-exists' => '0',
                 ],
                 'expectedReturnCode' => Command::FAILURE,

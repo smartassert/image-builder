@@ -2,7 +2,8 @@
 
 namespace App\Command;
 
-use DigitalOceanV2\Api\Snapshot as SnapshotApi;
+use App\Model\Image;
+use App\Services\ImageRepository;
 use DigitalOceanV2\Exception\ExceptionInterface;
 use DigitalOceanV2\Exception\RuntimeException;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -19,11 +20,10 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 class SnapshotExistsCommand extends Command
 {
     public const NAME = 'app:snapshot:exists';
-    public const OPTION_ID = 'id';
     public const OPTION_EXPECT_EXISTS = 'expect-exists';
 
     public function __construct(
-        private SnapshotApi $snapshotApi,
+        private ImageRepository $imageRepository,
         string $name = null,
     ) {
         parent::__construct($name);
@@ -32,26 +32,21 @@ class SnapshotExistsCommand extends Command
     protected function configure(): void
     {
         $this
-            ->addOption(self::OPTION_ID, null, InputOption::VALUE_REQUIRED, 'Snapshot ID')
             ->addOption(self::OPTION_EXPECT_EXISTS, null, InputOption::VALUE_OPTIONAL, 'Expect existence?', true)
         ;
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $id = $input->getOption(self::OPTION_ID);
-        $id = is_string($id) ? $id : 'invalid';
         $expectExists = (bool) $input->getOption(self::OPTION_EXPECT_EXISTS);
 
         try {
-            $this->snapshotApi->getById($id);
+            $image = $this->imageRepository->find();
 
-            return (int) !$expectExists;
+            return $image instanceof Image
+                ? (int) !$expectExists
+                : (int) $expectExists;
         } catch (RuntimeException $runtimeException) {
-            if (404 === $runtimeException->getCode()) {
-                return (int) $expectExists;
-            }
-
             $exception = $runtimeException;
         } catch (ExceptionInterface $vendorException) {
             $exception = $vendorException;
