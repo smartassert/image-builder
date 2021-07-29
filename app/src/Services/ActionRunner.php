@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-use App\Decider\Decider;
+use App\ActionHandler\ActionHandler;
 use App\Exception\ActionTimeoutException;
 
 class ActionRunner
@@ -11,7 +11,7 @@ class ActionRunner
      * @throws ActionTimeoutException
      */
     public function run(
-        Decider $decider,
+        ActionHandler $decider,
         int $maximumDurationInMicroseconds,
         int $retryPeriodInMicroseconds
     ): void {

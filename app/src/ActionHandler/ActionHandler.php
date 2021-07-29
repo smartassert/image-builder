@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Decider;
+namespace App\ActionHandler;
 
-class Decider
+class ActionHandler
 {
     /**
      * @param \Closure(mixed    $actionResult): bool $decider

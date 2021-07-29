@@ -2,7 +2,7 @@
 
 namespace App\Tests\Functional\Services;
 
-use App\Decider\Decider;
+use App\ActionHandler\ActionHandler;
 use App\Exception\ActionTimeoutException;
 use App\Model\Instance;
 use App\Services\ActionRunner;
@@ -31,7 +31,7 @@ class ActionRunnerTest extends KernelTestCase
      * @dataProvider runSuccessSimpleDataProvider
      */
     public function testRunSuccessSimple(
-        Decider $decider,
+        ActionHandler $decider,
         int $maximumDurationInMicroseconds,
         int $retryPeriodInMicroseconds
     ): void {
@@ -49,7 +49,7 @@ class ActionRunnerTest extends KernelTestCase
 
         return [
             'immediate success' => [
-                'decider' => new Decider(
+                'decider' => new ActionHandler(
                     function () {
                         return true;
                     },
@@ -60,7 +60,7 @@ class ActionRunnerTest extends KernelTestCase
                 'retryPeriodInMicroseconds' => 10,
             ],
             'delayed success, basic' => [
-                'decider' => new Decider(
+                'decider' => new ActionHandler(
                     function () use ($delayedSuccessLimit, &$delayedSuccessCount) {
                         if ($delayedSuccessCount < $delayedSuccessLimit) {
                             ++$delayedSuccessCount;
@@ -153,7 +153,7 @@ class ActionRunnerTest extends KernelTestCase
         $instance = $instanceRepository->findCurrent();
         \assert($instance instanceof Instance);
 
-        $decider = new Decider(
+        $decider = new ActionHandler(
             function (Instance $instance) use ($expectedIp) {
                 return $instance->hasIp($expectedIp);
             },
@@ -172,7 +172,7 @@ class ActionRunnerTest extends KernelTestCase
 
     public function testRunFailure(): void
     {
-        $decider = new Decider(
+        $decider = new ActionHandler(
             function () {
                 return false;
             },
