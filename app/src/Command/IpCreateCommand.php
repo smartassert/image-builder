@@ -25,14 +25,14 @@ class IpCreateCommand extends Command
     public const EXIT_CODE_HAS_IP = 4;
 
     private const MICROSECONDS_PER_SECOND = 1000000;
-    private const TIMEOUT_IN_SECONDS = 60;
-    private const RETRY_PERIOD_IN_SECONDS = 5;
 
     public function __construct(
         private InstanceRepository $instanceRepository,
         private FloatingIpManager $floatingIpManager,
         private FloatingIpRepository $floatingIpRepository,
         private ActionRunner $actionRunner,
+        private int $assigmentTimeoutInSeconds,
+        private int $assignmentRetryInSeconds,
         string $name = null
     ) {
         parent::__construct($name);
@@ -62,8 +62,8 @@ class IpCreateCommand extends Command
                     return $this->instanceRepository->find($instance->getId());
                 },
             ),
-            self::TIMEOUT_IN_SECONDS * self::MICROSECONDS_PER_SECOND,
-            self::RETRY_PERIOD_IN_SECONDS * self::MICROSECONDS_PER_SECOND
+            $this->assigmentTimeoutInSeconds * self::MICROSECONDS_PER_SECOND,
+            $this->assignmentRetryInSeconds * self::MICROSECONDS_PER_SECOND
         );
 
         $output->write($ip);
