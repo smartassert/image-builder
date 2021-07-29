@@ -16,16 +16,23 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
-      - name: Check snapshot exists
+      - name: Expose worker manager image variable
+        id: worker-manager-image
         run:
           export echo $(cat worker-manager-image.env | tr '\n' ' ')
-          cd app
 
-          php bin/console app:snapshot:exists --id $WORKER_MANAGER_IMAGE --expect-exists 1
+          echo "::set-output name=id::$WORKER_MANAGER_IMAGE"
+
+      - name: Check snapshot exists
+        env:
+          WORKER_MANAGER_IMAGE: ${{ steps.worker-manager-image.outputs.id }}
+        run: |
+          cd app
+          php bin/console app:snapshot:exists --expect-exists 1
 
       - name: Create
-        run:
-          export echo $(cat worker-manager-image.env | tr '\n' ' ')
+        env:
+          WORKER_MANAGER_IMAGE: ${{ steps.worker-manager-image.outputs.id }}
+        run: |
           cd app
-
           php bin/console app:instance:create
