@@ -6,7 +6,6 @@ use App\Model\Instance;
 use App\Model\InstanceCollection;
 use App\Tests\Services\InstanceFactory;
 use PHPUnit\Framework\TestCase;
-use webignition\ObjectReflector\ObjectReflector;
 
 class InstanceCollectionTest extends TestCase
 {
@@ -15,12 +14,11 @@ class InstanceCollectionTest extends TestCase
      */
     public function testSortByCreatedDate(InstanceCollection $collection, InstanceCollection $expectedCollection): void
     {
-        $originalInstances = ObjectReflector::getProperty($collection, 'instances');
-
+        $originalCollection = clone $collection;
         $sortedCollection = $collection->sortByCreatedDate();
 
         self::assertEquals($expectedCollection, $sortedCollection);
-        self::assertSame($originalInstances, ObjectReflector::getProperty($collection, 'instances'));
+        self::assertEquals($originalCollection, $collection);
     }
 
     /**
