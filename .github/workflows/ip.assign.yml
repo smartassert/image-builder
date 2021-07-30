@@ -37,12 +37,6 @@ jobs:
 
           echo "::set-output name=id::$WORKER_MANAGER_IMAGE"
 
-      - name: "Temp: examine worker manager image variable"
-        env:
-          WORKER_MANAGER_IMAGE: ${{ steps.worker-manager-image.outputs.id }}
-        run: |
-          echo $WORKER_MANAGER_IMAGE
-
       - name: Get floating IP
         id: floating-ip
         run: |
@@ -58,20 +52,14 @@ jobs:
           echo "::set-output name=ip::$IP"
           echo "::set-output name=has::$HAS_IP"
 
-      - name: "Temp: examine ip and if has ip"
-        env:
-          IP: ${{ steps.floating-ip.outputs.ip }}
-          HAS_IP: ${{ steps.floating-ip.outputs.has }}
-        run: |
-          echo $IP
-          echo $HAS_IP
-
       - name: Create IP if none found
         if: ${{ steps.floating-ip.outputs.has == 'false' }}
         run: |
-          echo "No IP, need to create"
+          cd app
+          php bin/console app:ip:create
 
       - name: Re-assign IP if found
         if: ${{ steps.floating-ip.outputs.has == 'true' }}
         run: |
-          echo "Has IP, re-assign to newest current instance"
+          cd app
+          php bin/console app:ip:assign
