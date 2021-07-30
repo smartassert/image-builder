@@ -42,10 +42,15 @@ class IpAssignCommandTest extends KernelTestCase
      * @param array<mixed> $httpResponseDataCollection
      */
     public function testRunSuccess(
+        ?callable $setup,
         array $httpResponseDataCollection,
         int $expectedExitCode,
         string $expectedOutput
     ): void {
+        if (is_callable($setup)) {
+            $setup($this->command);
+        }
+
         foreach ($httpResponseDataCollection as $httpResponseData) {
             $this->mockHandler->append(
                 $this->httpResponseFactory->createFromArray($httpResponseData)
@@ -67,6 +72,7 @@ class IpAssignCommandTest extends KernelTestCase
     {
         return [
             'no current instance' => [
+                'setup' => null,
                 'httpResponseDataCollection' => [
                     'droplets response' => [
                         HttpResponseFactory::KEY_STATUS_CODE => 200,
@@ -87,6 +93,7 @@ class IpAssignCommandTest extends KernelTestCase
                 ]),
             ],
             'no ip' => [
+                'setup' => null,
                 'httpResponseDataCollection' => [
                     'droplets response' => [
                         HttpResponseFactory::KEY_STATUS_CODE => 200,
@@ -120,6 +127,7 @@ class IpAssignCommandTest extends KernelTestCase
                 ]),
             ],
             'ip already assigned to current instance' => [
+                'setup' => null,
                 'httpResponseDataCollection' => [
                     'droplets response' => [
                         HttpResponseFactory::KEY_STATUS_CODE => 200,
@@ -175,6 +183,7 @@ class IpAssignCommandTest extends KernelTestCase
                 ]),
             ],
             'ip re-assigned' => [
+                'setup' => null,
                 'httpResponseDataCollection' => [
                     'droplets response' => [
                         HttpResponseFactory::KEY_STATUS_CODE => 200,
@@ -248,53 +257,21 @@ class IpAssignCommandTest extends KernelTestCase
                     ],
                 ]),
             ],
-        ];
-    }
+            'assignment timed out' => [
+                'setup' => function (IpAssignCommand $command) {
+                    $actionRunner = \Mockery::mock(ActionRunner::class);
+                    $actionRunner
+                        ->shouldReceive('run')
+                        ->andThrow(new ActionTimeoutException())
+                    ;
 
-    /**
-     * @dataProvider runWithActionTimeoutExceptionDataProvider
-     *
-     * @param array<mixed> $httpResponseDataCollection
-     */
-    public function testRunWithActionTimeoutException(
-        array $httpResponseDataCollection,
-        int $expectedExitCode,
-        string $expectedOutput
-    ): void {
-        foreach ($httpResponseDataCollection as $httpResponseData) {
-            $this->mockHandler->append(
-                $this->httpResponseFactory->createFromArray($httpResponseData)
-            );
-        }
-
-        $actionRunner = \Mockery::mock(ActionRunner::class);
-        $actionRunner
-            ->shouldReceive('run')
-            ->andThrow(new ActionTimeoutException())
-        ;
-
-        ObjectReflector::setProperty(
-            $this->command,
-            IpAssignCommand::class,
-            'actionRunner',
-            $actionRunner
-        );
-
-        $output = new BufferedOutput();
-
-        $exitCode = $this->command->run(new ArrayInput([]), $output);
-
-        self::assertSame($expectedExitCode, $exitCode);
-        self::assertJsonStringEqualsJsonString($expectedOutput, $output->fetch());
-    }
-
-    /**
-     * @return array<mixed>
-     */
-    public function runWithActionTimeoutExceptionDataProvider(): array
-    {
-        return [
-            'assignment times out' => [
+                    ObjectReflector::setProperty(
+                        $command,
+                        IpAssignCommand::class,
+                        'actionRunner',
+                        $actionRunner
+                    );
+                },
                 'httpResponseDataCollection' => [
                     'droplets response' => [
                         HttpResponseFactory::KEY_STATUS_CODE => 200,
