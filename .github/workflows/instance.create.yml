@@ -1,9 +1,6 @@
 name: Create instance
 
 on:
-  pull_request:
-    branches:
-      - github-49
   workflow_dispatch:
   schedule:
     - cron: "10 * * * *"
