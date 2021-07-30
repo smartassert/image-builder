@@ -65,3 +65,13 @@ jobs:
         run: |
           echo $IP
           echo $HAS_IP
+
+      - name: Create IP if none found
+        if: ${{ steps.floating-ip.outputs.has == 'false' }}
+        run: |
+          echo "No IP, need to create"
+
+      - name: Re-assign IP if found
+        if: ${{ steps.floating-ip.outputs.has == 'true' }}
+        run: |
+          echo "Has IP, re-assign to newest current instance"
