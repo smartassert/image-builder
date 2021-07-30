@@ -84,6 +84,11 @@ class Instance
         );
     }
 
+    public function getCreatedAt(): \DateTimeInterface
+    {
+        return new \DateTimeImmutable($this->droplet->createdAt);
+    }
+
     private function getFirstPublicV4IpAddress(): ?string
     {
         foreach ($this->droplet->networks as $network) {
