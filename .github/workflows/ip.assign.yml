@@ -31,3 +31,26 @@ jobs:
           WORKER_MANAGER_IMAGE: ${{ steps.worker-manager-image.outputs.id }}
         run: |
           echo $WORKER_MANAGER_IMAGE
+
+      - name: Get floating IP
+        id: floating-ip
+        run: |
+          cd app
+          IP=$(php bin/console app:ip:get)
+          HAS_IP="true"
+
+          if [ -z "$IP" ]; then
+            IP="null"
+            HAS_IP="false"
+          fi
+
+          echo "::set-output name=ip::$IP"
+          echo "::set-output name=has::$HAS_IP"
+
+      - name: "Temp: examine ip and if has ip"
+        env:
+          IP: ${{ steps.floating-ip.outputs.ip }}
+          HAS_IP: ${{ steps.floating-ip.outputs.has }}
+        run: |
+          echo $IP
+          echo $HAS_IP
