@@ -39,23 +39,6 @@ class InstanceCollection implements \IteratorAggregate, \Countable
             : $this->instances[0];
     }
 
-    public function getLatest(): ?Instance
-    {
-        $latest = null;
-        $latestVersion = null;
-
-        foreach ($this->instances as $instance) {
-            $instanceVersion = $instance->getVersion();
-
-            if (null !== $instanceVersion && $instanceVersion > $latestVersion) {
-                $latestVersion = $instanceVersion;
-                $latest = $instance;
-            }
-        }
-
-        return $latest;
-    }
-
     public function getNewest(): ?Instance
     {
         $sortedCollection = $this->sortByCreatedDate();
