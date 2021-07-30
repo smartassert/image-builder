@@ -137,15 +137,41 @@ class InstanceRepositoryTest extends KernelTestCase
                 ]),
                 'expectedInstance' => null,
             ],
-            'found' => [
+            'single droplet' => [
                 'httpResponseBody' => (string) json_encode([
                     'droplets' => [
                         [
                             'id' => 123,
+                            'created_at' => '2021-07-28T16:36:31Z',
                         ],
                     ],
                 ]),
-                'expectedInstance' => InstanceFactory::create(['id' => 123]),
+                'expectedInstance' => InstanceFactory::create([
+                    'id' => 123,
+                    'created_at' => '2021-07-28T16:36:31Z',
+                ]),
+            ],
+            'multiple droplets' => [
+                'httpResponseBody' => (string) json_encode([
+                    'droplets' => [
+                        [
+                            'id' => 123,
+                            'created_at' => '2021-07-28T16:36:31Z',
+                        ],
+                        [
+                            'id' => 456,
+                            'created_at' => '2021-07-29T16:36:31Z',
+                        ],
+                        [
+                            'id' => 798,
+                            'created_at' => '2021-07-30T16:36:31Z',
+                        ],
+                    ],
+                ]),
+                'expectedInstance' => InstanceFactory::create([
+                    'id' => 798,
+                    'created_at' => '2021-07-30T16:36:31Z',
+                ]),
             ],
         ];
     }

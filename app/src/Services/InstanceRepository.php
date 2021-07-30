@@ -38,10 +38,13 @@ class InstanceRepository
     public function findCurrent(): ?Instance
     {
         $droplets = $this->dropletApi->getAll($this->instanceTag);
+        $instances = [];
 
-        return 0 === count($droplets)
-            ? null
-            : new Instance($droplets[0]);
+        foreach ($droplets as $droplet) {
+            $instances[] = new Instance($droplet);
+        }
+
+        return (new InstanceCollection($instances))->getNewest();
     }
 
     /**

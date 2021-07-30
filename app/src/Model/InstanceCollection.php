@@ -32,20 +32,35 @@ class InstanceCollection implements \IteratorAggregate, \Countable
         return count($this->instances);
     }
 
-    public function getLatest(): ?Instance
+    public function getFirst(): ?Instance
     {
-        $latest = null;
-        $latestVersion = null;
+        return 0 === count($this)
+            ? null
+            : $this->instances[0];
+    }
 
-        foreach ($this->instances as $instance) {
-            $instanceVersion = $instance->getVersion();
+    public function getNewest(): ?Instance
+    {
+        $sortedCollection = $this->sortByCreatedDate();
 
-            if (null !== $instanceVersion && $instanceVersion > $latestVersion) {
-                $latestVersion = $instanceVersion;
-                $latest = $instance;
+        return $sortedCollection->getFirst();
+    }
+
+    public function sortByCreatedDate(): InstanceCollection
+    {
+        $instances = $this->instances;
+
+        usort($instances, function (Instance $a, Instance $b): int {
+            $aTimestamp = $a->getCreatedAt()->getTimestamp();
+            $bTimestamp = $b->getCreatedAt()->getTimestamp();
+
+            if ($aTimestamp === $bTimestamp) {
+                return 0;
             }
-        }
 
-        return $latest;
+            return $aTimestamp < $bTimestamp ? 1 : -1;
+        });
+
+        return new InstanceCollection($instances);
     }
 }
