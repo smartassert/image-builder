@@ -37,11 +37,11 @@ class IpAssignCommandTest extends KernelTestCase
     }
 
     /**
-     * @dataProvider runSuccessDataProvider
+     * @dataProvider runDataProvider
      *
      * @param array<mixed> $httpResponseDataCollection
      */
-    public function testRunSuccess(
+    public function testRun(
         ?callable $setup,
         array $httpResponseDataCollection,
         int $expectedExitCode,
@@ -68,7 +68,7 @@ class IpAssignCommandTest extends KernelTestCase
     /**
      * @return array<mixed>
      */
-    public function runSuccessDataProvider(): array
+    public function runDataProvider(): array
     {
         return [
             'no current instance' => [
