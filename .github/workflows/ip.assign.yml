@@ -50,6 +50,7 @@ jobs:
       - name: Create IP if none found
         if: ${{ steps.has-ip.outputs.value == 'false' }}
         run: ./.github/workflows/ip.create.sh
+        continue-on-error: true
 
       - name: Re-assign IP if found
         if: ${{ steps.has-ip.outputs.value == 'true' }}
