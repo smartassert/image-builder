@@ -52,9 +52,9 @@ jobs:
           echo "::set-output name=ip::$IP"
           echo "::set-output name=has::$HAS_IP"
 
-      - name: Create IP if none found
-        run: |
-          ./.github/workflows/ip.create.sh
+#      - name: Create IP if none found
+#        run: |
+#          ./.github/workflows/ip.create.sh
 
       - name: Re-assign IP if found
         run: |
