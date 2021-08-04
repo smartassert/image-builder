@@ -88,7 +88,6 @@ class IpAssignCommandTest extends KernelTestCase
                 'expectedOutput' => (string) json_encode([
                     'error' => [
                         'id' => 'no-instance',
-                        'message' => 'Cannot re-assign IP, no current instance found'
                     ],
                 ]),
             ],
@@ -122,7 +121,6 @@ class IpAssignCommandTest extends KernelTestCase
                 'expectedOutput' => (string) json_encode([
                     'error' => [
                         'id' => 'no-ip',
-                        'message' => 'Cannot re-assign IP, none found'
                     ],
                 ]),
             ],
@@ -173,7 +171,6 @@ class IpAssignCommandTest extends KernelTestCase
                 'expectedOutput' => (string) json_encode([
                     'success' => [
                         'id' => 'already-assigned',
-                        'message' => '127.0.0.200 is already assigned to instance 123',
                         'context' => [
                             'ip' => '127.0.0.200',
                             'source-instance' => 123,
@@ -248,7 +245,6 @@ class IpAssignCommandTest extends KernelTestCase
                 'expectedOutput' => (string) json_encode([
                     'success' => [
                         'id' => 're-assigned',
-                        'message' => 'Re-assigned 127.0.0.200 from instance 123 to instance 456',
                         'context' => [
                             'ip' => '127.0.0.200',
                             'source-instance' => 123,
@@ -336,7 +332,6 @@ class IpAssignCommandTest extends KernelTestCase
                 'expectedOutput' => (string) json_encode([
                     'error' => [
                         'id' => 'assignment-timed-out',
-                        'message' => 'Waited 30 seconds to assign 127.0.0.200 from instance 123 to instance 456',
                         'context' => [
                             'ip' => '127.0.0.200',
                             'source-instance' => 123,

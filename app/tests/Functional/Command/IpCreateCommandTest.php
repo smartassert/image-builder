@@ -90,7 +90,6 @@ class IpCreateCommandTest extends KernelTestCase
                 'expectedOutput' => (string) json_encode([
                     'error' => [
                         'id' => 'no-instance',
-                        'message' => 'Cannot assign IP, no current instance found',
                     ],
                 ]),
             ],
@@ -133,7 +132,9 @@ class IpCreateCommandTest extends KernelTestCase
                 'expectedOutput' => (string) json_encode([
                     'error' => [
                         'id' => 'has-ip',
-                        'message' => 'Cannot create new IP, 127.0.0.200 already in use',
+                        'context' => [
+                            'ip' => '127.0.0.200',
+                        ],
                     ],
                 ]),
             ],
@@ -195,7 +196,6 @@ class IpCreateCommandTest extends KernelTestCase
                 'expectedOutput' => (string) json_encode([
                     'success' => [
                         'id' => 'created',
-                        'message' => 'Assigned 127.0.0.100 to instance 123',
                         'context' => [
                             'ip' => '127.0.0.100',
                             'target-instance' => 123,

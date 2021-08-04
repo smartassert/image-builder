@@ -50,20 +50,16 @@ class IpAssignCommand extends Command
 
         $instance = $this->instanceRepository->findCurrent();
         if (null === $instance) {
-            $this->outputHandler->writeError(new CommandOutput(
-                'no-instance',
-                'Cannot re-assign IP, no current instance found'
-            ));
+            $this->outputHandler->writeError(
+                new CommandOutput('no-instance')
+            );
 
             return self::EXIT_CODE_NO_CURRENT_INSTANCE;
         }
 
         $assignedIp = $this->floatingIpRepository->find();
         if (null === $assignedIp) {
-            $this->outputHandler->writeError(new CommandOutput(
-                'no-ip',
-                'Cannot re-assign IP, none found'
-            ));
+            $this->outputHandler->writeError(new CommandOutput('no-ip'));
 
             return self::EXIT_CODE_NO_IP;
         }
@@ -75,11 +71,6 @@ class IpAssignCommand extends Command
         if ($instance->hasIp($ip)) {
             $this->outputHandler->writeSuccess(new CommandOutput(
                 'already-assigned',
-                sprintf(
-                    '%s is already assigned to instance %s',
-                    $ip,
-                    $targetInstanceId
-                ),
                 [
                     'ip' => $ip,
                     'source-instance' => $targetInstanceId,
@@ -108,12 +99,6 @@ class IpAssignCommand extends Command
 
             $this->outputHandler->writeSuccess(new CommandOutput(
                 're-assigned',
-                sprintf(
-                    'Re-assigned %s from instance %s to instance %s',
-                    $ip,
-                    $sourceInstanceId,
-                    $targetInstanceId
-                ),
                 [
                     'ip' => $ip,
                     'source-instance' => $sourceInstanceId,
@@ -125,13 +110,6 @@ class IpAssignCommand extends Command
         } catch (ActionTimeoutException) {
             $this->outputHandler->writeError(new CommandOutput(
                 'assignment-timed-out',
-                sprintf(
-                    'Waited %d seconds to assign %s from instance %s to instance %s',
-                    $this->assigmentTimeoutInSeconds,
-                    $ip,
-                    $sourceInstanceId,
-                    $targetInstanceId
-                ),
                 [
                     'ip' => $ip,
                     'source-instance' => $sourceInstanceId,

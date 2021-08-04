@@ -47,10 +47,9 @@ class IpCreateCommand extends Command
 
         $instance = $this->instanceRepository->findCurrent();
         if (null === $instance) {
-            $this->outputHandler->writeError(new CommandOutput(
-                'no-instance',
-                'Cannot assign IP, no current instance found'
-            ));
+            $this->outputHandler->writeError(
+                new CommandOutput('no-instance')
+            );
 
             return self::EXIT_CODE_NO_CURRENT_INSTANCE;
         }
@@ -59,13 +58,14 @@ class IpCreateCommand extends Command
 
         $assignedIp = $this->floatingIpRepository->find();
         if ($assignedIp instanceof AssignedIp) {
-            $this->outputHandler->writeError(new CommandOutput(
-                'has-ip',
-                sprintf(
-                    'Cannot create new IP, %s already in use',
-                    $assignedIp->getIp()
+            $this->outputHandler->writeError(
+                new CommandOutput(
+                    'has-ip',
+                    [
+                        'ip' => $assignedIp->getIp(),
+                    ]
                 )
-            ));
+            );
 
             return self::EXIT_CODE_HAS_IP;
         }
@@ -88,11 +88,6 @@ class IpCreateCommand extends Command
 
         $this->outputHandler->writeSuccess(new CommandOutput(
             'created',
-            sprintf(
-                'Assigned %s to instance %s',
-                $ip,
-                $instanceId,
-            ),
             [
                 'ip' => $ip,
                 'target-instance' => $instanceId,
