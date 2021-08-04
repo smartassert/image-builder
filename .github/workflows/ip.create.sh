@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
 
-set +e
-
 JSON_OUTPUT=$(php app/bin/console app:ip:create)
 EXIT_CODE=$?
 
