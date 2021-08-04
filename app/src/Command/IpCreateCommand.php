@@ -4,8 +4,10 @@ namespace App\Command;
 
 use App\ActionHandler\ActionHandler;
 use App\Model\AssignedIp;
+use App\Model\CommandOutput\CommandOutput;
 use App\Model\Instance;
 use App\Services\ActionRunner;
+use App\Services\CommandOutputHandler;
 use App\Services\FloatingIpManager;
 use App\Services\FloatingIpRepository;
 use App\Services\InstanceRepository;
@@ -31,6 +33,7 @@ class IpCreateCommand extends Command
         private FloatingIpManager $floatingIpManager,
         private FloatingIpRepository $floatingIpRepository,
         private ActionRunner $actionRunner,
+        private CommandOutputHandler $outputHandler,
         private int $assigmentTimeoutInSeconds,
         private int $assignmentRetryInSeconds,
         string $name = null
@@ -40,13 +43,30 @@ class IpCreateCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
+        $this->outputHandler->setOutput($output);
+
         $instance = $this->instanceRepository->findCurrent();
         if (null === $instance) {
+            $this->outputHandler->writeError(
+                new CommandOutput('no-instance')
+            );
+
             return self::EXIT_CODE_NO_CURRENT_INSTANCE;
         }
 
+        $instanceId = $instance->getId();
+
         $assignedIp = $this->floatingIpRepository->find();
         if ($assignedIp instanceof AssignedIp) {
+            $this->outputHandler->writeError(
+                new CommandOutput(
+                    'has-ip',
+                    [
+                        'ip' => $assignedIp->getIp(),
+                    ]
+                )
+            );
+
             return self::EXIT_CODE_HAS_IP;
         }
 
@@ -66,7 +86,13 @@ class IpCreateCommand extends Command
             $this->assignmentRetryInSeconds * self::MICROSECONDS_PER_SECOND
         );
 
-        $output->write($ip);
+        $this->outputHandler->writeSuccess(new CommandOutput(
+            'created',
+            [
+                'ip' => $ip,
+                'target-instance' => $instanceId,
+            ]
+        ));
 
         return Command::SUCCESS;
     }

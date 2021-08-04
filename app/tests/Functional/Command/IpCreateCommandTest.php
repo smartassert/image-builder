@@ -65,7 +65,7 @@ class IpCreateCommandTest extends KernelTestCase
             $expectedOutput
         );
 
-        self::assertStringContainsString($expectedOutput, $output->fetch());
+        self::assertJsonStringEqualsJsonString($expectedOutput, $output->fetch());
     }
 
     /**
@@ -87,7 +87,11 @@ class IpCreateCommandTest extends KernelTestCase
                     ],
                 ],
                 'expectedExitCode' => IpCreateCommand::EXIT_CODE_NO_CURRENT_INSTANCE,
-                'expectedOutput' => '',
+                'expectedOutput' => (string) json_encode([
+                    'error' => [
+                        'id' => 'no-instance',
+                    ],
+                ]),
             ],
             'ip already exists' => [
                 'httpResponseDataCollection' => [
@@ -125,7 +129,14 @@ class IpCreateCommandTest extends KernelTestCase
                     ],
                 ],
                 'expectedExitCode' => IpCreateCommand::EXIT_CODE_HAS_IP,
-                'expectedOutput' => '',
+                'expectedOutput' => (string) json_encode([
+                    'error' => [
+                        'id' => 'has-ip',
+                        'context' => [
+                            'ip' => '127.0.0.200',
+                        ],
+                    ],
+                ]),
             ],
             'created' => [
                 'httpResponseDataCollection' => [
@@ -182,7 +193,15 @@ class IpCreateCommandTest extends KernelTestCase
                     ],
                 ],
                 'expectedExitCode' => IpCreateCommand::SUCCESS,
-                'expectedOutput' => '127.0.0.100',
+                'expectedOutput' => (string) json_encode([
+                    'success' => [
+                        'id' => 'created',
+                        'context' => [
+                            'ip' => '127.0.0.100',
+                            'target-instance' => 123,
+                        ],
+                    ],
+                ]),
             ],
         ];
     }

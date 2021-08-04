@@ -9,19 +9,17 @@ class CommandOutput implements \JsonSerializable
      */
     public function __construct(
         private string $id,
-        private string $message,
         private array $context = [],
     ) {
     }
 
     /**
-     * @return array{id: string, message: string}
+     * @return array{"id": string, "context"?: array<mixed>}
      */
     public function jsonSerialize(): array
     {
         $data = [
             'id' => $this->id,
-            'message' => $this->message,
         ];
 
         if ([] !== $this->context) {
