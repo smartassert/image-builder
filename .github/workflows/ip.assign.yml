@@ -56,28 +56,18 @@ jobs:
         if: ${{ steps.floating-ip.outputs.has == 'false' }}
         run: |
           cd app
-          IP=$(php bin/console app:ip:create)
+          JSON_OUTPUT=$(php bin/console app:ip:create)
           EXIT_CODE=$?
 
-          if [ "$EXIT_CODE" -eq 3 ]; then
-            echo "No instance found, unable to create an IP."
-          else
-            echo "Created IP \"$IP\""
-          fi
-
-          exit 0
+          echo $JSON_OUTPUT | jq "."
+          exit $EXIT_CODE
 
       - name: Re-assign IP if found
         if: ${{ steps.floating-ip.outputs.has == 'true' }}
         run: |
           cd app
-          php bin/console app:ip:assign
+          JSON_OUTPUT=$(php bin/console app:ip:create)
           EXIT_CODE=$?
 
-          if [ "$EXIT_CODE" -eq 3 ]; then
-            echo "No instance found, unable to assign an IP."
-          else
-            echo "Created IP \"$IP\""
-          fi
-
-          exit 0
+          echo $JSON_OUTPUT | jq "."
+          exit $EXIT_CODE
