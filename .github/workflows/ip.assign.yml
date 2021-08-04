@@ -1,9 +1,6 @@
 name: Assign IP to Current Instance
 
 on:
-  pull_request:
-    branches:
-      - github-49
   workflow_dispatch:
   schedule:
     - cron: "20 * * * *"
