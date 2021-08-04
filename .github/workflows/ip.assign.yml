@@ -55,6 +55,8 @@ jobs:
       - name: Create IP if none found
         if: ${{ steps.floating-ip.outputs.has == 'false' }}
         run: |
+          set +e
+
           cd app
           JSON_OUTPUT=$(php bin/console app:ip:create)
           EXIT_CODE=$?
