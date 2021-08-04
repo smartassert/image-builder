@@ -65,7 +65,7 @@ class IpCreateCommandTest extends KernelTestCase
             $expectedOutput
         );
 
-        self::assertStringContainsString($expectedOutput, $output->fetch());
+        self::assertJsonStringEqualsJsonString($expectedOutput, $output->fetch());
     }
 
     /**
@@ -87,7 +87,12 @@ class IpCreateCommandTest extends KernelTestCase
                     ],
                 ],
                 'expectedExitCode' => IpCreateCommand::EXIT_CODE_NO_CURRENT_INSTANCE,
-                'expectedOutput' => '',
+                'expectedOutput' => (string) json_encode([
+                    'error' => [
+                        'id' => 'no-instance',
+                        'message' => 'Cannot assign IP, no current instance found',
+                    ],
+                ]),
             ],
             'ip already exists' => [
                 'httpResponseDataCollection' => [
@@ -125,7 +130,12 @@ class IpCreateCommandTest extends KernelTestCase
                     ],
                 ],
                 'expectedExitCode' => IpCreateCommand::EXIT_CODE_HAS_IP,
-                'expectedOutput' => '',
+                'expectedOutput' => (string) json_encode([
+                    'error' => [
+                        'id' => 'has-ip',
+                        'message' => 'Cannot create new IP, 127.0.0.200 already in use',
+                    ],
+                ]),
             ],
             'created' => [
                 'httpResponseDataCollection' => [
@@ -182,7 +192,16 @@ class IpCreateCommandTest extends KernelTestCase
                     ],
                 ],
                 'expectedExitCode' => IpCreateCommand::SUCCESS,
-                'expectedOutput' => '127.0.0.100',
+                'expectedOutput' => (string) json_encode([
+                    'success' => [
+                        'id' => 'created',
+                        'message' => 'Assigned 127.0.0.100 to instance 123',
+                        'context' => [
+                            'ip' => '127.0.0.100',
+                            'target-instance' => 123,
+                        ],
+                    ],
+                ]),
             ],
         ];
     }
