@@ -60,7 +60,7 @@ jobs:
           EXIT_CODE=$?
 
           echo $JSON_OUTPUT | jq "."
-          exit $EXIT_CODE
+#          exit $EXIT_CODE
 
       - name: Re-assign IP if found
         if: ${{ steps.floating-ip.outputs.has == 'true' }}
