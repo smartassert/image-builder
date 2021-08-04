@@ -38,26 +38,19 @@ jobs:
           echo "::set-output name=id::$WORKER_MANAGER_IMAGE"
 
       - name: Get floating IP
-        id: floating-ip
+        id: has-ip
         run: |
-          cd app
-          IP=$(php bin/console app:ip:get)
           HAS_IP="true"
-
-          if [ -z "$IP" ]; then
-            IP="null"
+          if [ -z "$(php app/bin/console app:ip:get)" ]; then
             HAS_IP="false"
           fi
 
-          echo "::set-output name=ip::$IP"
-          echo "::set-output name=has::$HAS_IP"
+          echo "::set-output name=value::$HAS_IP"
 
       - name: Create IP if none found
-        if: ${{ steps.floating-ip.outputs.has == 'false' }}
-        run: |
-          ./.github/workflows/ip.create.sh
+        if: ${{ steps.has-ip.outputs.value == 'false' }}
+        run: ./.github/workflows/ip.create.sh
 
       - name: Re-assign IP if found
-        if: ${{ steps.floating-ip.outputs.has == 'true' }}
-        run: |
-          ./.github/workflows/ip.assign.sh
+        if: ${{ steps.has-ip.outputs.value == 'true' }}
+        run: ./.github/workflows/ip.assign.sh
