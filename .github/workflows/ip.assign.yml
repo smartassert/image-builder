@@ -60,9 +60,4 @@ jobs:
       - name: Re-assign IP if found
         if: ${{ steps.floating-ip.outputs.has == 'true' }}
         run: |
-          cd app
-          JSON_OUTPUT=$(php bin/console app:ip:create)
-          EXIT_CODE=$?
-
-          echo $JSON_OUTPUT | jq "."
-          exit $EXIT_CODE
+          ./.github/workflows/ip.assign.sh
