@@ -2,7 +2,6 @@
 
 set +e
 
-cd app
 JSON_OUTPUT=$(php app/bin/console app:ip:create)
 EXIT_CODE=$?
 
