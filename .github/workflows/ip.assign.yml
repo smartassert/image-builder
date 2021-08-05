@@ -25,13 +25,6 @@ jobs:
           args: --ignore-platform-reqs --quiet
           working_dir: app
 
-      - name: Expose worker manager image variable
-        id: worker-manager-image
-        run:
-          export echo $(cat worker-manager-image.env | tr '\n' ' ')
-
-          echo "::set-output name=id::$WORKER_MANAGER_IMAGE"
-
       - name: Get floating IP
         id: has-ip
         run: |
