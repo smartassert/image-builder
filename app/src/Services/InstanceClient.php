@@ -20,19 +20,6 @@ class InstanceClient
     /**
      * @throws ClientExceptionInterface
      */
-    public function getVersion(Instance $instance): string
-    {
-        $url = $instance->getUrl() . '/version';
-        $request = $this->requestFactory->createRequest('GET', $url);
-
-        $response = $this->httpClient->sendRequest($request);
-
-        return $response->getBody()->getContents();
-    }
-
-    /**
-     * @throws ClientExceptionInterface
-     */
     public function getStatus(Instance $instance): ?InstanceStatus
     {
         $url = $instance->getUrl() . '/';
