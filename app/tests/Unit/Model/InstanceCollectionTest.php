@@ -4,6 +4,7 @@ namespace App\Tests\Unit\Model;
 
 use App\Model\Instance;
 use App\Model\InstanceCollection;
+use App\Tests\Services\DropletDataFactory;
 use App\Tests\Services\InstanceFactory;
 use PHPUnit\Framework\TestCase;
 
@@ -98,38 +99,9 @@ class InstanceCollectionTest extends TestCase
     public function filterByNotIpDataProvider(): array
     {
         $ip = '127.0.0.1';
-        $instanceWithIp = InstanceFactory::create([
-            'id' => 123,
-            'networks' => [
-                'v4' => [
-                    [
-                        'ip_address' => $ip,
-                    ],
-                ],
-            ],
-        ]);
-
-        $instanceWithoutIp1 = InstanceFactory::create([
-            'id' => 465,
-            'networks' => [
-                'v4' => [
-                    [
-                        'ip_address' => '127.0.0.2',
-                    ],
-                ],
-            ],
-        ]);
-
-        $instanceWithoutIp2 = InstanceFactory::create([
-            'id' => 789,
-            'networks' => [
-                'v4' => [
-                    [
-                        'ip_address' => '127.0.0.3',
-                    ],
-                ],
-            ],
-        ]);
+        $instanceWithIp = InstanceFactory::create(DropletDataFactory::createWithIps(123, [$ip]));
+        $instanceWithoutIp1 = InstanceFactory::create(DropletDataFactory::createWithIps(456, ['127.0.0.2']));
+        $instanceWithoutIp2 = InstanceFactory::create(DropletDataFactory::createWithIps(789, ['127.0.0.3']));
 
         return [
             'empty' => [

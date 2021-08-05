@@ -3,6 +3,7 @@
 namespace App\Tests\Unit\Model;
 
 use App\Model\Instance;
+use App\Tests\Services\DropletDataFactory;
 use App\Tests\Services\InstanceFactory;
 use PHPUnit\Framework\TestCase;
 
@@ -30,50 +31,23 @@ class InstanceTest extends TestCase
                 'expectedHas' => false,
             ],
             'no matching IP' => [
-                'instance' => InstanceFactory::create([
-                    'id' => 123,
-                    'networks' => [
-                        'v4' => [
-                            [
-                                'ip_address' => '127.0.0.2',
-                            ],
-                        ],
-                    ],
-                ]),
+                'instance' => InstanceFactory::create(
+                    DropletDataFactory::createWithIps(123, ['127.0.0.2'])
+                ),
                 'ip' => '127.0.0.1',
                 'expectedHas' => false,
             ],
             'single IP, matching' => [
-                'instance' => InstanceFactory::create([
-                    'id' => 123,
-                    'networks' => [
-                        'v4' => [
-                            [
-                                'ip_address' => '127.0.0.1',
-                            ],
-                        ],
-                    ],
-                ]),
+                'instance' => InstanceFactory::create(
+                    DropletDataFactory::createWithIps(123, ['127.0.0.1'])
+                ),
                 'ip' => '127.0.0.1',
                 'expectedHas' => true,
             ],
             'three IPs, third matching' => [
-                'instance' => InstanceFactory::create([
-                    'id' => 123,
-                    'networks' => [
-                        'v4' => [
-                            [
-                                'ip_address' => '127.0.0.1',
-                            ],
-                            [
-                                'ip_address' => '127.0.0.2',
-                            ],
-                            [
-                                'ip_address' => '127.0.0.3',
-                            ],
-                        ],
-                    ],
-                ]),
+                'instance' => InstanceFactory::create(
+                    DropletDataFactory::createWithIps(123, ['127.0.0.1', '127.0.0.2', '127.0.0.3'])
+                ),
                 'ip' => '127.0.0.3',
                 'expectedHas' => true,
             ],
