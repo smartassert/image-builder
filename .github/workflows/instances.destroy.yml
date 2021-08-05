@@ -31,9 +31,14 @@ jobs:
       - name: Get floating IP
         id: ip
         run: |
-          echo "::set-output name=value::$(php app/bin/console app:ip:get)"
+          echo "::set-output name=value::non-empty-string"
 
       - name: Step to run if has IP
+        if: ${{ steps.ip.outputs.value != '' }}
+        run: |
+          echo "has IP!"
+
+      - name: Step to run if not has IP
         if: ${{ steps.ip.outputs.value == '' }}
         run: |
-          echo "no IP"
+          echo "no IP!"
