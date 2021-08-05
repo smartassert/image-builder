@@ -9,7 +9,6 @@ use DigitalOceanV2\Exception\ExceptionInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
@@ -20,7 +19,6 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 class InstanceListCommand extends Command
 {
     public const NAME = 'app:instance:list';
-    public const OPTION_PRETTY_PRINT = 'pretty-print';
 
     public function __construct(
         private InstanceRepository $instanceRepository,
@@ -29,19 +27,6 @@ class InstanceListCommand extends Command
         string $name = null,
     ) {
         parent::__construct($name);
-    }
-
-    protected function configure(): void
-    {
-        $this
-            ->addOption(
-                self::OPTION_PRETTY_PRINT,
-                null,
-                InputOption::VALUE_OPTIONAL,
-                '',
-                false
-            )
-        ;
     }
 
     /**
@@ -69,11 +54,7 @@ class InstanceListCommand extends Command
             ];
         }
 
-        $prettyPrint = $input->getOption(self::OPTION_PRETTY_PRINT);
-        $prettyPrint = is_scalar($prettyPrint) && $prettyPrint;
-        $jsonEncodeFlags = $prettyPrint ? JSON_PRETTY_PRINT : 0;
-
-        $output->write((string) json_encode($collectionData, $jsonEncodeFlags));
+        $output->write((string) json_encode($collectionData));
 
         return Command::SUCCESS;
     }
