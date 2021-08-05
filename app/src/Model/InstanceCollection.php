@@ -2,6 +2,8 @@
 
 namespace App\Model;
 
+use App\Model\InstanceMatcher\InstanceMatcherInterface;
+
 /**
  * @implements \IteratorAggregate<Instance>
  */

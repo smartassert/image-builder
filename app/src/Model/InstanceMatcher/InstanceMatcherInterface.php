@@ -1,6 +1,8 @@
 <?php
 
-namespace App\Model;
+namespace App\Model\InstanceMatcher;
+
+use App\Model\Instance;
 
 interface InstanceMatcherInterface
 {

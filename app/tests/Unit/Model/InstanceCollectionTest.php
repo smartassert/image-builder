@@ -4,9 +4,9 @@ namespace App\Tests\Unit\Model;
 
 use App\Model\Instance;
 use App\Model\InstanceCollection;
-use App\Model\InstanceEmptyMessageQueueMatcher;
-use App\Model\InstanceMatcherInterface;
-use App\Model\InstanceNotHasIpMatcher;
+use App\Model\InstanceMatcher\InstanceEmptyMessageQueueMatcher;
+use App\Model\InstanceMatcher\InstanceMatcherInterface;
+use App\Model\InstanceMatcher\InstanceNotHasIpMatcher;
 use App\Tests\Services\DropletDataFactory;
 use App\Tests\Services\InstanceFactory;
 use PHPUnit\Framework\TestCase;
