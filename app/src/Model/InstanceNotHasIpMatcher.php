@@ -2,7 +2,7 @@
 
 namespace App\Model;
 
-class InstanceCollectionNotHasIpFilter implements InstanceCollectionFilterInterface
+class InstanceNotHasIpMatcher implements InstanceMatcherInterface
 {
     public function __construct(
         private string $ip

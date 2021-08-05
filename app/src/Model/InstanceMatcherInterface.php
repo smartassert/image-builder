@@ -2,7 +2,7 @@
 
 namespace App\Model;
 
-interface InstanceCollectionFilterInterface
+interface InstanceMatcherInterface
 {
     public function matches(Instance $instance): bool;
 }

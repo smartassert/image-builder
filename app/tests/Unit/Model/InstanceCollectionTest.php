@@ -4,9 +4,9 @@ namespace App\Tests\Unit\Model;
 
 use App\Model\Instance;
 use App\Model\InstanceCollection;
-use App\Model\InstanceCollectionFilterInterface;
-use App\Model\InstanceCollectionHasEmptyMessageQueueFilter;
-use App\Model\InstanceCollectionNotHasIpFilter;
+use App\Model\InstanceEmptyMessageQueueMatcher;
+use App\Model\InstanceMatcherInterface;
+use App\Model\InstanceNotHasIpMatcher;
 use App\Tests\Services\DropletDataFactory;
 use App\Tests\Services\InstanceFactory;
 use PHPUnit\Framework\TestCase;
@@ -87,7 +87,7 @@ class InstanceCollectionTest extends TestCase
      */
     public function testFilter(
         InstanceCollection $collection,
-        InstanceCollectionFilterInterface $filter,
+        InstanceMatcherInterface $filter,
         InstanceCollection $expectedCollection
     ): void {
         self::assertEquals(
@@ -118,8 +118,8 @@ class InstanceCollectionTest extends TestCase
             'id' => 789,
         ])->withMessageQueueSize(0);
 
-        $notHasIpFilter = new InstanceCollectionNotHasIpFilter($ip);
-        $hasEmptyMessageQueueFilter = new InstanceCollectionHasEmptyMessageQueueFilter();
+        $notHasIpFilter = new InstanceNotHasIpMatcher($ip);
+        $hasEmptyMessageQueueFilter = new InstanceEmptyMessageQueueMatcher();
 
         return [
             'empty, not has IP filter' => [

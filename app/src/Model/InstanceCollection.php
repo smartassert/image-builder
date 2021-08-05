@@ -64,7 +64,7 @@ class InstanceCollection implements \IteratorAggregate, \Countable
         return new InstanceCollection($instances);
     }
 
-    public function filter(InstanceCollectionFilterInterface $filter): self
+    public function filter(InstanceMatcherInterface $filter): self
     {
         $instances = [];
 

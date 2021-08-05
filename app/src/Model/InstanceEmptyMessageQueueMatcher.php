@@ -2,7 +2,7 @@
 
 namespace App\Model;
 
-class InstanceCollectionHasEmptyMessageQueueFilter implements InstanceCollectionFilterInterface
+class InstanceEmptyMessageQueueMatcher implements InstanceMatcherInterface
 {
     public function matches(Instance $instance): bool
     {
