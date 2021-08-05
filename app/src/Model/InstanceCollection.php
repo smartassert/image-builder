@@ -46,7 +46,7 @@ class InstanceCollection implements \IteratorAggregate, \Countable
         return $sortedCollection->getFirst();
     }
 
-    public function sortByCreatedDate(): InstanceCollection
+    public function sortByCreatedDate(): self
     {
         $instances = $this->instances;
 
@@ -60,6 +60,19 @@ class InstanceCollection implements \IteratorAggregate, \Countable
 
             return $aTimestamp < $bTimestamp ? 1 : -1;
         });
+
+        return new InstanceCollection($instances);
+    }
+
+    public function filterByNotIp(string $ip): self
+    {
+        $instances = [];
+
+        foreach ($this as $instance) {
+            if (false === $instance->hasIp($ip)) {
+                $instances[] = $instance;
+            }
+        }
 
         return new InstanceCollection($instances);
     }
