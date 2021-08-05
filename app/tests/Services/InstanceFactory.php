@@ -10,18 +10,12 @@ class InstanceFactory
     /**
      * @param array<mixed> $dropletData
      */
-    public static function create(array $dropletData, ?string $version = null): Instance
+    public static function create(array $dropletData): Instance
     {
-        $instance = new Instance(
+        return new Instance(
             new Droplet(
                 DropletDataFactory::normalize($dropletData)
             )
         );
-
-        if (is_string($version)) {
-            $instance = $instance->withVersion($version);
-        }
-
-        return $instance;
     }
 }
