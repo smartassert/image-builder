@@ -2,6 +2,8 @@
 
 namespace App\Model;
 
+use App\Model\InstanceMatcher\InstanceMatcherInterface;
+
 /**
  * @implements \IteratorAggregate<Instance>
  */
@@ -64,12 +66,12 @@ class InstanceCollection implements \IteratorAggregate, \Countable
         return new InstanceCollection($instances);
     }
 
-    public function filterByNotIp(string $ip): self
+    public function filter(InstanceMatcherInterface $filter): self
     {
         $instances = [];
 
         foreach ($this as $instance) {
-            if (false === $instance->hasIp($ip)) {
+            if ($filter->matches($instance)) {
                 $instances[] = $instance;
             }
         }
