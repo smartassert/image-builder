@@ -8,6 +8,7 @@ use App\Model\Instance;
 use App\Services\ActionRunner;
 use App\Services\FloatingIpManager;
 use App\Services\InstanceRepository;
+use App\Tests\Services\DropletDataFactory;
 use App\Tests\Services\HttpResponseFactory;
 use GuzzleHttp\Handler\MockHandler;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
@@ -109,16 +110,7 @@ class ActionRunnerTest extends KernelTestCase
                     'content-type' => 'application/json; charset=utf-8',
                 ],
                 HttpResponseFactory::KEY_BODY => (string) json_encode([
-                    'droplet' => [
-                        'id' => 123,
-                        'networks' => [
-                            'v4' => [
-                                [
-                                    'ip_address' => '127.0.0.1',
-                                ],
-                            ],
-                        ],
-                    ],
+                    'droplet' => DropletDataFactory::createWithIps(123, ['127.0.0.1']),
                 ])
             ]),
             'get instance, has expected IP' => $httpResponseFactory->createFromArray([
@@ -127,19 +119,7 @@ class ActionRunnerTest extends KernelTestCase
                     'content-type' => 'application/json; charset=utf-8',
                 ],
                 HttpResponseFactory::KEY_BODY => (string) json_encode([
-                    'droplet' => [
-                        'id' => 123,
-                        'networks' => [
-                            'v4' => [
-                                [
-                                    'ip_address' => '127.0.0.1',
-                                ],
-                                [
-                                    'ip_address' => $expectedIp,
-                                ],
-                            ],
-                        ],
-                    ],
+                    'droplet' => DropletDataFactory::createWithIps(123, ['127.0.0.1', $expectedIp]),
                 ])
             ]),
         ]);

@@ -4,6 +4,7 @@ namespace App\Tests\Unit\Model;
 
 use App\Model\Instance;
 use App\Model\InstanceCollection;
+use App\Tests\Services\DropletDataFactory;
 use App\Tests\Services\InstanceFactory;
 use PHPUnit\Framework\TestCase;
 
@@ -74,6 +75,67 @@ class InstanceCollectionTest extends TestCase
             'reverse sorted' => [
                 'collection' => $reverseSortedCollection,
                 'expectedNewest' => $expectedNewest,
+            ],
+        ];
+    }
+
+    /**
+     * @dataProvider filterByNotIpDataProvider
+     */
+    public function testFilterByNotIp(
+        InstanceCollection $collection,
+        string $ip,
+        InstanceCollection $expectedCollection
+    ): void {
+        self::assertEquals(
+            $expectedCollection,
+            $collection->filterByNotIp($ip)
+        );
+    }
+
+    /**
+     * @return array<mixed>
+     */
+    public function filterByNotIpDataProvider(): array
+    {
+        $ip = '127.0.0.1';
+        $instanceWithIp = InstanceFactory::create(DropletDataFactory::createWithIps(123, [$ip]));
+        $instanceWithoutIp1 = InstanceFactory::create(DropletDataFactory::createWithIps(456, ['127.0.0.2']));
+        $instanceWithoutIp2 = InstanceFactory::create(DropletDataFactory::createWithIps(789, ['127.0.0.3']));
+
+        return [
+            'empty' => [
+                'collection' => new InstanceCollection([]),
+                'ip' => 'not relevant',
+                'expectedCollection' => new InstanceCollection([]),
+            ],
+            'single, has IP' => [
+                'collection' => new InstanceCollection([
+                    $instanceWithIp,
+                ]),
+                'ip' => $ip,
+                'expectedCollection' => new InstanceCollection([]),
+            ],
+            'single, does not have IP' => [
+                'collection' => new InstanceCollection([
+                    $instanceWithoutIp1,
+                ]),
+                'ip' => $ip,
+                'expectedCollection' => new InstanceCollection([
+                    $instanceWithoutIp1,
+                ]),
+            ],
+            'multiple, one has IP' => [
+                'collection' => new InstanceCollection([
+                    $instanceWithoutIp1,
+                    $instanceWithIp,
+                    $instanceWithoutIp2,
+                ]),
+                'ip' => $ip,
+                'expectedCollection' => new InstanceCollection([
+                    $instanceWithoutIp1,
+                    $instanceWithoutIp2,
+                ]),
             ],
         ];
     }

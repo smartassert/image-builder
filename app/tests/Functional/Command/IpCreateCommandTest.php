@@ -3,6 +3,7 @@
 namespace App\Tests\Functional\Command;
 
 use App\Command\IpCreateCommand;
+use App\Tests\Services\DropletDataFactory;
 use App\Tests\Services\HttpResponseFactory;
 use GuzzleHttp\Handler\MockHandler;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
@@ -179,16 +180,7 @@ class IpCreateCommandTest extends KernelTestCase
                             'content-type' => 'application/json; charset=utf-8',
                         ],
                         HttpResponseFactory::KEY_BODY => (string) json_encode([
-                            'droplet' => [
-                                'id' => 123,
-                                'networks' => [
-                                    'v4' => [
-                                        [
-                                            'ip_address' => '127.0.0.100',
-                                        ],
-                                    ],
-                                ],
-                            ],
+                            'droplet' => DropletDataFactory::createWithIps(123, ['127.0.0.100']),
                         ]),
                     ],
                 ],

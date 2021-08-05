@@ -5,6 +5,7 @@ namespace App\Tests\Functional\Services;
 use App\Model\Instance;
 use App\Model\InstanceCollection;
 use App\Services\InstanceCollectionHydrator;
+use App\Tests\Services\DropletDataFactory;
 use App\Tests\Services\HttpResponseFactory;
 use DigitalOceanV2\Entity\Droplet as DropletEntity;
 use GuzzleHttp\Handler\MockHandler;
@@ -74,16 +75,6 @@ class InstanceCollectionHydratorTest extends KernelTestCase
 
     private function createDroplet(int $id, string $ipAddress): DropletEntity
     {
-        return new DropletEntity([
-            'id' => $id,
-            'networks' => [
-                'v4' => [
-                    [
-                        'type' => 'public',
-                        'ip_address' => $ipAddress,
-                    ],
-                ],
-            ],
-        ]);
+        return new DropletEntity(DropletDataFactory::createWithIps($id, [$ipAddress]));
     }
 }

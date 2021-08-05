@@ -5,6 +5,7 @@ namespace App\Tests\Functional\Command;
 use App\Command\IpAssignCommand;
 use App\Exception\ActionTimeoutException;
 use App\Services\ActionRunner;
+use App\Tests\Services\DropletDataFactory;
 use App\Tests\Services\HttpResponseFactory;
 use GuzzleHttp\Handler\MockHandler;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
@@ -134,16 +135,7 @@ class IpAssignCommandTest extends KernelTestCase
                         ],
                         HttpResponseFactory::KEY_BODY => (string) json_encode([
                             'droplets' => [
-                                [
-                                    'id' => 123,
-                                    'networks' => [
-                                        'v4' => [
-                                            [
-                                                'ip_address' => '127.0.0.200',
-                                            ],
-                                        ],
-                                    ],
-                                ],
+                                DropletDataFactory::createWithIps(123, ['127.0.0.200']),
                             ],
                         ]),
                     ],
