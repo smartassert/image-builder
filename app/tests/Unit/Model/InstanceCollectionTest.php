@@ -140,6 +140,69 @@ class InstanceCollectionTest extends TestCase
         ];
     }
 
+    /**
+     * @dataProvider filterByWithEmptyMessageQueueSizeDataProvider
+     */
+    public function testFilterByWithEmptyMessageQueueSize(
+        InstanceCollection $collection,
+        InstanceCollection $expectedCollection
+    ): void {
+        self::assertEquals(
+            $expectedCollection,
+            $collection->filterByWithEmptyMessageQueue()
+        );
+    }
+
+    /**
+     * @return array<mixed>
+     */
+    public function filterByWithEmptyMessageQueueSizeDataProvider(): array
+    {
+        $instanceWithNonEmptyMessageQueue = InstanceFactory::create([
+            'id' => 123,
+        ])->withMessageQueueSize(1);
+
+        $instanceWithEmptyMessageQueue1 = InstanceFactory::create([
+            'id' => 456,
+        ])->withMessageQueueSize(0);
+
+        $instanceWithEmptyMessageQueue2 = InstanceFactory::create([
+            'id' => 789,
+        ])->withMessageQueueSize(0);
+
+        return [
+            'empty' => [
+                'collection' => new InstanceCollection([]),
+                'expectedCollection' => new InstanceCollection([]),
+            ],
+            'single, non-empty message queue' => [
+                'collection' => new InstanceCollection([
+                    $instanceWithNonEmptyMessageQueue,
+                ]),
+                'expectedCollection' => new InstanceCollection([]),
+            ],
+            'single, empty message queue' => [
+                'collection' => new InstanceCollection([
+                    $instanceWithEmptyMessageQueue1,
+                ]),
+                'expectedCollection' => new InstanceCollection([
+                    $instanceWithEmptyMessageQueue1
+                ]),
+            ],
+            'multiple, one has non-empty message queue' => [
+                'collection' => new InstanceCollection([
+                    $instanceWithEmptyMessageQueue1,
+                    $instanceWithNonEmptyMessageQueue,
+                    $instanceWithEmptyMessageQueue2,
+                ]),
+                'expectedCollection' => new InstanceCollection([
+                    $instanceWithEmptyMessageQueue1,
+                    $instanceWithEmptyMessageQueue2,
+                ]),
+            ],
+        ];
+    }
+
     private function createSortedCollection(): InstanceCollection
     {
         return new InstanceCollection([

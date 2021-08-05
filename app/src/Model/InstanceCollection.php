@@ -76,4 +76,17 @@ class InstanceCollection implements \IteratorAggregate, \Countable
 
         return new InstanceCollection($instances);
     }
+
+    public function filterByWithEmptyMessageQueue(): self
+    {
+        $instances = [];
+
+        foreach ($this as $instance) {
+            if (0 === $instance->getMessageQueueSize()) {
+                $instances[] = $instance;
+            }
+        }
+
+        return new InstanceCollection($instances);
+    }
 }
