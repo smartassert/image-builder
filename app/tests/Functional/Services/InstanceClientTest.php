@@ -35,22 +35,6 @@ class InstanceClientTest extends KernelTestCase
         $this->httpResponseFactory = $httpResponseFactory;
     }
 
-    public function testGetVersion(): void
-    {
-        $version = 'version-string';
-
-        $this->mockHandler->append($this->httpResponseFactory->createFromArray([
-            HttpResponseFactory::KEY_STATUS_CODE => 200,
-            HttpResponseFactory::KEY_BODY => $version,
-        ]));
-
-        $instance = InstanceFactory::create([
-            'id' => 123,
-        ]);
-
-        self::assertSame($version, $this->instanceClient->getVersion($instance));
-    }
-
     /**
      * @dataProvider getStatusReturnsNullDataProvider
      */
