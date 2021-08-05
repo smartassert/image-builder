@@ -2,8 +2,6 @@ name: Assign IP to Current Instance
 
 on:
   workflow_dispatch:
-  schedule:
-    - cron: "20 * * * *"
 
 jobs:
   assign:
