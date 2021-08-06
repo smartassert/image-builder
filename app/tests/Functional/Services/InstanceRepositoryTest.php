@@ -32,6 +32,34 @@ class InstanceRepositoryTest extends KernelTestCase
         $this->httpResponseFactory = $httpResponseFactory;
     }
 
+    public function testCreate(): void
+    {
+        $dropletData = [
+            'id' => 123,
+        ];
+
+        $successResponseData = [
+            HttpResponseFactory::KEY_STATUS_CODE => 202,
+            HttpResponseFactory::KEY_HEADERS => [
+                'content-type' => 'application/json; charset=utf-8',
+            ],
+            HttpResponseFactory::KEY_BODY => (string) json_encode([
+                'droplet' => $dropletData,
+            ]),
+        ];
+
+        $this->mockHandler->append(
+            $this->httpResponseFactory->createFromArray($successResponseData)
+        );
+        $instance = $this->instanceRepository->create();
+
+        self::assertInstanceOf(Instance::class, $instance);
+        self::assertEquals(
+            $instance = InstanceFactory::create($dropletData),
+            $instance
+        );
+    }
+
     /**
      * @dataProvider findAllDataProvider
      *
@@ -218,6 +246,43 @@ class InstanceRepositoryTest extends KernelTestCase
                 ],
                 'id' => 123,
                 'expectedImage' => InstanceFactory::create(['id' => 123]),
+            ],
+        ];
+    }
+
+    /**
+     * @dataProvider deleteDataProvider
+     *
+     * @param array<mixed> $httpResponseData
+     */
+    public function testDelete(array $httpResponseData, int $id): void
+    {
+        $this->mockHandler->append(
+            $this->httpResponseFactory->createFromArray($httpResponseData)
+        );
+
+        $this->instanceRepository->delete($id);
+
+        self::expectNotToPerformAssertions();
+    }
+
+    /**
+     * @return array<mixed>
+     */
+    public function deleteDataProvider(): array
+    {
+        return [
+            'not found' => [
+                'httpResponseData' => [
+                    HttpResponseFactory::KEY_STATUS_CODE => 404,
+                ],
+                'id' => 0,
+            ],
+            'found' => [
+                'httpResponseData' => [
+                    HttpResponseFactory::KEY_STATUS_CODE => 204,
+                ],
+                'id' => 123,
             ],
         ];
     }
