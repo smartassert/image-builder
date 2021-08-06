@@ -91,10 +91,6 @@ services:
         arguments:
             $projectDirectory: '%kernel.project_dir%'
 
-    App\Services\InstanceCreator:
-        arguments:
-            $instanceName: '%instance_tag%'
-
     App\Services\InstanceRepository:
         arguments:
             $instanceCollectionTag: '%instance_collection_tag%'
