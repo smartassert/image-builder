@@ -6,7 +6,7 @@
 parameters:
     instance_collection_tag: '%env(DIGITALOCEAN_DROPLET_TAG)%'
     worker_manager_image: '%env(WORKER_MANAGER_IMAGE)%'
-    instance_tag: '%env(DIGITALOCEAN_DROPLET_TAG)%-%worker_manager_image%'
+    instance_tag: '%instance_collection_tag%-%env(WORKER_MANAGER_VERSION)%'
     ip_create_assignment_timeout_in_seconds: '%env(IP_CREATE_ASSIGNMENT_TIMEOUT_IN_SECONDS)%'
     ip_create_assignment_retry_in_seconds: '%env(IP_CREATE_ASSIGNMENT_RETRY_IN_SECONDS)%'
 
@@ -93,7 +93,7 @@ services:
 
     App\Services\InstanceCreator:
         arguments:
-            $instanceName: '%env(DIGITALOCEAN_DROPLET_TAG)%-%env(WORKER_MANAGER_VERSION)%'
+            $instanceName: '%instance_tag%'
 
     App\Services\InstanceRepository:
         arguments:
@@ -106,4 +106,4 @@ services:
 
     App\Services\FloatingIpRepository:
         arguments:
-            $dropletTag: '%env(DIGITALOCEAN_DROPLET_TAG)%'
+            $dropletTag: '%instance_collection_tag%'
