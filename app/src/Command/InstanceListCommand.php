@@ -4,6 +4,7 @@ namespace App\Command;
 
 use App\Model\InstanceCollection;
 use App\Model\InstanceMatcher\InstanceEmptyMessageQueueMatcher;
+use App\Model\InstanceMatcher\InstanceNotHasIpMatcher;
 use App\Services\CommandExceptionRenderer;
 use App\Services\InstanceCollectionHydrator;
 use App\Services\InstanceRepository;
@@ -23,6 +24,7 @@ class InstanceListCommand extends Command
 {
     public const NAME = 'app:instance:list';
     public const OPTION_WITH_EMPTY_MESSAGE_QUEUE = 'with-empty-message-queue';
+    public const OPTION_WITHOUT_IP = 'without-ip';
 
     public function __construct(
         private InstanceRepository $instanceRepository,
@@ -42,6 +44,12 @@ class InstanceListCommand extends Command
                 InputOption::VALUE_NONE,
                 'Include only instances with an empty message queue'
             )
+            ->addOption(
+                self::OPTION_WITHOUT_IP,
+                null,
+                InputOption::VALUE_OPTIONAL,
+                'Include only instances without a specific IP'
+            )
         ;
     }
 
@@ -55,8 +63,13 @@ class InstanceListCommand extends Command
             $withEmptyMessageQueue = false;
         }
 
+        $withoutIp = $input->getOption(self::OPTION_WITHOUT_IP);
+        if (!is_string($withoutIp)) {
+            $withoutIp = null;
+        }
+
         try {
-            $instances = $this->findInstances($withEmptyMessageQueue);
+            $instances = $this->findInstances($withEmptyMessageQueue, $withoutIp);
         } catch (ExceptionInterface $e) {
             $io = new SymfonyStyle($input, $output);
             $io->error($this->commandExceptionRenderer->render($e));
@@ -86,13 +99,19 @@ class InstanceListCommand extends Command
     /**
      * @throws ExceptionInterface
      */
-    private function findInstances(bool $withEmptyMessageQueue = false): InstanceCollection
-    {
+    private function findInstances(
+        bool $withEmptyMessageQueue = false,
+        ?string $withoutIp = null,
+    ): InstanceCollection {
         $instances = $this->instanceRepository->findAll();
         $instances = $this->instanceCollectionHydrator->hydrate($instances);
 
         if (true === $withEmptyMessageQueue) {
             $instances = $instances->filter(new InstanceEmptyMessageQueueMatcher());
+        }
+
+        if (is_string($withoutIp)) {
+            $instances = $instances->filter(new InstanceNotHasIpMatcher($withoutIp));
         }
 
         return $instances;
