@@ -159,6 +159,37 @@ class InstanceIsHealthyCommandTest extends KernelTestCase
                     ],
                 ]),
             ],
+            'found, no health data' => [
+                'input' => [
+                    '--id' => '123',
+                ],
+                'httpResponseDataCollection' => [
+                    [
+                        HttpResponseFactory::KEY_STATUS_CODE => 200,
+                        HttpResponseFactory::KEY_HEADERS => [
+                            'content-type' => 'application/json; charset=utf-8',
+                        ],
+                        HttpResponseFactory::KEY_BODY => (string) json_encode([
+                            'droplet' => [
+                                'id' => 123,
+                            ],
+                        ]),
+                    ],
+                    [
+                        HttpResponseFactory::KEY_STATUS_CODE => 200,
+                        HttpResponseFactory::KEY_HEADERS => [
+                            'content-type' => 'application/json; charset=utf-8',
+                        ],
+                        HttpResponseFactory::KEY_BODY => (string) json_encode([]),
+                    ],
+                ],
+                'expectedReturnCode' => Command::FAILURE,
+                'expectedOutput' => (string) json_encode([
+                    'error' => [
+                        'id' => 'unavailable',
+                    ],
+                ]),
+            ],
             'not healthy' => [
                 'input' => [
                     '--id' => '123',

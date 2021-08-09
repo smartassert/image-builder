@@ -123,7 +123,7 @@ class InstanceClientTest extends KernelTestCase
     public function testGetHealth(
         string $httpResponseBody,
         Instance $instance,
-        ?InstanceHealth $expectedInstanceHealth
+        InstanceHealth $expectedInstanceHealth
     ): void {
         $this->mockHandler->append($this->httpResponseFactory->createFromArray([
             HttpResponseFactory::KEY_STATUS_CODE => 200,
@@ -144,7 +144,7 @@ class InstanceClientTest extends KernelTestCase
             'response data is not an array' => [
                 'responseBody' => json_encode(true),
                 'instance' => $instance,
-                'expectedInstanceStatus' => null,
+                'expectedInstanceStatus' => new InstanceHealth([]),
             ],
             'response data is valid' => [
                 'responseBody' => json_encode([

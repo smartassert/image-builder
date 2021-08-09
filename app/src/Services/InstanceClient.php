@@ -38,7 +38,7 @@ class InstanceClient
     /**
      * @throws ClientExceptionInterface
      */
-    public function getHealth(Instance $instance): ?InstanceHealth
+    public function getHealth(Instance $instance): InstanceHealth
     {
         $url = $instance->getUrl() . '/health-check';
         $request = $this->requestFactory->createRequest('GET', $url);
@@ -46,11 +46,7 @@ class InstanceClient
         $response = $this->httpClient->sendRequest($request);
         $responseData = json_decode($response->getBody()->getContents(), true);
 
-        if (is_array($responseData)) {
-            return new InstanceHealth($responseData);
-        }
-
-        return null;
+        return new InstanceHealth(is_array($responseData) ? $responseData : []);
     }
 
     /**
