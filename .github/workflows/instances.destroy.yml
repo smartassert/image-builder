@@ -43,6 +43,7 @@ jobs:
           echo "::set-output name=value::$INSTANCES"
 
       - name: Destroy matching instances
+        if: ${{ steps.instances.outputs.value != '' }}
         env:
           INSTANCES: ${{ steps.instances.outputs.value }}
         run: |
