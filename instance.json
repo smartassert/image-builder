@@ -1,9 +1,0 @@
-{
-  "instances": [
-    {
-      "id": 456,
-      "version": "0.2",
-      "message-queue-size": 7
-    }
-  ]
-}
