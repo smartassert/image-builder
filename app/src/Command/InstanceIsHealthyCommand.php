@@ -2,9 +2,11 @@
 
 namespace App\Command;
 
+use App\Model\CommandOutput\CommandOutput;
 use App\Model\InstanceHealth;
 use App\Model\InstanceServiceAvailabilityInterface;
 use App\Services\CommandExceptionRenderer;
+use App\Services\CommandOutputHandler;
 use App\Services\InstanceClient;
 use App\Services\InstanceRepository;
 use DigitalOceanV2\Exception\ExceptionInterface;
@@ -32,6 +34,7 @@ class InstanceIsHealthyCommand extends Command
         private InstanceRepository $instanceRepository,
         private InstanceClient $instanceClient,
         private CommandExceptionRenderer $commandExceptionRenderer,
+        private CommandOutputHandler $outputHandler,
     ) {
         parent::__construct(null);
     }
@@ -49,6 +52,8 @@ class InstanceIsHealthyCommand extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
+        $this->outputHandler->setOutput($output);
+
         $io = new SymfonyStyle($input, $output);
 
         $id = $this->getIdFromInput($input);
@@ -56,11 +61,17 @@ class InstanceIsHealthyCommand extends Command
         if (null === $id) {
             $presentationId = $input->getOption(self::OPTION_ID);
             if (is_array($presentationId)) {
-                $presentationId = implode(',', $presentationId);
+                $presentationId = 'array: ' . implode(',', $presentationId);
             }
-            $presentationId = (string) $presentationId;
 
-            $io->error('Supplied id "' . $presentationId . '" is invalid');
+            $this->outputHandler->writeError(
+                new CommandOutput(
+                    'id-invalid',
+                    [
+                        'id' => $presentationId,
+                    ]
+                )
+            );
 
             return self::EXIT_CODE_ID_INVALID;
         }
@@ -68,20 +79,30 @@ class InstanceIsHealthyCommand extends Command
         try {
             $instance = $this->instanceRepository->find($id);
             if (null === $instance) {
-                $io->error('Instance with id "' . $id . '" not found');
+                $this->outputHandler->writeError(
+                    new CommandOutput(
+                        'not-found',
+                        [
+                            'id' => $id,
+                        ]
+                    )
+                );
 
                 return self::EXIT_CODE_NOT_FOUND;
             }
 
             $health = $this->instanceClient->getHealth($instance);
             if ($health instanceof InstanceHealth) {
-                foreach ($health->getComponentAvailabilities() as $name => $availability) {
-                    if (InstanceServiceAvailabilityInterface::AVAILABILITY_AVAILABLE === $availability) {
-                        $io->success($name);
-                    } else {
-                        $io->error($name);
-                    }
-                }
+                $isAvailable = $health->isAvailable();
+
+                $outputId = $isAvailable
+                    ? InstanceServiceAvailabilityInterface::AVAILABILITY_AVAILABLE
+                    : InstanceServiceAvailabilityInterface::AVAILABILITY_UNAVAILABLE;
+
+                $this->outputHandler->writeOutput(
+                    $isAvailable,
+                    new CommandOutput($outputId, $health->jsonSerialize())
+                );
 
                 return $health->isAvailable() ? Command::SUCCESS : Command::FAILURE;
             }

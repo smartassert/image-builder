@@ -16,26 +16,20 @@ class CommandOutputHandler
 
     public function writeError(CommandOutput $commandOutput): void
     {
-        $this->output->write(
-            $this->createErrorOutput($commandOutput)
-        );
+        $this->writeOutput(false, $commandOutput);
     }
 
     public function writeSuccess(CommandOutput $commandOutput): void
     {
-        $this->output->write(
-            $this->createSuccessOutput($commandOutput)
-        );
+        $this->writeOutput(true, $commandOutput);
     }
 
-    private function createSuccessOutput(CommandOutput $commandOutput): string
+    public function writeOutput(bool $isSuccessful, CommandOutput $commandOutput): void
     {
-        return $this->createJsonOutput('success', $commandOutput);
-    }
-
-    private function createErrorOutput(CommandOutput $commandOutput): string
-    {
-        return $this->createJsonOutput('error', $commandOutput);
+        $this->output->write($this->createJsonOutput(
+            $isSuccessful ? 'success' : 'error',
+            $commandOutput
+        ));
     }
 
     /**

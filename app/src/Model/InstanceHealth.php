@@ -2,7 +2,7 @@
 
 namespace App\Model;
 
-class InstanceHealth
+class InstanceHealth implements \JsonSerializable
 {
     /**
      * @var array<string, InstanceServiceAvailabilityInterface::AVAILABILITY_*>
@@ -43,6 +43,14 @@ class InstanceHealth
      * @return array<string, InstanceServiceAvailabilityInterface::AVAILABILITY_*>
      */
     public function getComponentAvailabilities(): array
+    {
+        return $this->componentAvailabilities;
+    }
+
+    /**
+     * @return array<string, InstanceServiceAvailabilityInterface::AVAILABILITY_*>
+     */
+    public function jsonSerialize(): array
     {
         return $this->componentAvailabilities;
     }
