@@ -49,6 +49,6 @@ jobs:
           INSTANCE_IDS: ${{ steps.instances.outputs.ids }}
         run: |
           for ID in $INSTANCE_IDS; do
-            echo -n "Destroying $ID ... "
+            echo "Destroying $ID ... "
             php app/bin/console app:instance:destroy --id=$ID
           done
