@@ -39,6 +39,7 @@ jobs:
           IP: ${{ steps.ip.outputs.value }}
         run: |
           INSTANCES=$(php app/bin/console app:instance:list --with-empty-message-queue --without-ip=$IP)
+          INSTANCES="{\"instances\":[{\"id\": 456,\"version\": \"0.2\",\"message-queue-size\": 7},{\"id\": 789,\"version\": \"0.3\",\"message-queue-size\": 0}]}"
           INSTANCE_IDS=$(echo $INSTANCES | jq ".instances[] | .id")
 
           echo "::set-output name=ids::$INSTANCE_IDS"
