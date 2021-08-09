@@ -3,13 +3,14 @@
 namespace App\Tests\Functional\Command;
 
 use App\Command\InstanceIsHealthyCommand;
+use App\Model\InstanceServiceAvailabilityInterface;
 use App\Tests\Services\HttpResponseFactory;
 use DigitalOceanV2\Exception\RuntimeException;
 use GuzzleHttp\Handler\MockHandler;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
+use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Output\BufferedOutput;
-use Symfony\Component\Console\Output\NullOutput;
 
 class InstanceIsHealthyCommandTest extends KernelTestCase
 {
@@ -88,7 +89,8 @@ class InstanceIsHealthyCommandTest extends KernelTestCase
     public function testExecuteSuccess(
         array $input,
         array $httpResponseDataCollection,
-        int $expectedReturnCode
+        int $expectedReturnCode,
+        string $expectedOutput
     ): void {
         foreach ($httpResponseDataCollection as $httpResponseData) {
             $this->mockHandler->append(
@@ -96,9 +98,12 @@ class InstanceIsHealthyCommandTest extends KernelTestCase
             );
         }
 
-        $commandReturnCode = $this->command->run(new ArrayInput($input), new NullOutput());
+        $output = new BufferedOutput();
+
+        $commandReturnCode = $this->command->run(new ArrayInput($input), $output);
 
         self::assertSame($expectedReturnCode, $commandReturnCode);
+        self::assertJsonStringEqualsJsonString($expectedOutput, $output->fetch());
     }
 
     /**
@@ -111,6 +116,14 @@ class InstanceIsHealthyCommandTest extends KernelTestCase
                 'input' => [],
                 'httpResponseDataCollection' => [],
                 'expectedReturnCode' => InstanceIsHealthyCommand::EXIT_CODE_ID_INVALID,
+                'expectedOutput' => (string) json_encode([
+                    'error' => [
+                        'id' => 'id-invalid',
+                        'context' => [
+                            'id' => null,
+                        ],
+                    ],
+                ]),
             ],
             'id invalid, not numeric' => [
                 'input' => [
@@ -118,6 +131,14 @@ class InstanceIsHealthyCommandTest extends KernelTestCase
                 ],
                 'httpResponseDataCollection' => [],
                 'expectedReturnCode' => InstanceIsHealthyCommand::EXIT_CODE_ID_INVALID,
+                'expectedOutput' => (string) json_encode([
+                    'error' => [
+                        'id' => 'id-invalid',
+                        'context' => [
+                            'id' => 'not-numeric',
+                        ],
+                    ],
+                ]),
             ],
             'not found' => [
                 'input' => [
@@ -129,6 +150,14 @@ class InstanceIsHealthyCommandTest extends KernelTestCase
                     ],
                 ],
                 'expectedReturnCode' => InstanceIsHealthyCommand::EXIT_CODE_NOT_FOUND,
+                'expectedOutput' => (string) json_encode([
+                    'error' => [
+                        'id' => 'not-found',
+                        'context' => [
+                            'id' => 123,
+                        ],
+                    ],
+                ]),
             ],
             'not healthy' => [
                 'input' => [
@@ -158,7 +187,17 @@ class InstanceIsHealthyCommandTest extends KernelTestCase
                         ]),
                     ],
                 ],
-                'expectedReturnCode' => InstanceIsHealthyCommand::FAILURE,
+                'expectedReturnCode' => Command::FAILURE,
+                'expectedOutput' => (string) json_encode([
+                    'error' => [
+                        'id' => InstanceServiceAvailabilityInterface::AVAILABILITY_UNAVAILABLE,
+                        'context' => [
+                            'service1' => InstanceServiceAvailabilityInterface::AVAILABILITY_UNAVAILABLE,
+                            'service2' => InstanceServiceAvailabilityInterface::AVAILABILITY_AVAILABLE,
+                            'service3' => InstanceServiceAvailabilityInterface::AVAILABILITY_AVAILABLE,
+                        ],
+                    ],
+                ]),
             ],
             'healthy' => [
                 'input' => [
@@ -188,7 +227,17 @@ class InstanceIsHealthyCommandTest extends KernelTestCase
                         ]),
                     ],
                 ],
-                'expectedReturnCode' => InstanceIsHealthyCommand::SUCCESS,
+                'expectedReturnCode' => Command::SUCCESS,
+                'expectedOutput' => (string) json_encode([
+                    'success' => [
+                        'id' => InstanceServiceAvailabilityInterface::AVAILABILITY_AVAILABLE,
+                        'context' => [
+                            'service1' => InstanceServiceAvailabilityInterface::AVAILABILITY_AVAILABLE,
+                            'service2' => InstanceServiceAvailabilityInterface::AVAILABILITY_AVAILABLE,
+                            'service3' => InstanceServiceAvailabilityInterface::AVAILABILITY_AVAILABLE,
+                        ],
+                    ],
+                ]),
             ],
         ];
     }
