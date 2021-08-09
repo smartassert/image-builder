@@ -206,7 +206,9 @@ class InstanceListCommandTest extends KernelTestCase
                     ],
                 ],
                 'expectedReturnCode' => Command::SUCCESS,
-                'expectedOutput' => '[]',
+                'expectedOutput' => (string) json_encode([
+                    'instances' => [],
+                ]),
             ],
             'single instance' => [
                 'input' => [],
@@ -229,7 +231,9 @@ class InstanceListCommandTest extends KernelTestCase
                 ],
                 'expectedReturnCode' => Command::SUCCESS,
                 'expectedOutput' => (string) json_encode([
-                    $expectedOutputData[0],
+                    'instances' => [
+                        $expectedOutputData[0],
+                    ],
                 ]),
             ],
             'many instances, no filter' => [
@@ -237,9 +241,11 @@ class InstanceListCommandTest extends KernelTestCase
                 'httpResponseDataCollection' => $collectionHttpResponses,
                 'expectedReturnCode' => Command::SUCCESS,
                 'expectedOutput' => (string) json_encode([
-                    $expectedOutputData[0],
-                    $expectedOutputData[1],
-                    $expectedOutputData[2],
+                    'instances' => [
+                        $expectedOutputData[0],
+                        $expectedOutputData[1],
+                        $expectedOutputData[2],
+                    ],
                 ]),
             ],
             'many instances, --with-empty-message-queue-size' => [
@@ -271,7 +277,9 @@ class InstanceListCommandTest extends KernelTestCase
                 ],
                 'expectedReturnCode' => Command::SUCCESS,
                 'expectedOutput' => (string) json_encode([
-                    $expectedOutputData[2],
+                    'instances' => [
+                        $expectedOutputData[2],
+                    ],
                 ]),
             ],
             'many instances, --without-ip' => [
@@ -281,8 +289,10 @@ class InstanceListCommandTest extends KernelTestCase
                 'httpResponseDataCollection' => $collectionHttpResponses,
                 'expectedReturnCode' => Command::SUCCESS,
                 'expectedOutput' => (string) json_encode([
-                    $expectedOutputData[1],
-                    $expectedOutputData[2],
+                    'instances' => [
+                        $expectedOutputData[1],
+                        $expectedOutputData[2],
+                    ],
                 ]),
             ],
             'many instances, , --with-empty-message-queue-size, --without-ip' => [
@@ -293,7 +303,9 @@ class InstanceListCommandTest extends KernelTestCase
                 'httpResponseDataCollection' => $collectionHttpResponses,
                 'expectedReturnCode' => Command::SUCCESS,
                 'expectedOutput' => (string) json_encode([
-                    $expectedOutputData[2],
+                    'instances' => [
+                        $expectedOutputData[2],
+                    ],
                 ]),
             ],
         ];

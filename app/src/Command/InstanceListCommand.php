@@ -77,11 +77,9 @@ class InstanceListCommand extends Command
             ];
         }
 
-        $prettyPrint = $input->getOption(self::OPTION_WITH_EMPTY_MESSAGE_QUEUE);
-        $prettyPrint = is_scalar($prettyPrint) && $prettyPrint;
-        $jsonEncodeFlags = $prettyPrint ? JSON_PRETTY_PRINT : 0;
-
-        $output->write((string) json_encode($collectionData, $jsonEncodeFlags));
+        $output->write((string) json_encode([
+            'instances' => $collectionData,
+        ]));
 
         return Command::SUCCESS;
     }
