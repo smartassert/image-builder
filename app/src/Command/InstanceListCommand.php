@@ -5,7 +5,6 @@ namespace App\Command;
 use App\Model\InstanceCollection;
 use App\Model\InstanceMatcher\InstanceEmptyMessageQueueMatcher;
 use App\Model\InstanceMatcher\InstanceNotHasIpMatcher;
-use App\Services\CommandExceptionRenderer;
 use App\Services\InstanceCollectionHydrator;
 use App\Services\InstanceRepository;
 use DigitalOceanV2\Exception\ExceptionInterface;
@@ -14,7 +13,6 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Style\SymfonyStyle;
 
 #[AsCommand(
     name: InstanceListCommand::NAME,
@@ -29,7 +27,6 @@ class InstanceListCommand extends Command
     public function __construct(
         private InstanceRepository $instanceRepository,
         private InstanceCollectionHydrator $instanceCollectionHydrator,
-        private CommandExceptionRenderer $commandExceptionRenderer,
         string $name = null,
     ) {
         parent::__construct($name);
@@ -68,14 +65,7 @@ class InstanceListCommand extends Command
             $withoutIp = null;
         }
 
-        try {
-            $instances = $this->findInstances($withEmptyMessageQueue, $withoutIp);
-        } catch (ExceptionInterface $e) {
-            $io = new SymfonyStyle($input, $output);
-            $io->error($this->commandExceptionRenderer->render($e));
-
-            throw $e;
-        }
+        $instances = $this->findInstances($withEmptyMessageQueue, $withoutIp);
 
         $collectionData = [];
 
