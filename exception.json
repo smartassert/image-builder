@@ -1,0 +1,8 @@
+{
+  "exception": {
+    "class": "DigitalOceanV2\\Exception\\RuntimeException",
+    "message": "Unable to authenticate you",
+    "relative-path": "vendor\/toin0u\/digitalocean-v2\/src\/HttpClient\/Plugin\/ExceptionThrower.php",
+    "line": 79
+  }
+}
