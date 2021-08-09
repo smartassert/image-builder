@@ -30,7 +30,7 @@ jobs:
 
       - name: Get floating IP
         id: ip
-        run: echo "::set-output name=value::test-value"
+        run: echo "::set-output name=value::$(php app/bin/console app:ip:get)"
 
       - name: Get list of instances to destroy
         id: instances
