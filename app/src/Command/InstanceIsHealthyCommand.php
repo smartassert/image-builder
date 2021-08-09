@@ -3,7 +3,6 @@
 namespace App\Command;
 
 use App\Model\CommandOutput\CommandOutput;
-use App\Model\InstanceHealth;
 use App\Model\InstanceServiceAvailabilityInterface;
 use App\Services\CommandOutputHandler;
 use App\Services\InstanceClient;
@@ -89,24 +88,18 @@ class InstanceIsHealthyCommand extends Command
         }
 
         $health = $this->instanceClient->getHealth($instance);
-        if ($health instanceof InstanceHealth) {
-            $isAvailable = $health->isAvailable();
+        $isAvailable = $health->isAvailable();
 
-            $outputId = $isAvailable
-                ? InstanceServiceAvailabilityInterface::AVAILABILITY_AVAILABLE
-                : InstanceServiceAvailabilityInterface::AVAILABILITY_UNAVAILABLE;
+        $outputId = $isAvailable
+            ? InstanceServiceAvailabilityInterface::AVAILABILITY_AVAILABLE
+            : InstanceServiceAvailabilityInterface::AVAILABILITY_UNAVAILABLE;
 
-            $this->outputHandler->writeOutput(
-                $isAvailable,
-                new CommandOutput($outputId, $health->jsonSerialize())
-            );
+        $this->outputHandler->writeOutput(
+            $isAvailable,
+            new CommandOutput($outputId, $health->jsonSerialize())
+        );
 
-            return $health->isAvailable() ? Command::SUCCESS : Command::FAILURE;
-        }
-
-        $io->error('Instance health check failed');
-
-        return Command::FAILURE;
+        return $health->isAvailable() ? Command::SUCCESS : Command::FAILURE;
     }
 
     private function getIdFromInput(InputInterface $input): ?int
