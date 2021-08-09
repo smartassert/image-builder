@@ -87,10 +87,6 @@ services:
                     - '%instance_collection_tag%'
                     - '%instance_tag%'
 
-    App\Services\CommandExceptionRenderer:
-        arguments:
-            $projectDirectory: '%kernel.project_dir%'
-
     App\Services\InstanceRepository:
         arguments:
             $instanceCollectionTag: '%instance_collection_tag%'
