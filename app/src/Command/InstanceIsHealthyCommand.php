@@ -5,7 +5,6 @@ namespace App\Command;
 use App\Model\CommandOutput\CommandOutput;
 use App\Model\InstanceHealth;
 use App\Model\InstanceServiceAvailabilityInterface;
-use App\Services\CommandExceptionRenderer;
 use App\Services\CommandOutputHandler;
 use App\Services\InstanceClient;
 use App\Services\InstanceRepository;
@@ -33,7 +32,6 @@ class InstanceIsHealthyCommand extends Command
     public function __construct(
         private InstanceRepository $instanceRepository,
         private InstanceClient $instanceClient,
-        private CommandExceptionRenderer $commandExceptionRenderer,
         private CommandOutputHandler $outputHandler,
     ) {
         parent::__construct(null);
@@ -76,40 +74,34 @@ class InstanceIsHealthyCommand extends Command
             return self::EXIT_CODE_ID_INVALID;
         }
 
-        try {
-            $instance = $this->instanceRepository->find($id);
-            if (null === $instance) {
-                $this->outputHandler->writeError(
-                    new CommandOutput(
-                        'not-found',
-                        [
-                            'id' => $id,
-                        ]
-                    )
-                );
+        $instance = $this->instanceRepository->find($id);
+        if (null === $instance) {
+            $this->outputHandler->writeError(
+                new CommandOutput(
+                    'not-found',
+                    [
+                        'id' => $id,
+                    ]
+                )
+            );
 
-                return self::EXIT_CODE_NOT_FOUND;
-            }
+            return self::EXIT_CODE_NOT_FOUND;
+        }
 
-            $health = $this->instanceClient->getHealth($instance);
-            if ($health instanceof InstanceHealth) {
-                $isAvailable = $health->isAvailable();
+        $health = $this->instanceClient->getHealth($instance);
+        if ($health instanceof InstanceHealth) {
+            $isAvailable = $health->isAvailable();
 
-                $outputId = $isAvailable
-                    ? InstanceServiceAvailabilityInterface::AVAILABILITY_AVAILABLE
-                    : InstanceServiceAvailabilityInterface::AVAILABILITY_UNAVAILABLE;
+            $outputId = $isAvailable
+                ? InstanceServiceAvailabilityInterface::AVAILABILITY_AVAILABLE
+                : InstanceServiceAvailabilityInterface::AVAILABILITY_UNAVAILABLE;
 
-                $this->outputHandler->writeOutput(
-                    $isAvailable,
-                    new CommandOutput($outputId, $health->jsonSerialize())
-                );
+            $this->outputHandler->writeOutput(
+                $isAvailable,
+                new CommandOutput($outputId, $health->jsonSerialize())
+            );
 
-                return $health->isAvailable() ? Command::SUCCESS : Command::FAILURE;
-            }
-        } catch (ClientExceptionInterface | ExceptionInterface $exception) {
-            $io->error($this->commandExceptionRenderer->render($exception));
-
-            throw $exception;
+            return $health->isAvailable() ? Command::SUCCESS : Command::FAILURE;
         }
 
         $io->error('Instance health check failed');
