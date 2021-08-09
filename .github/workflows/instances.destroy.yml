@@ -30,15 +30,24 @@ jobs:
 
       - name: Get floating IP
         id: ip
-        run: |
-          echo "::set-output name=value::$(php app/bin/console app:ip:get)"
+        run: echo "::set-output name=value::$(php app/bin/console app:ip:get)"
 
-      - name: Step to run if has IP
+      - name: Get list of instances to destroy
+        id: instances
         if: ${{ steps.ip.outputs.value != '' }}
+        env:
+          IP: ${{ steps.ip.outputs.value }}
         run: |
-          echo "has IP!"
+          INSTANCES=$(php app/bin/console app:instance:list --with-empty-message-queue --without-ip=$IP)
+          INSTANCE_IDS=$(echo $INSTANCES | jq ".instances[] | .id")
 
-      - name: Step to run if not has IP
-        if: ${{ steps.ip.outputs.value == '' }}
+          echo "::set-output name=ids::$INSTANCE_IDS"
+
+      - name: Destroy matching instances
+        env:
+          INSTANCE_IDS: ${{ steps.instances.outputs.ids }}
         run: |
-          echo "no IP!"
+          for ID in $INSTANCE_IDS; do
+            echo -n "Destroying $ID ... "
+            php app/bin/console app:instance:destroy --id=$ID
+          done
