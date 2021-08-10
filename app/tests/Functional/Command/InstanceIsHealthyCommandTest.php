@@ -117,11 +117,10 @@ class InstanceIsHealthyCommandTest extends KernelTestCase
                 'httpResponseDataCollection' => [],
                 'expectedReturnCode' => InstanceIsHealthyCommand::EXIT_CODE_ID_INVALID,
                 'expectedOutput' => (string) json_encode([
-                    'error' => [
-                        'id' => 'id-invalid',
-                        'context' => [
-                            'id' => null,
-                        ],
+                    'status' => 'error',
+                    'id' => 'id-invalid',
+                    'context' => [
+                        'id' => null,
                     ],
                 ]),
             ],
@@ -132,11 +131,10 @@ class InstanceIsHealthyCommandTest extends KernelTestCase
                 'httpResponseDataCollection' => [],
                 'expectedReturnCode' => InstanceIsHealthyCommand::EXIT_CODE_ID_INVALID,
                 'expectedOutput' => (string) json_encode([
-                    'error' => [
-                        'id' => 'id-invalid',
-                        'context' => [
-                            'id' => 'not-numeric',
-                        ],
+                    'status' => 'error',
+                    'id' => 'id-invalid',
+                    'context' => [
+                        'id' => 'not-numeric',
                     ],
                 ]),
             ],
@@ -151,11 +149,10 @@ class InstanceIsHealthyCommandTest extends KernelTestCase
                 ],
                 'expectedReturnCode' => InstanceIsHealthyCommand::EXIT_CODE_NOT_FOUND,
                 'expectedOutput' => (string) json_encode([
-                    'error' => [
-                        'id' => 'not-found',
-                        'context' => [
-                            'id' => 123,
-                        ],
+                    'status' => 'error',
+                    'id' => 'not-found',
+                    'context' => [
+                        'id' => 123,
                     ],
                 ]),
             ],
@@ -185,9 +182,8 @@ class InstanceIsHealthyCommandTest extends KernelTestCase
                 ],
                 'expectedReturnCode' => Command::FAILURE,
                 'expectedOutput' => (string) json_encode([
-                    'error' => [
-                        'id' => 'unavailable',
-                    ],
+                    'status' => 'success',
+                    'id' => 'unavailable',
                 ]),
             ],
             'not healthy' => [
@@ -220,13 +216,12 @@ class InstanceIsHealthyCommandTest extends KernelTestCase
                 ],
                 'expectedReturnCode' => Command::FAILURE,
                 'expectedOutput' => (string) json_encode([
-                    'error' => [
-                        'id' => InstanceServiceAvailabilityInterface::AVAILABILITY_UNAVAILABLE,
-                        'context' => [
-                            'service1' => InstanceServiceAvailabilityInterface::AVAILABILITY_UNAVAILABLE,
-                            'service2' => InstanceServiceAvailabilityInterface::AVAILABILITY_AVAILABLE,
-                            'service3' => InstanceServiceAvailabilityInterface::AVAILABILITY_AVAILABLE,
-                        ],
+                    'status' => 'success',
+                    'id' => InstanceServiceAvailabilityInterface::AVAILABILITY_UNAVAILABLE,
+                    'context' => [
+                        'service1' => InstanceServiceAvailabilityInterface::AVAILABILITY_UNAVAILABLE,
+                        'service2' => InstanceServiceAvailabilityInterface::AVAILABILITY_AVAILABLE,
+                        'service3' => InstanceServiceAvailabilityInterface::AVAILABILITY_AVAILABLE,
                     ],
                 ]),
             ],
@@ -260,13 +255,12 @@ class InstanceIsHealthyCommandTest extends KernelTestCase
                 ],
                 'expectedReturnCode' => Command::SUCCESS,
                 'expectedOutput' => (string) json_encode([
-                    'success' => [
-                        'id' => InstanceServiceAvailabilityInterface::AVAILABILITY_AVAILABLE,
-                        'context' => [
-                            'service1' => InstanceServiceAvailabilityInterface::AVAILABILITY_AVAILABLE,
-                            'service2' => InstanceServiceAvailabilityInterface::AVAILABILITY_AVAILABLE,
-                            'service3' => InstanceServiceAvailabilityInterface::AVAILABILITY_AVAILABLE,
-                        ],
+                    'status' => 'success',
+                    'id' => InstanceServiceAvailabilityInterface::AVAILABILITY_AVAILABLE,
+                    'context' => [
+                        'service1' => InstanceServiceAvailabilityInterface::AVAILABILITY_AVAILABLE,
+                        'service2' => InstanceServiceAvailabilityInterface::AVAILABILITY_AVAILABLE,
+                        'service3' => InstanceServiceAvailabilityInterface::AVAILABILITY_AVAILABLE,
                     ],
                 ]),
             ],

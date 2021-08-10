@@ -50,8 +50,8 @@ class IpAssignCommand extends Command
 
         $instance = $this->instanceRepository->findCurrent();
         if (null === $instance) {
-            $this->outputHandler->writeError(
-                new CommandOutput('no-instance')
+            $this->outputHandler->writeOutput(
+                CommandOutput::createError('no-instance')
             );
 
             return self::EXIT_CODE_NO_CURRENT_INSTANCE;
@@ -59,7 +59,9 @@ class IpAssignCommand extends Command
 
         $assignedIp = $this->floatingIpRepository->find();
         if (null === $assignedIp) {
-            $this->outputHandler->writeError(new CommandOutput('no-ip'));
+            $this->outputHandler->writeOutput(
+                CommandOutput::createError('no-ip')
+            );
 
             return self::EXIT_CODE_NO_IP;
         }
@@ -69,14 +71,16 @@ class IpAssignCommand extends Command
         $targetInstanceId = $instance->getId();
 
         if ($instance->hasIp($ip)) {
-            $this->outputHandler->writeSuccess(new CommandOutput(
-                'already-assigned',
-                [
-                    'ip' => $ip,
-                    'source-instance' => $targetInstanceId,
-                    'target-instance' => $targetInstanceId,
-                ]
-            ));
+            $this->outputHandler->writeOutput(
+                CommandOutput::createSuccess(
+                    'already-assigned',
+                    [
+                        'ip' => $ip,
+                        'source-instance' => $targetInstanceId,
+                        'target-instance' => $targetInstanceId,
+                    ]
+                )
+            );
 
             return Command::SUCCESS;
         }
@@ -97,26 +101,30 @@ class IpAssignCommand extends Command
                 $this->assignmentRetryInSeconds * self::MICROSECONDS_PER_SECOND
             );
 
-            $this->outputHandler->writeSuccess(new CommandOutput(
-                're-assigned',
-                [
-                    'ip' => $ip,
-                    'source-instance' => $sourceInstanceId,
-                    'target-instance' => $targetInstanceId,
-                ]
-            ));
+            $this->outputHandler->writeOutput(
+                CommandOutput::createSuccess(
+                    're-assigned',
+                    [
+                        'ip' => $ip,
+                        'source-instance' => $sourceInstanceId,
+                        'target-instance' => $targetInstanceId,
+                    ]
+                )
+            );
 
             return Command::SUCCESS;
         } catch (ActionTimeoutException) {
-            $this->outputHandler->writeError(new CommandOutput(
-                'assignment-timed-out',
-                [
-                    'ip' => $ip,
-                    'source-instance' => $sourceInstanceId,
-                    'target-instance' => $targetInstanceId,
-                    'timeout-in-seconds' => $this->assigmentTimeoutInSeconds,
-                ]
-            ));
+            $this->outputHandler->writeOutput(
+                CommandOutput::createError(
+                    'assignment-timed-out',
+                    [
+                        'ip' => $ip,
+                        'source-instance' => $sourceInstanceId,
+                        'target-instance' => $targetInstanceId,
+                        'timeout-in-seconds' => $this->assigmentTimeoutInSeconds,
+                    ]
+                )
+            );
 
             return self::EXIT_CODE_ASSIGNMENT_TIMED_OUT;
         }

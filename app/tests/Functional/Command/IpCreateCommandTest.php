@@ -7,6 +7,7 @@ use App\Tests\Services\DropletDataFactory;
 use App\Tests\Services\HttpResponseFactory;
 use GuzzleHttp\Handler\MockHandler;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
+use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Output\BufferedOutput;
 
@@ -89,9 +90,8 @@ class IpCreateCommandTest extends KernelTestCase
                 ],
                 'expectedExitCode' => IpCreateCommand::EXIT_CODE_NO_CURRENT_INSTANCE,
                 'expectedOutput' => (string) json_encode([
-                    'error' => [
-                        'id' => 'no-instance',
-                    ],
+                    'status' => 'error',
+                    'id' => 'no-instance',
                 ]),
             ],
             'ip already exists' => [
@@ -131,11 +131,10 @@ class IpCreateCommandTest extends KernelTestCase
                 ],
                 'expectedExitCode' => IpCreateCommand::EXIT_CODE_HAS_IP,
                 'expectedOutput' => (string) json_encode([
-                    'error' => [
-                        'id' => 'has-ip',
-                        'context' => [
-                            'ip' => '127.0.0.200',
-                        ],
+                    'status' => 'error',
+                    'id' => 'has-ip',
+                    'context' => [
+                        'ip' => '127.0.0.200',
                     ],
                 ]),
             ],
@@ -184,14 +183,13 @@ class IpCreateCommandTest extends KernelTestCase
                         ]),
                     ],
                 ],
-                'expectedExitCode' => IpCreateCommand::SUCCESS,
+                'expectedExitCode' => Command::SUCCESS,
                 'expectedOutput' => (string) json_encode([
-                    'success' => [
-                        'id' => 'created',
-                        'context' => [
-                            'ip' => '127.0.0.100',
-                            'target-instance' => 123,
-                        ],
+                    'status' => 'success',
+                    'id' => 'created',
+                    'context' => [
+                        'ip' => '127.0.0.100',
+                        'target-instance' => 123,
                     ],
                 ]),
             ],
