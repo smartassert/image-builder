@@ -50,7 +50,7 @@ class IpAssignCommand extends Command
 
         $instance = $this->instanceRepository->findCurrent();
         if (null === $instance) {
-            $this->outputHandler->fooWriteOutput(
+            $this->outputHandler->writeOutput(
                 CommandOutput::createError('no-instance')
             );
 
@@ -59,7 +59,7 @@ class IpAssignCommand extends Command
 
         $assignedIp = $this->floatingIpRepository->find();
         if (null === $assignedIp) {
-            $this->outputHandler->fooWriteOutput(
+            $this->outputHandler->writeOutput(
                 CommandOutput::createError('no-ip')
             );
 
@@ -71,7 +71,7 @@ class IpAssignCommand extends Command
         $targetInstanceId = $instance->getId();
 
         if ($instance->hasIp($ip)) {
-            $this->outputHandler->fooWriteOutput(
+            $this->outputHandler->writeOutput(
                 CommandOutput::createSuccess(
                     'already-assigned',
                     [
@@ -101,7 +101,7 @@ class IpAssignCommand extends Command
                 $this->assignmentRetryInSeconds * self::MICROSECONDS_PER_SECOND
             );
 
-            $this->outputHandler->fooWriteOutput(
+            $this->outputHandler->writeOutput(
                 CommandOutput::createSuccess(
                     're-assigned',
                     [
@@ -114,7 +114,7 @@ class IpAssignCommand extends Command
 
             return Command::SUCCESS;
         } catch (ActionTimeoutException) {
-            $this->outputHandler->fooWriteOutput(
+            $this->outputHandler->writeOutput(
                 CommandOutput::createError(
                     'assignment-timed-out',
                     [

@@ -58,7 +58,7 @@ class InstanceIsHealthyCommand extends Command
                 $presentationId = 'array: ' . implode(',', $presentationId);
             }
 
-            $this->outputHandler->fooWriteOutput(
+            $this->outputHandler->writeOutput(
                 CommandOutput::createError('id-invalid', ['id' => $presentationId])
             );
 
@@ -67,7 +67,7 @@ class InstanceIsHealthyCommand extends Command
 
         $instance = $this->instanceRepository->find($id);
         if (null === $instance) {
-            $this->outputHandler->fooWriteOutput(
+            $this->outputHandler->writeOutput(
                 CommandOutput::createError('not-found', ['id' => $id])
             );
 
@@ -76,7 +76,7 @@ class InstanceIsHealthyCommand extends Command
 
         $health = $this->instanceClient->getHealth($instance);
 
-        $this->outputHandler->fooWriteOutput(
+        $this->outputHandler->writeOutput(
             CommandOutput::createSuccess(
                 $health->isAvailable()
                     ? InstanceServiceAvailabilityInterface::AVAILABILITY_AVAILABLE

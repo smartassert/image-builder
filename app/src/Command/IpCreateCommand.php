@@ -47,7 +47,7 @@ class IpCreateCommand extends Command
 
         $instance = $this->instanceRepository->findCurrent();
         if (null === $instance) {
-            $this->outputHandler->fooWriteOutput(
+            $this->outputHandler->writeOutput(
                 CommandOutput::createError(
                     'no-instance',
                 )
@@ -60,7 +60,7 @@ class IpCreateCommand extends Command
 
         $assignedIp = $this->floatingIpRepository->find();
         if ($assignedIp instanceof AssignedIp) {
-            $this->outputHandler->fooWriteOutput(
+            $this->outputHandler->writeOutput(
                 CommandOutput::createError(
                     'has-ip',
                     [
@@ -88,7 +88,7 @@ class IpCreateCommand extends Command
             $this->assignmentRetryInSeconds * self::MICROSECONDS_PER_SECOND
         );
 
-        $this->outputHandler->fooWriteOutput(
+        $this->outputHandler->writeOutput(
             CommandOutput::createSuccess(
                 'created',
                 [
