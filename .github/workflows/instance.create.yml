@@ -2,9 +2,12 @@ name: Create instance
 
 on:
   workflow_dispatch:
+  pull_request:
+    branches:
+      - github-49
 
 jobs:
-  commit:
+  create:
     name: Create instance
     runs-on: ubuntu-latest
     env:
@@ -35,13 +38,23 @@ jobs:
       - name: Check snapshot exists
         env:
           WORKER_MANAGER_IMAGE: ${{ steps.worker-manager-image.outputs.id }}
-        run: |
-          cd app
-          php bin/console app:snapshot:exists --expect-exists 1
+        run: php app/bin/console app:snapshot:exists --expect-exists 1
 
       - name: Create
+        id: instance
         env:
           WORKER_MANAGER_IMAGE: ${{ steps.worker-manager-image.outputs.id }}
         run: |
-          cd app
-          php bin/console app:instance:create
+          CREATE_OUTPUT=$(php app/bin/console app:instance:create)
+          echo "::set-output name=id::$(echo $CREATE_OUTPUT | jq ".id")"
+
+      - name: Health check
+        env:
+          COMMAND: "php app/bin/console app:instance:is-healthy --id=${{ steps.instance.outputs.id }}"
+        run: ./.github/workflows/execute-command-output-json.sh
+
+      - name: Remove instance if health check failed
+        if:  ${{ failure() }}
+        env:
+          INSTANCE_ID: ${{ steps.instance.outputs.id }}
+        run: php app/bin/console app:instance:destroy --id=$INSTANCE_ID
