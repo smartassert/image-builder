@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-JSON_OUTPUT=$(php app/bin/console app:ip:assign)
+JSON_OUTPUT=$($COMMAND)
 EXIT_CODE=$?
 
 echo $JSON_OUTPUT | jq "."
