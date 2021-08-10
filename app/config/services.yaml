@@ -6,7 +6,7 @@
 parameters:
     instance_collection_tag: '%env(DIGITALOCEAN_DROPLET_TAG)%'
     worker_manager_image: '%env(WORKER_MANAGER_IMAGE)%'
-    instance_tag: '%instance_collection_tag%-%env(WORKER_MANAGER_VERSION)%'
+    instance_tag: '%instance_collection_tag%-%worker_manager_image%'
     ip_create_assignment_timeout_in_seconds: '%env(IP_CREATE_ASSIGNMENT_TIMEOUT_IN_SECONDS)%'
     ip_create_assignment_retry_in_seconds: '%env(IP_CREATE_ASSIGNMENT_RETRY_IN_SECONDS)%'
 
