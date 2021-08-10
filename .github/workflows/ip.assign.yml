@@ -32,8 +32,12 @@ jobs:
 
       - name: Re-assign IP if found
         if: ${{ steps.ip.outputs.value != '' }}
-        run: ./.github/workflows/ip.assign.sh
+        env:
+          COMMAND: "php app/bin/console app:ip:assign"
+        run: ./.github/workflows/execute-command-output-json.sh
 
       - name: Create IP if none found
         if: ${{ steps.ip.outputs.value == '' }}
-        run: ./.github/workflows/ip.create.sh
+        env:
+          COMMAND: "php app/bin/console app:ip:create"
+        run: ./.github/workflows/execute-command-output-json.sh
