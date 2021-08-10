@@ -118,10 +118,8 @@ class InstanceIsHealthyCommandTest extends KernelTestCase
                 'expectedReturnCode' => InstanceIsHealthyCommand::EXIT_CODE_ID_INVALID,
                 'expectedOutput' => (string) json_encode([
                     'status' => 'error',
-                    'id' => 'id-invalid',
-                    'context' => [
-                        'id' => null,
-                    ],
+                    'error-code' => 'id-invalid',
+                    'id' => null,
                 ]),
             ],
             'id invalid, not numeric' => [
@@ -132,10 +130,8 @@ class InstanceIsHealthyCommandTest extends KernelTestCase
                 'expectedReturnCode' => InstanceIsHealthyCommand::EXIT_CODE_ID_INVALID,
                 'expectedOutput' => (string) json_encode([
                     'status' => 'error',
-                    'id' => 'id-invalid',
-                    'context' => [
-                        'id' => 'not-numeric',
-                    ],
+                    'error-code' => 'id-invalid',
+                    'id' => 'not-numeric',
                 ]),
             ],
             'not found' => [
@@ -150,10 +146,8 @@ class InstanceIsHealthyCommandTest extends KernelTestCase
                 'expectedReturnCode' => InstanceIsHealthyCommand::EXIT_CODE_NOT_FOUND,
                 'expectedOutput' => (string) json_encode([
                     'status' => 'error',
-                    'id' => 'not-found',
-                    'context' => [
-                        'id' => 123,
-                    ],
+                    'error-code' => 'not-found',
+                    'id' => 123,
                 ]),
             ],
             'found, no health data' => [
@@ -168,7 +162,7 @@ class InstanceIsHealthyCommandTest extends KernelTestCase
                         ],
                         HttpResponseFactory::KEY_BODY => (string) json_encode([
                             'droplet' => [
-                                'id' => 123,
+                                'code' => 123,
                             ],
                         ]),
                     ],
@@ -183,7 +177,8 @@ class InstanceIsHealthyCommandTest extends KernelTestCase
                 'expectedReturnCode' => Command::FAILURE,
                 'expectedOutput' => (string) json_encode([
                     'status' => 'success',
-                    'id' => 'unavailable',
+                    'is-healthy' => false,
+                    'services' => [],
                 ]),
             ],
             'not healthy' => [
@@ -198,7 +193,7 @@ class InstanceIsHealthyCommandTest extends KernelTestCase
                         ],
                         HttpResponseFactory::KEY_BODY => (string) json_encode([
                             'droplet' => [
-                                'id' => 123,
+                                'code' => 123,
                             ],
                         ]),
                     ],
@@ -217,8 +212,8 @@ class InstanceIsHealthyCommandTest extends KernelTestCase
                 'expectedReturnCode' => Command::FAILURE,
                 'expectedOutput' => (string) json_encode([
                     'status' => 'success',
-                    'id' => InstanceServiceAvailabilityInterface::AVAILABILITY_UNAVAILABLE,
-                    'context' => [
+                    'is-healthy' => false,
+                    'services' => [
                         'service1' => InstanceServiceAvailabilityInterface::AVAILABILITY_UNAVAILABLE,
                         'service2' => InstanceServiceAvailabilityInterface::AVAILABILITY_AVAILABLE,
                         'service3' => InstanceServiceAvailabilityInterface::AVAILABILITY_AVAILABLE,
@@ -237,7 +232,7 @@ class InstanceIsHealthyCommandTest extends KernelTestCase
                         ],
                         HttpResponseFactory::KEY_BODY => (string) json_encode([
                             'droplet' => [
-                                'id' => 123,
+                                'code' => 123,
                             ],
                         ]),
                     ],
@@ -256,8 +251,8 @@ class InstanceIsHealthyCommandTest extends KernelTestCase
                 'expectedReturnCode' => Command::SUCCESS,
                 'expectedOutput' => (string) json_encode([
                     'status' => 'success',
-                    'id' => InstanceServiceAvailabilityInterface::AVAILABILITY_AVAILABLE,
-                    'context' => [
+                    'is-healthy' => true,
+                    'services' => [
                         'service1' => InstanceServiceAvailabilityInterface::AVAILABILITY_AVAILABLE,
                         'service2' => InstanceServiceAvailabilityInterface::AVAILABILITY_AVAILABLE,
                         'service3' => InstanceServiceAvailabilityInterface::AVAILABILITY_AVAILABLE,

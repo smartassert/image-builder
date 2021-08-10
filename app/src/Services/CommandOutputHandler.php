@@ -2,7 +2,6 @@
 
 namespace App\Services;
 
-use App\Model\CommandOutput\CommandOutput;
 use Symfony\Component\Console\Output\OutputInterface;
 
 class CommandOutputHandler
@@ -14,8 +13,36 @@ class CommandOutputHandler
         $this->output = $output;
     }
 
-    public function writeOutput(CommandOutput $commandOutput): void
+    /**
+     * @param array<mixed> $data
+     */
+    public function createSuccessOutput(array $data = []): void
     {
-        $this->output->write((string) json_encode($commandOutput));
+        $this->createOutput('success', $data);
+    }
+
+    /**
+     * @param array<mixed> $data
+     */
+    public function createErrorOutput(string $errorCode, array $data = []): void
+    {
+        $this->createOutput('error', array_merge(
+            ['error-code' => $errorCode],
+            $data
+        ));
+    }
+
+    /**
+     * @param 'success'|'error' $status
+     * @param array<mixed>      $data
+     */
+    private function createOutput(string $status, array $data = []): void
+    {
+        $this->output->write((string) json_encode(array_merge(
+            [
+                'status' => $status,
+            ],
+            $data
+        )));
     }
 }

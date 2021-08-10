@@ -4,7 +4,6 @@ namespace App\Command;
 
 use App\ActionHandler\ActionHandler;
 use App\Model\AssignedIp;
-use App\Model\CommandOutput\CommandOutput;
 use App\Model\Instance;
 use App\Services\ActionRunner;
 use App\Services\CommandOutputHandler;
@@ -47,11 +46,7 @@ class IpCreateCommand extends Command
 
         $instance = $this->instanceRepository->findCurrent();
         if (null === $instance) {
-            $this->outputHandler->writeOutput(
-                CommandOutput::createError(
-                    'no-instance',
-                )
-            );
+            $this->outputHandler->createErrorOutput('no-instance');
 
             return self::EXIT_CODE_NO_CURRENT_INSTANCE;
         }
@@ -60,14 +55,7 @@ class IpCreateCommand extends Command
 
         $assignedIp = $this->floatingIpRepository->find();
         if ($assignedIp instanceof AssignedIp) {
-            $this->outputHandler->writeOutput(
-                CommandOutput::createError(
-                    'has-ip',
-                    [
-                        'ip' => $assignedIp->getIp(),
-                    ]
-                )
-            );
+            $this->outputHandler->createErrorOutput('has-ip', ['ip' => $assignedIp->getIp()]);
 
             return self::EXIT_CODE_HAS_IP;
         }
@@ -88,15 +76,7 @@ class IpCreateCommand extends Command
             $this->assignmentRetryInSeconds * self::MICROSECONDS_PER_SECOND
         );
 
-        $this->outputHandler->writeOutput(
-            CommandOutput::createSuccess(
-                'created',
-                [
-                    'ip' => $ip,
-                    'target-instance' => $instanceId,
-                ]
-            )
-        );
+        $this->outputHandler->createSuccessOutput(['ip' => $ip, 'target-instance' => $instanceId]);
 
         return Command::SUCCESS;
     }
