@@ -2,6 +2,7 @@
 
 namespace App\Command;
 
+use App\Services\CommandOutputHandler;
 use App\Services\InstanceRepository;
 use DigitalOceanV2\Exception\ExceptionInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -19,6 +20,7 @@ class InstanceCreateCommand extends Command
 
     public function __construct(
         private InstanceRepository $instanceRepository,
+        private CommandOutputHandler $commandOutputHandler,
     ) {
         parent::__construct(null);
     }
@@ -28,12 +30,14 @@ class InstanceCreateCommand extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
+        $this->commandOutputHandler->setOutput($output);
+
         $instance = $this->instanceRepository->findCurrent();
         if (null === $instance) {
             $instance = $this->instanceRepository->create();
         }
 
-        $output->write((string) $instance->getId());
+        $this->commandOutputHandler->createSuccessOutput(['id' => $instance->getId()]);
 
         return Command::SUCCESS;
     }

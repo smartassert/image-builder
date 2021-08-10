@@ -92,7 +92,7 @@ class InstanceCreateCommandTest extends KernelTestCase
         $commandReturnCode = $this->command->run(new ArrayInput($input), $output);
 
         self::assertSame($expectedReturnCode, $commandReturnCode);
-        self::assertSame($expectedOutput, $output->fetch());
+        self::assertJsonStringEqualsJsonString($expectedOutput, $output->fetch());
     }
 
     /**
@@ -112,14 +112,17 @@ class InstanceCreateCommandTest extends KernelTestCase
                         HttpResponseFactory::KEY_BODY => (string) json_encode([
                             'droplets' => [
                                 [
-                                    'id' => 789,
+                                    'id' => 123,
                                 ]
                             ],
                         ]),
                     ],
                 ],
                 'expectedReturnCode' => Command::SUCCESS,
-                'expectedOutput' => '789',
+                'expectedOutput' => (string) json_encode([
+                    'status' => 'success',
+                    'id' => 123,
+                ]),
             ],
             'created' => [
                 'input' => [],
@@ -146,7 +149,10 @@ class InstanceCreateCommandTest extends KernelTestCase
                     ],
                 ],
                 'expectedReturnCode' => Command::SUCCESS,
-                'expectedOutput' => '789',
+                'expectedOutput' => (string) json_encode([
+                    'status' => 'success',
+                    'id' => 789,
+                ]),
             ],
         ];
     }
