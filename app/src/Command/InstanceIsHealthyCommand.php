@@ -2,8 +2,6 @@
 
 namespace App\Command;
 
-use App\Model\CommandOutput\CommandOutput;
-use App\Model\InstanceServiceAvailabilityInterface;
 use App\Services\CommandOutputHandler;
 use App\Services\InstanceClient;
 use App\Services\InstanceRepository;
@@ -58,32 +56,24 @@ class InstanceIsHealthyCommand extends Command
                 $presentationId = 'array: ' . implode(',', $presentationId);
             }
 
-            $this->outputHandler->writeOutput(
-                CommandOutput::createError('id-invalid', ['id' => $presentationId])
-            );
+            $this->outputHandler->createErrorOutput('id-invalid', ['id' => $presentationId]);
 
             return self::EXIT_CODE_ID_INVALID;
         }
 
         $instance = $this->instanceRepository->find($id);
         if (null === $instance) {
-            $this->outputHandler->writeOutput(
-                CommandOutput::createError('not-found', ['id' => $id])
-            );
+            $this->outputHandler->createErrorOutput('not-found', ['id' => $id]);
 
             return self::EXIT_CODE_NOT_FOUND;
         }
 
         $health = $this->instanceClient->getHealth($instance);
 
-        $this->outputHandler->writeOutput(
-            CommandOutput::createSuccess(
-                $health->isAvailable()
-                    ? InstanceServiceAvailabilityInterface::AVAILABILITY_AVAILABLE
-                    : InstanceServiceAvailabilityInterface::AVAILABILITY_UNAVAILABLE,
-                $health->jsonSerialize()
-            )
-        );
+        $this->outputHandler->createSuccessOutput([
+            'is-healthy' => $health->isAvailable(),
+            'services' => $health->jsonSerialize(),
+        ]);
 
         return $health->isAvailable() ? Command::SUCCESS : Command::FAILURE;
     }

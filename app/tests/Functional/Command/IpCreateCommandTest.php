@@ -91,7 +91,7 @@ class IpCreateCommandTest extends KernelTestCase
                 'expectedExitCode' => IpCreateCommand::EXIT_CODE_NO_CURRENT_INSTANCE,
                 'expectedOutput' => (string) json_encode([
                     'status' => 'error',
-                    'id' => 'no-instance',
+                    'error-code' => 'no-instance',
                 ]),
             ],
             'ip already exists' => [
@@ -132,10 +132,8 @@ class IpCreateCommandTest extends KernelTestCase
                 'expectedExitCode' => IpCreateCommand::EXIT_CODE_HAS_IP,
                 'expectedOutput' => (string) json_encode([
                     'status' => 'error',
-                    'id' => 'has-ip',
-                    'context' => [
-                        'ip' => '127.0.0.200',
-                    ],
+                    'error-code' => 'has-ip',
+                    'ip' => '127.0.0.200',
                 ]),
             ],
             'created' => [
@@ -186,11 +184,8 @@ class IpCreateCommandTest extends KernelTestCase
                 'expectedExitCode' => Command::SUCCESS,
                 'expectedOutput' => (string) json_encode([
                     'status' => 'success',
-                    'id' => 'created',
-                    'context' => [
-                        'ip' => '127.0.0.100',
-                        'target-instance' => 123,
-                    ],
+                    'ip' => '127.0.0.100',
+                    'target-instance' => 123,
                 ]),
             ],
         ];

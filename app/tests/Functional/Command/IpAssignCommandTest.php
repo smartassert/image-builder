@@ -88,7 +88,7 @@ class IpAssignCommandTest extends KernelTestCase
                 'expectedExitCode' => IpAssignCommand::EXIT_CODE_NO_CURRENT_INSTANCE,
                 'expectedOutput' => (string) json_encode([
                     'status' => 'error',
-                    'id' => 'no-instance',
+                    'error-code' => 'no-instance',
                 ]),
             ],
             'no ip' => [
@@ -120,7 +120,7 @@ class IpAssignCommandTest extends KernelTestCase
                 'expectedExitCode' => IpAssignCommand::EXIT_CODE_NO_IP,
                 'expectedOutput' => (string) json_encode([
                     'status' => 'error',
-                    'id' => 'no-ip',
+                    'error-code' => 'no-ip',
                 ]),
             ],
             'ip already assigned to current instance' => [
@@ -160,12 +160,10 @@ class IpAssignCommandTest extends KernelTestCase
                 'expectedExitCode' => Command::SUCCESS,
                 'expectedOutput' => (string) json_encode([
                     'status' => 'success',
-                    'id' => 'already-assigned',
-                    'context' => [
-                        'ip' => '127.0.0.200',
-                        'source-instance' => 123,
-                        'target-instance' => 123,
-                    ],
+                    'outcome' => 'already-assigned',
+                    'ip' => '127.0.0.200',
+                    'source-instance' => 123,
+                    'target-instance' => 123,
                 ]),
             ],
             'ip re-assigned' => [
@@ -233,12 +231,10 @@ class IpAssignCommandTest extends KernelTestCase
                 'expectedExitCode' => Command::SUCCESS,
                 'expectedOutput' => (string) json_encode([
                     'status' => 'success',
-                    'id' => 're-assigned',
-                    'context' => [
-                        'ip' => '127.0.0.200',
-                        'source-instance' => 123,
-                        'target-instance' => 456,
-                    ],
+                    'outcome' => 're-assigned',
+                    'ip' => '127.0.0.200',
+                    'source-instance' => 123,
+                    'target-instance' => 456,
                 ]),
             ],
             'assignment timed out' => [
@@ -319,13 +315,11 @@ class IpAssignCommandTest extends KernelTestCase
                 'expectedExitCode' => IpAssignCommand::EXIT_CODE_ASSIGNMENT_TIMED_OUT,
                 'expectedOutput' => (string) json_encode([
                     'status' => 'error',
-                    'id' => 'assignment-timed-out',
-                    'context' => [
-                        'ip' => '127.0.0.200',
-                        'source-instance' => 123,
-                        'target-instance' => 456,
-                        'timeout-in-seconds' => 30,
-                    ],
+                    'error-code' => 'assignment-timed-out',
+                    'ip' => '127.0.0.200',
+                    'source-instance' => 123,
+                    'target-instance' => 456,
+                    'timeout-in-seconds' => 30,
                 ]),
             ],
         ];
