@@ -32,6 +32,11 @@ class CommandOutputHandler
         ));
     }
 
+    public function fooWriteOutput(CommandOutput $commandOutput): void
+    {
+        $this->output->write((string) json_encode($commandOutput));
+    }
+
     /**
      * @param "success"|"error" $type
      */

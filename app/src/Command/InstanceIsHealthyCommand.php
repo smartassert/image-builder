@@ -58,13 +58,8 @@ class InstanceIsHealthyCommand extends Command
                 $presentationId = 'array: ' . implode(',', $presentationId);
             }
 
-            $this->outputHandler->writeError(
-                new CommandOutput(
-                    'id-invalid',
-                    [
-                        'id' => $presentationId,
-                    ]
-                )
+            $this->outputHandler->fooWriteOutput(
+                CommandOutput::createError('id-invalid', ['id' => $presentationId])
             );
 
             return self::EXIT_CODE_ID_INVALID;
@@ -72,28 +67,22 @@ class InstanceIsHealthyCommand extends Command
 
         $instance = $this->instanceRepository->find($id);
         if (null === $instance) {
-            $this->outputHandler->writeError(
-                new CommandOutput(
-                    'not-found',
-                    [
-                        'id' => $id,
-                    ]
-                )
+            $this->outputHandler->fooWriteOutput(
+                CommandOutput::createError('not-found', ['id' => $id])
             );
 
             return self::EXIT_CODE_NOT_FOUND;
         }
 
         $health = $this->instanceClient->getHealth($instance);
-        $isAvailable = $health->isAvailable();
 
-        $outputId = $isAvailable
-            ? InstanceServiceAvailabilityInterface::AVAILABILITY_AVAILABLE
-            : InstanceServiceAvailabilityInterface::AVAILABILITY_UNAVAILABLE;
-
-        $this->outputHandler->writeOutput(
-            $isAvailable,
-            new CommandOutput($outputId, $health->jsonSerialize())
+        $this->outputHandler->fooWriteOutput(
+            CommandOutput::createSuccess(
+                $health->isAvailable()
+                    ? InstanceServiceAvailabilityInterface::AVAILABILITY_AVAILABLE
+                    : InstanceServiceAvailabilityInterface::AVAILABILITY_UNAVAILABLE,
+                $health->jsonSerialize()
+            )
         );
 
         return $health->isAvailable() ? Command::SUCCESS : Command::FAILURE;
