@@ -119,7 +119,6 @@ class InstanceIsHealthyCommandTest extends KernelTestCase
                 'expectedOutput' => (string) json_encode([
                     'status' => 'error',
                     'error-code' => 'id-invalid',
-                    'id' => null,
                 ]),
             ],
             'id invalid, not numeric' => [
@@ -131,7 +130,6 @@ class InstanceIsHealthyCommandTest extends KernelTestCase
                 'expectedOutput' => (string) json_encode([
                     'status' => 'error',
                     'error-code' => 'id-invalid',
-                    'id' => 'not-numeric',
                 ]),
             ],
             'not found' => [
