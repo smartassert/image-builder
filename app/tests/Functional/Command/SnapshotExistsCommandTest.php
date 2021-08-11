@@ -71,13 +71,6 @@ class SnapshotExistsCommandTest extends KernelTestCase
         ];
 
         return [
-            'invalid api token' => [
-                'httpResponseData' => [
-                    HttpResponseFactory::KEY_STATUS_CODE => 401,
-                ],
-                'input' => [],
-                'expectedReturnCode' => Command::INVALID,
-            ],
             'not exists, expect exists (default)' => [
                 'httpResponseData' => $notExistsResponseData,
                 'input' => [],
