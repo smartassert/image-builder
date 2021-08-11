@@ -15,20 +15,3 @@ services:
 
     App\Tests\Services\HttpResponseFactory:
         public: true
-
-    App\Services\InstanceCollectionHydrator:
-        public: true
-
-    App\Services\FloatingIpManager:
-        public: true
-
-    App\Services\ActionRepository:
-        public: true
-
-    App\Services\ImageRepository:
-        public: true
-        arguments:
-            $imageName: '%worker_manager_image%'
-
-    App\Services\ActionRunner:
-        public: true
