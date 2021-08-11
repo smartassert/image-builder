@@ -16,7 +16,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 #[AsCommand(
     name: InstanceListCommand::NAME,
-    description: 'List worker manager instances.',
+    description: 'List instances',
 )]
 class InstanceListCommand extends Command
 {

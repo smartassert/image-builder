@@ -12,7 +12,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 #[AsCommand(
     name: InstanceCreateCommand::NAME,
-    description: 'Create a worker manager instance.',
+    description: 'Create an instance',
 )]
 class InstanceCreateCommand extends Command
 {

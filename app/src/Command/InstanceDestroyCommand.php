@@ -9,7 +9,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 #[AsCommand(
     name: self::NAME,
-    description: 'Destroy an instance.',
+    description: 'Destroy an instance',
 )]
 class InstanceDestroyCommand extends AbstractInstanceActionCommand
 {

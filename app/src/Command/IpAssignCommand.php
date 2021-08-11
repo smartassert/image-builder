@@ -18,7 +18,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 #[AsCommand(
     name: IpAssignCommand::NAME,
-    description: 'Add a short description for your command',
+    description: 'Assign current floating IP to current instance',
 )]
 class IpAssignCommand extends Command
 {

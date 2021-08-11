@@ -17,7 +17,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 #[AsCommand(
     name: IpCreateCommand::NAME,
-    description: 'Create a new floating IP for the current instance.',
+    description: 'Create a new floating IP for the current instance',
 )]
 class IpCreateCommand extends Command
 {
