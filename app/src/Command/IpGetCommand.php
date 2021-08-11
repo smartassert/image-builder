@@ -11,7 +11,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 #[AsCommand(
     name: IpGetCommand::NAME,
-    description: 'Get the current floating IP. Output IP if present',
+    description: 'Get the current floating IP',
 )]
 class IpGetCommand extends Command
 {

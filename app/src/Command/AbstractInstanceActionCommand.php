@@ -8,7 +8,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
-class AbstractInstanceActionCommand extends Command
+abstract class AbstractInstanceActionCommand extends Command
 {
     private const OPTION_ID = 'id';
     private ?int $id;
