@@ -14,42 +14,6 @@ use PHPUnit\Framework\TestCase;
 class InstanceCollectionTest extends TestCase
 {
     /**
-     * @dataProvider sortByCreatedDateDataProvider
-     */
-    public function testSortByCreatedDate(InstanceCollection $collection, InstanceCollection $expectedCollection): void
-    {
-        $originalCollection = clone $collection;
-        $sortedCollection = $collection->sortByCreatedDate();
-
-        self::assertEquals($expectedCollection, $sortedCollection);
-        self::assertEquals($originalCollection, $collection);
-    }
-
-    /**
-     * @return array<mixed>
-     */
-    public function sortByCreatedDateDataProvider(): array
-    {
-        $sortedCollection = $this->createSortedCollection();
-        $reverseSortedCollection = $this->createReverseSortedCollection();
-
-        return [
-            'empty' => [
-                'collection' => new InstanceCollection([]),
-                'expectedCollection' => new InstanceCollection([]),
-            ],
-            'already sorted' => [
-                'collection' => $sortedCollection,
-                'expectedCollection' => $sortedCollection,
-            ],
-            'started reverse sorted' => [
-                'collection' => $reverseSortedCollection,
-                'expectedCollection' => $sortedCollection,
-            ],
-        ];
-    }
-
-    /**
      * @dataProvider getNewestDataProvider
      */
     public function testGetNewest(InstanceCollection $collection, ?Instance $expectedNewest): void
