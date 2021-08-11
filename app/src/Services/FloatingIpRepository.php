@@ -11,7 +11,7 @@ class FloatingIpRepository
 {
     public function __construct(
         private FloatingIpApi $floatingIpApi,
-        private string $dropletTag
+        private string $instanceCollectionTag
     ) {
     }
 
@@ -28,7 +28,7 @@ class FloatingIpRepository
             $assignee = $floatingIpEntity->droplet;
 
             if ($assignee instanceof DropletEntity) {
-                if (in_array($this->dropletTag, $assignee->tags)) {
+                if (in_array($this->instanceCollectionTag, $assignee->tags)) {
                     return new AssignedIp($floatingIpEntity);
                 }
             }
