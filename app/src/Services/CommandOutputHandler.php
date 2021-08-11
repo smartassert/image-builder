@@ -6,27 +6,20 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class CommandOutputHandler
 {
-    private OutputInterface $output;
-
-    public function setOutput(OutputInterface $output): void
+    /**
+     * @param array<mixed> $data
+     */
+    public function createSuccessOutput(OutputInterface $output, array $data = []): void
     {
-        $this->output = $output;
+        $this->createOutput($output, 'success', $data);
     }
 
     /**
      * @param array<mixed> $data
      */
-    public function createSuccessOutput(array $data = []): void
+    public function createErrorOutput(OutputInterface $output, string $errorCode, array $data = []): void
     {
-        $this->createOutput('success', $data);
-    }
-
-    /**
-     * @param array<mixed> $data
-     */
-    public function createErrorOutput(string $errorCode, array $data = []): void
-    {
-        $this->createOutput('error', array_merge(
+        $this->createOutput($output, 'error', array_merge(
             ['error-code' => $errorCode],
             $data
         ));
@@ -36,9 +29,9 @@ class CommandOutputHandler
      * @param 'success'|'error' $status
      * @param array<mixed>      $data
      */
-    private function createOutput(string $status, array $data = []): void
+    private function createOutput(OutputInterface $output, string $status, array $data = []): void
     {
-        $this->output->write((string) json_encode(array_merge(
+        $output->write((string) json_encode(array_merge(
             [
                 'status' => $status,
             ],

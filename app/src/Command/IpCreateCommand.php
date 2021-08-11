@@ -42,11 +42,9 @@ class IpCreateCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $this->outputHandler->setOutput($output);
-
         $instance = $this->instanceRepository->findCurrent();
         if (null === $instance) {
-            $this->outputHandler->createErrorOutput('no-instance');
+            $this->outputHandler->createErrorOutput($output, 'no-instance');
 
             return self::EXIT_CODE_NO_CURRENT_INSTANCE;
         }
@@ -55,7 +53,7 @@ class IpCreateCommand extends Command
 
         $assignedIp = $this->floatingIpRepository->find();
         if ($assignedIp instanceof AssignedIp) {
-            $this->outputHandler->createErrorOutput('has-ip', ['ip' => $assignedIp->getIp()]);
+            $this->outputHandler->createErrorOutput($output, 'has-ip', ['ip' => $assignedIp->getIp()]);
 
             return self::EXIT_CODE_HAS_IP;
         }
@@ -76,7 +74,7 @@ class IpCreateCommand extends Command
             $this->assignmentRetryInSeconds * self::MICROSECONDS_PER_SECOND
         );
 
-        $this->outputHandler->createSuccessOutput(['ip' => $ip, 'target-instance' => $instanceId]);
+        $this->outputHandler->createSuccessOutput($output, ['ip' => $ip, 'target-instance' => $instanceId]);
 
         return Command::SUCCESS;
     }

@@ -30,14 +30,12 @@ class InstanceCreateCommand extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $this->commandOutputHandler->setOutput($output);
-
         $instance = $this->instanceRepository->findCurrent();
         if (null === $instance) {
             $instance = $this->instanceRepository->create();
         }
 
-        $this->commandOutputHandler->createSuccessOutput(['id' => $instance->getId()]);
+        $this->commandOutputHandler->createSuccessOutput($output, ['id' => $instance->getId()]);
 
         return Command::SUCCESS;
     }

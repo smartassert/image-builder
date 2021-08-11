@@ -38,8 +38,6 @@ class InstanceIsHealthyCommand extends AbstractInstanceActionCommand
     {
         parent::execute($input, $output);
 
-        $this->outputHandler->setOutput($output);
-
         $id = $this->getId();
         if (null === $id) {
             $this->outputHandler->createErrorOutput('id-invalid');
@@ -49,17 +47,20 @@ class InstanceIsHealthyCommand extends AbstractInstanceActionCommand
 
         $instance = $this->instanceRepository->find($id);
         if (null === $instance) {
-            $this->outputHandler->createErrorOutput('not-found', ['id' => $id]);
+            $this->outputHandler->createErrorOutput($output, 'not-found', ['id' => $id]);
 
             return self::EXIT_CODE_NOT_FOUND;
         }
 
         $health = $this->instanceClient->getHealth($instance);
 
-        $this->outputHandler->createSuccessOutput([
-            'is-healthy' => $health->isAvailable(),
-            'services' => $health->jsonSerialize(),
-        ]);
+        $this->outputHandler->createSuccessOutput(
+            $output,
+            [
+                'is-healthy' => $health->isAvailable(),
+                'services' => $health->jsonSerialize(),
+            ]
+        );
 
         return $health->isAvailable() ? Command::SUCCESS : Command::FAILURE;
     }
