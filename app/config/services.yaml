@@ -16,6 +16,10 @@ services:
         autowire: true      # Automatically injects dependencies in your services.
         autoconfigure: true # Automatically registers your services as commands, event subscribers, etc.
 
+        bind:
+            $instanceCollectionTag: '%instance_collection_tag%'
+            $instanceTag: '%instance_tag%'
+
     # makes classes in src/ available to be used as services
     # this creates a service per class whose id is the fully-qualified class name
     App\:
@@ -87,15 +91,6 @@ services:
                     - '%instance_collection_tag%'
                     - '%instance_tag%'
 
-    App\Services\InstanceRepository:
-        arguments:
-            $instanceCollectionTag: '%instance_collection_tag%'
-            $instanceTag: '%instance_tag%'
-
     App\Services\ImageRepository:
         arguments:
             $imageName: '%worker_manager_image%'
-
-    App\Services\FloatingIpRepository:
-        arguments:
-            $dropletTag: '%instance_collection_tag%'
