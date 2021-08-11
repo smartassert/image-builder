@@ -34,13 +34,4 @@ class AssignedIp
     {
         return $this->floatingIpEntity->ip;
     }
-
-    public function withInstance(Instance $instance): self
-    {
-        $new = clone $this;
-        $new->hasInstance = true;
-        $new->instance = $instance;
-
-        return $new;
-    }
 }
