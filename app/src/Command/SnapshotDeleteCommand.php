@@ -23,9 +23,8 @@ class SnapshotDeleteCommand extends Command
 
     public function __construct(
         private SnapshotApi $snapshotApi,
-        string $name = null,
     ) {
-        parent::__construct($name);
+        parent::__construct(null);
     }
 
     protected function configure(): void

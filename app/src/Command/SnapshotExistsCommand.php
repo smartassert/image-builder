@@ -23,10 +23,9 @@ class SnapshotExistsCommand extends Command
     public const OPTION_EXPECT_EXISTS = 'expect-exists';
 
     public function __construct(
-        private ImageRepository $imageRepository,
-        string $name = null,
+        private ImageRepository $imageRepository
     ) {
-        parent::__construct($name);
+        parent::__construct(null);
     }
 
     protected function configure(): void

@@ -27,9 +27,8 @@ class InstanceListCommand extends Command
     public function __construct(
         private InstanceRepository $instanceRepository,
         private InstanceCollectionHydrator $instanceCollectionHydrator,
-        string $name = null,
     ) {
-        parent::__construct($name);
+        parent::__construct(null);
     }
 
     protected function configure(): void
