@@ -12,3 +12,6 @@ services:
         factory: ['GuzzleHttp\HandlerStack', 'create']
         arguments:
             $handler: '@GuzzleHttp\Handler\MockHandler'
+
+    App\Tests\Services\HttpResponseFactory:
+        public: true

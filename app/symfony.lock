@@ -50,6 +50,15 @@
     "guzzlehttp/psr7": {
         "version": "2.0.0"
     },
+    "hamcrest/hamcrest-php": {
+        "version": "v2.0.1"
+    },
+    "mockery/mockery": {
+        "version": "1.4.3"
+    },
+    "monolog/monolog": {
+        "version": "2.3.2"
+    },
     "myclabs/deep-copy": {
         "version": "1.10.2"
     },
@@ -92,8 +101,14 @@
     "phpspec/prophecy": {
         "version": "1.13.0"
     },
+    "phpstan/extension-installer": {
+        "version": "1.1.0"
+    },
     "phpstan/phpstan": {
         "version": "0.12.92"
+    },
+    "phpstan/phpstan-mockery": {
+        "version": "0.12.14"
     },
     "phpstan/phpstan-phpunit": {
         "version": "0.12.20"
@@ -202,6 +217,9 @@
     "sebastian/version": {
         "version": "3.0.2"
     },
+    "smartassert/digitalocean-droplet-configuration": {
+        "version": "0.1"
+    },
     "squizlabs/php_codesniffer": {
         "version": "3.6",
         "recipe": {
@@ -308,6 +326,24 @@
             "ref": "fadbfe33303a76e25cb63401050439aa9b1a9c7f"
         }
     },
+    "symfony/monolog-bridge": {
+        "version": "v5.3.4"
+    },
+    "symfony/monolog-bundle": {
+        "version": "3.7",
+        "recipe": {
+            "repo": "github.com/symfony/recipes",
+            "branch": "master",
+            "version": "3.7",
+            "ref": "a7bace7dbc5a7ed5608dbe2165e0774c87175fe6"
+        },
+        "files": [
+            "config/packages/dev/monolog.yaml",
+            "config/packages/prod/deprecations.yaml",
+            "config/packages/prod/monolog.yaml",
+            "config/packages/test/monolog.yaml"
+        ]
+    },
     "symfony/options-resolver": {
         "version": "v5.3.0"
     },
@@ -371,6 +407,9 @@
     },
     "toin0u/digitalocean-v2": {
         "version": "4.4.x-dev"
+    },
+    "webignition/object-reflector": {
+        "version": "1.0"
     },
     "webmozart/assert": {
         "version": "1.10.0"

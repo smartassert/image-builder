@@ -94,7 +94,7 @@ jobs:
           ID: ${{ steps.snapshot.outputs.id }}
         run: |
           cd app
-          php bin/console app:snapshot:exists --id $ID --expect-exists 1
+          WORKER_MANAGER_IMAGE=$ID php bin/console app:snapshot:exists --expect-exists 1
 
       - name: Remove created image if not a release
         if: ${{ github.event_name != 'release' }}
@@ -104,7 +104,7 @@ jobs:
         run: |
           cd app
           php bin/console app:snapshot:delete --id $ID
-          php bin/console app:snapshot:exists --id $ID --expect-exists 0
+          WORKER_MANAGER_IMAGE=$ID php bin/console app:snapshot:exists --expect-exists 0
 
       - name: Trigger update worker manager image workflow if a release
         if: ${{ github.event_name == 'release' }}
