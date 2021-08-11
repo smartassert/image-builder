@@ -38,9 +38,8 @@ class IpAssignCommand extends Command
         private OutputFactory $outputFactory,
         private int $assigmentTimeoutInSeconds,
         private int $assignmentRetryInSeconds,
-        string $name = null
     ) {
-        parent::__construct($name);
+        parent::__construct(null);
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
