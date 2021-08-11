@@ -21,10 +21,11 @@ class FloatingIpManager
     public function create(Instance $instance): AssignedIp
     {
         $floatingIpEntity = $this->floatingIpApi->createAssigned($instance->getId());
+        if (null === $floatingIpEntity->droplet) {
+            $floatingIpEntity->droplet = $instance->getDroplet();
+        }
 
-        return (new AssignedIp($floatingIpEntity))
-            ->withInstance($instance)
-        ;
+        return new AssignedIp($floatingIpEntity);
     }
 
     /**

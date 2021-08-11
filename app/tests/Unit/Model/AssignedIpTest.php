@@ -9,38 +9,6 @@ use PHPUnit\Framework\TestCase;
 
 class AssignedIpTest extends TestCase
 {
-    /**
-     * @dataProvider hasInstanceDataProvider
-     */
-    public function testHasInstance(AssignedIp $assignedIp, bool $expectedHasInstance): void
-    {
-        self::assertSame($expectedHasInstance, $assignedIp->hasInstance());
-    }
-
-    /**
-     * @return array<mixed>
-     */
-    public function hasInstanceDataProvider(): array
-    {
-        return [
-            'not has instance' => [
-                'assignedIp' => new AssignedIp(new FloatingIpEntity([
-                    'ip' => '127.0.0.1',
-                ])),
-                'expectedHasInstance' => false,
-            ],
-            'has instance' => [
-                'assignedIp' => new AssignedIp(new FloatingIpEntity([
-                    'ip' => '127.0.0.1',
-                    'droplet' => (object) [
-                        'id' => 123,
-                    ],
-                ])),
-                'expectedHasInstance' => true,
-            ],
-        ];
-    }
-
     public function testGetInstance(): void
     {
         $assignedIp = new AssignedIp(new FloatingIpEntity([
@@ -67,23 +35,5 @@ class AssignedIpTest extends TestCase
         ]));
 
         self::assertEquals('127.0.0.1', $assignedIp->getIp());
-    }
-
-    public function testWithInstance(): void
-    {
-        $assignedIp = new AssignedIp(new FloatingIpEntity([
-            'ip' => '127.0.0.1',
-            'droplet' => null,
-        ]));
-
-        self::assertFalse($assignedIp->hasInstance());
-
-        $expectedInstance = InstanceFactory::create([
-            'id' => 123,
-        ]);
-
-        $assignedIp = $assignedIp->withInstance($expectedInstance);
-        self::assertTrue($assignedIp->hasInstance());
-        self::assertSame($expectedInstance, $assignedIp->getInstance());
     }
 }
