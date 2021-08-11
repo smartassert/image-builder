@@ -6,10 +6,10 @@ use App\ActionHandler\ActionHandler;
 use App\Model\AssignedIp;
 use App\Model\Instance;
 use App\Services\ActionRunner;
-use App\Services\CommandOutputHandler;
 use App\Services\FloatingIpManager;
 use App\Services\FloatingIpRepository;
 use App\Services\InstanceRepository;
+use App\Services\OutputFactory;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -32,7 +32,7 @@ class IpCreateCommand extends Command
         private FloatingIpManager $floatingIpManager,
         private FloatingIpRepository $floatingIpRepository,
         private ActionRunner $actionRunner,
-        private CommandOutputHandler $outputHandler,
+        private OutputFactory $outputFactory,
         private int $assigmentTimeoutInSeconds,
         private int $assignmentRetryInSeconds,
         string $name = null
@@ -44,7 +44,7 @@ class IpCreateCommand extends Command
     {
         $instance = $this->instanceRepository->findCurrent();
         if (null === $instance) {
-            $this->outputHandler->createErrorOutput($output, 'no-instance');
+            $output->write($this->outputFactory->createErrorOutput('no-instance'));
 
             return self::EXIT_CODE_NO_CURRENT_INSTANCE;
         }
@@ -53,7 +53,7 @@ class IpCreateCommand extends Command
 
         $assignedIp = $this->floatingIpRepository->find();
         if ($assignedIp instanceof AssignedIp) {
-            $this->outputHandler->createErrorOutput($output, 'has-ip', ['ip' => $assignedIp->getIp()]);
+            $output->write($this->outputFactory->createErrorOutput('has-ip', ['ip' => $assignedIp->getIp()]));
 
             return self::EXIT_CODE_HAS_IP;
         }
@@ -74,7 +74,7 @@ class IpCreateCommand extends Command
             $this->assignmentRetryInSeconds * self::MICROSECONDS_PER_SECOND
         );
 
-        $this->outputHandler->createSuccessOutput($output, ['ip' => $ip, 'target-instance' => $instanceId]);
+        $output->write($this->outputFactory->createSuccessOutput(['ip' => $ip, 'target-instance' => $instanceId]));
 
         return Command::SUCCESS;
     }
