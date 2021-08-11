@@ -2,9 +2,9 @@
 
 namespace App\Command;
 
-use App\Services\CommandOutputHandler;
 use App\Services\InstanceClient;
 use App\Services\InstanceRepository;
+use App\Services\OutputFactory;
 use DigitalOceanV2\Exception\ExceptionInterface;
 use Psr\Http\Client\ClientExceptionInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -25,7 +25,7 @@ class InstanceIsHealthyCommand extends AbstractInstanceActionCommand
     public function __construct(
         InstanceRepository $instanceRepository,
         private InstanceClient $instanceClient,
-        private CommandOutputHandler $outputHandler,
+        private OutputFactory $outputFactory,
     ) {
         parent::__construct($instanceRepository);
     }
@@ -38,28 +38,26 @@ class InstanceIsHealthyCommand extends AbstractInstanceActionCommand
     {
         parent::execute($input, $output);
 
-        $this->outputHandler->setOutput($output);
-
         $id = $this->getId();
         if (null === $id) {
-            $this->outputHandler->createErrorOutput('id-invalid');
+            $output->write($this->outputFactory->createErrorOutput('id-invalid'));
 
             return self::EXIT_CODE_ID_INVALID;
         }
 
         $instance = $this->instanceRepository->find($id);
         if (null === $instance) {
-            $this->outputHandler->createErrorOutput('not-found', ['id' => $id]);
+            $output->write($this->outputFactory->createErrorOutput('not-found', ['id' => $id]));
 
             return self::EXIT_CODE_NOT_FOUND;
         }
 
         $health = $this->instanceClient->getHealth($instance);
 
-        $this->outputHandler->createSuccessOutput([
+        $output->write($this->outputFactory->createSuccessOutput([
             'is-healthy' => $health->isAvailable(),
             'services' => $health->jsonSerialize(),
-        ]);
+        ]));
 
         return $health->isAvailable() ? Command::SUCCESS : Command::FAILURE;
     }
