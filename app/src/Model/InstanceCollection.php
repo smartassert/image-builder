@@ -3,6 +3,8 @@
 namespace App\Model;
 
 use App\Model\InstanceMatcher\InstanceMatcherInterface;
+use App\Model\InstanceSorter\InstanceCreatedDateSorter;
+use App\Model\InstanceSorter\InstanceSorterInterface;
 
 /**
  * @implements \IteratorAggregate<Instance>
@@ -48,19 +50,12 @@ class InstanceCollection implements \IteratorAggregate, \Countable
         return $sortedCollection->getFirst();
     }
 
-    public function sortByCreatedDate(): self
+    public function sort(InstanceSorterInterface $sorter): self
     {
         $instances = $this->instances;
 
-        usort($instances, function (Instance $a, Instance $b): int {
-            $aTimestamp = $a->getCreatedAt()->getTimestamp();
-            $bTimestamp = $b->getCreatedAt()->getTimestamp();
-
-            if ($aTimestamp === $bTimestamp) {
-                return 0;
-            }
-
-            return $aTimestamp < $bTimestamp ? 1 : -1;
+        usort($instances, function (Instance $a, Instance $b) use ($sorter): int {
+            return $sorter->sort($a, $b);
         });
 
         return new InstanceCollection($instances);
@@ -77,5 +72,10 @@ class InstanceCollection implements \IteratorAggregate, \Countable
         }
 
         return new InstanceCollection($instances);
+    }
+
+    private function sortByCreatedDate(): self
+    {
+        return $this->sort(new InstanceCreatedDateSorter());
     }
 }
