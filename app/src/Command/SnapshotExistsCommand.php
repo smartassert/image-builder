@@ -4,14 +4,11 @@ namespace App\Command;
 
 use App\Model\Image;
 use App\Services\ImageRepository;
-use DigitalOceanV2\Exception\ExceptionInterface;
-use DigitalOceanV2\Exception\RuntimeException;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Style\SymfonyStyle;
 
 #[AsCommand(
     name: SnapshotExistsCommand::NAME,
@@ -40,30 +37,8 @@ class SnapshotExistsCommand extends Command
     {
         $expectExists = (bool) $input->getOption(self::OPTION_EXPECT_EXISTS);
 
-        try {
-            $image = $this->imageRepository->find();
-
-            return $image instanceof Image
-                ? (int) !$expectExists
-                : (int) $expectExists;
-        } catch (RuntimeException $runtimeException) {
-            $exception = $runtimeException;
-        } catch (ExceptionInterface $vendorException) {
-            $exception = $vendorException;
-        }
-
-        if ($exception instanceof \Throwable) {
-            $exceptionMessage = sprintf(
-                '%s %s: %s',
-                $exception::class,
-                $exception->getCode(),
-                $exception->getMessage()
-            );
-
-            $io = new SymfonyStyle($input, $output);
-            $io->error($exceptionMessage);
-        }
-
-        return Command::INVALID;
+        return $this->imageRepository->find() instanceof Image
+            ? (int) !$expectExists
+            : (int) $expectExists;
     }
 }
