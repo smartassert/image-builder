@@ -25,22 +25,28 @@ jobs:
           args: --ignore-platform-reqs --quiet
           working_dir: app
 
-      - name: Expose worker manager image variable
-        id: worker-manager-image
-        run:
-          export echo $(cat worker-manager-image.env | tr '\n' ' ')
+      - name: Checkout bash-read-env-file
+        uses: actions/checkout@v2
+        with:
+          repository: smartassert/bash-read-env-file
+          path: ./vendor/smartassert/bash-read-env-file
+          ref: main
 
-          echo "::set-output name=id::$WORKER_MANAGER_IMAGE"
+      - name: Read build config
+        id: worker-manager-image
+        env:
+          ENV_FILE_PATH: ./worker-manager-image.env
+        run: ./vendor/smartassert/bash-read-env-file/src/read-env-file-ga.sh
 
       - name: Check snapshot exists
         env:
-          WORKER_MANAGER_IMAGE: ${{ steps.worker-manager-image.outputs.id }}
+          WORKER_MANAGER_IMAGE: ${{ steps.worker-manager-image.outputs.WORKER_MANAGER_IMAGE }}
         run: php app/bin/console app:snapshot:exists --expect-exists 1
 
       - name: Create
         id: instance
         env:
-          WORKER_MANAGER_IMAGE: ${{ steps.worker-manager-image.outputs.id }}
+          WORKER_MANAGER_IMAGE: ${{ steps.worker-manager-image.outputs.WORKER_MANAGER_IMAGE }}
         run: |
           CREATE_OUTPUT=$(php app/bin/console app:instance:create)
           echo "::set-output name=id::$(echo $CREATE_OUTPUT | jq ".id")"
