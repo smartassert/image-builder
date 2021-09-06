@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-sudo apt-get update && apt-get install -y \
+sudo apt update && sudo apt install -y \
     apt-transport-https \
     ca-certificates \
     curl \
@@ -14,12 +14,12 @@ sudo add-apt-repository \
    $(lsb_release -cs) \
    stable"
 
-sudo apt-get update && apt-get install -y \
+sudo apt update && sudo apt install -y \
     docker-ce \
     docker-ce-cli \
     containerd.io
 
-apt-get autoremove -y \
+sudo apt autoremove -y \
   && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 DOCKER_COMPOSE_BIN=/usr/local/bin/docker-compose
