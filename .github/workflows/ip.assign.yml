@@ -34,10 +34,10 @@ jobs:
         if: ${{ steps.ip.outputs.value != '' }}
         env:
           COMMAND: "php app/bin/console app:ip:assign"
-        run: ./.github/workflows/execute-command-output-json.sh
+        run: ./ci/scripts/execute-command-output-json.sh
 
       - name: Create IP if none found
         if: ${{ steps.ip.outputs.value == '' }}
         env:
           COMMAND: "php app/bin/console app:ip:create"
-        run: ./.github/workflows/execute-command-output-json.sh
+        run: ./ci/scripts/execute-command-output-json.sh
