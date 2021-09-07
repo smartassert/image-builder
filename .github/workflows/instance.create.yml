@@ -54,7 +54,7 @@ jobs:
       - name: Health check
         env:
           COMMAND: "php app/bin/console app:instance:is-healthy --id=${{ steps.instance.outputs.id }}"
-        run: ./.github/workflows/execute-command-output-json.sh
+        run: ./ci/scripts/execute-command-output-json.sh
 
       - name: Remove instance if health check failed
         if:  ${{ failure() }}
