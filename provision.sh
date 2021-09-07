@@ -1,28 +1,23 @@
 #!/usr/bin/env bash
 
-function apt_get_update() {
-  until sudo apt-get update
+function run_command_until_successful () {
+  until "$@"
   do
-      echo "Retrying apt-get update"
+      echo -e "\033[1mRetrying $@\033[0m"
       sleep 1
   done
 }
 
-function apt_get_install() {
-  until sudo apt-get install -y \
-      apt-transport-https \
-      ca-certificates \
-      curl \
-      gnupg-agent \
-      software-properties-common
-  do
-    echo "Retrying apt-get install"
-    sleep 1
-  done
-}
+run_command_until_successful sudo apt-get update
+run_command_until_successful sudo apt-get install -y \
+  apt-transport-https \
+  ca-certificates \
+  curl \
+  gnupg-agent \
+  software-properties-common
 
-apt_get_update
-apt_get_install
+#apt_get_update
+#apt_get_install
 
 
 #curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
