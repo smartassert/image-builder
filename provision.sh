@@ -29,7 +29,7 @@ run_command_until_successful sudo apt-get install -y \
   docker-ce-cli \
   containerd.io
 
-run_command_until_successful sudo apt autoremove -y
+run_command_until_successful sudo apt-get autoremove -y
 rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 DOCKER_COMPOSE_BIN=/usr/local/bin/docker-compose
