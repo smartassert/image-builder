@@ -16,24 +16,21 @@ run_command_until_successful sudo apt-get install -y \
   gnupg-agent \
   software-properties-common
 
-#apt_get_update
-#apt_get_install
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
 
+sudo add-apt-repository \
+   "deb [arch=amd64] https://download.docker.com/linux/ubuntu \
+   $(lsb_release -cs) \
+   stable"
 
-#curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
-#
-#sudo add-apt-repository \
-#   "deb [arch=amd64] https://download.docker.com/linux/ubuntu \
-#   $(lsb_release -cs) \
-#   stable"
-#
-#sudo apt update && sudo apt install -y \
-#    docker-ce \
-#    docker-ce-cli \
-#    containerd.io
-#
-#sudo apt autoremove -y \
-#  && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+run_command_until_successful sudo apt-get update
+run_command_until_successful sudo apt-get install -y \
+  docker-ce \
+  docker-ce-cli \
+  containerd.io
+
+run_command_until_successful sudo apt autoremove -y
+rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 #
 #DOCKER_COMPOSE_BIN=/usr/local/bin/docker-compose
 #if [ ! -f "$DOCKER_COMPOSE_BIN" ]; then
