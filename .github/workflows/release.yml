@@ -24,6 +24,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
+      - name: Checkout bash-ga-ci-tools
+        uses: actions/checkout@v2
+        with:
+          repository: smartassert/bash-ga-ci-tools
+          path: ./vendor/smartassert/bash-ga-ci-tools
+          ref: main
+
       - name: Setup php
         uses: shivammathur/setup-php@v2
         with:
@@ -40,12 +47,13 @@ jobs:
         env:
           VALUE1: ${{ github.event.release.tag_name }}
           DEFAULT: master
-        run: echo "::set-output name=value::$(./vendor/smartassert/bash-ga-cli-tools/src/select-defined-variable-or-default.sh)"
+        run: echo "::set-output name=value::$(./vendor/smartassert/bash-ga-ci-tools/src/select-defined-variable-or-default.sh)"
 
       - name: Output version
         env:
           VERSION: ${{ steps.version.outputs.value }}
-        run: echo "$VERSION"
+        run: |
+          [ "" != "$VERSION" ] && echo "$VERSION"
 
       - name: Set snapshot name
         id: snapshot-name
