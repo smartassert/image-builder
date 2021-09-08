@@ -75,9 +75,6 @@ services:
     DigitalOceanV2\Api\Droplet:
         class: DigitalOceanV2\Api\Droplet
 
-    DigitalOceanV2\Api\Snapshot:
-        class: DigitalOceanV2\Api\Snapshot
-
     DigitalOceanV2\Api\FloatingIp:
         class: DigitalOceanV2\Api\FloatingIp
 
@@ -90,7 +87,3 @@ services:
                 tags:
                     - '%instance_collection_tag%'
                     - '%instance_tag%'
-
-    App\Services\ImageRepository:
-        arguments:
-            $imageName: '%worker_manager_image%'
