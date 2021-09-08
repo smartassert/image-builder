@@ -104,6 +104,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
+      - name: Checkout bash-ga-deploy-tools
+        uses: actions/checkout@v2
+        with:
+          repository: smartassert/bash-ga-deploy-tools
+          path: ./vendor/smartassert/bash-ga-deploy-tools
+          ref: main
+
       - name: Setup php
         uses: shivammathur/setup-php@v2
         with:
@@ -149,10 +156,9 @@ jobs:
       - name: Verify snapshot exists
         env:
           DIGITALOCEAN_API_TOKEN: ${{ secrets.DIGITALOCEAN_API_TOKEN }}
-          ID: ${{ steps.image.outputs.id }}
-        run: |
-          cd app
-          WORKER_MANAGER_IMAGE=$ID php bin/console app:snapshot:exists --expect-exists 1
+          IMAGE_ID: ${{ steps.image.outputs.id }}
+          EXPECTED_EXISTS: "true"
+        run: ./vendor/smartassert/bash-ga-deploy-tools/src/digitalocean-snapshot/verify-existence.sh
 
   update-stored-snapshot-id:
     needs: [setup, create-image]
@@ -185,6 +191,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
+      - name: Checkout bash-ga-deploy-tools
+        uses: actions/checkout@v2
+        with:
+          repository: smartassert/bash-ga-deploy-tools
+          path: ./vendor/smartassert/bash-ga-deploy-tools
+          ref: main
+
       - name: Setup php
         uses: shivammathur/setup-php@v2
         with:
@@ -197,11 +210,10 @@ jobs:
           working_dir: app
 
       - name: Remove snapshot
-        if: ${{ github.event_name != 'release' }}
         env:
           DIGITALOCEAN_API_TOKEN: ${{ secrets.DIGITALOCEAN_API_TOKEN }}
-          ID: ${{ needs.create-image.outputs.image-id }}
+          IMAGE_ID: ${{ needs.create-image.outputs.image-id }}
+          EXPECTED_EXISTS: "false"
         run: |
-          cd app
-          php bin/console app:snapshot:delete --id $ID
-          WORKER_MANAGER_IMAGE=$ID php bin/console app:snapshot:exists --expect-exists 0
+          ./vendor/smartassert/bash-ga-deploy-tools/src/digitalocean-snapshot/delete.sh
+          ./vendor/smartassert/bash-ga-deploy-tools/src/digitalocean-snapshot/verify-existence.sh

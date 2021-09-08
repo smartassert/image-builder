@@ -14,6 +14,20 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
+      - name: Checkout bash-read-env-file
+        uses: actions/checkout@v2
+        with:
+          repository: smartassert/bash-read-env-file
+          path: ./vendor/smartassert/bash-read-env-file
+          ref: main
+
+      - name: Checkout bash-ga-deploy-tools
+        uses: actions/checkout@v2
+        with:
+          repository: smartassert/bash-ga-deploy-tools
+          path: ./vendor/smartassert/bash-ga-deploy-tools
+          ref: main
+
       - name: Setup php
         uses: shivammathur/setup-php@v2
         with:
@@ -25,13 +39,6 @@ jobs:
           args: --ignore-platform-reqs --quiet
           working_dir: app
 
-      - name: Checkout bash-read-env-file
-        uses: actions/checkout@v2
-        with:
-          repository: smartassert/bash-read-env-file
-          path: ./vendor/smartassert/bash-read-env-file
-          ref: main
-
       - name: Read build config
         id: worker-manager-image
         env:
@@ -40,8 +47,9 @@ jobs:
 
       - name: Check snapshot exists
         env:
-          WORKER_MANAGER_IMAGE: ${{ steps.worker-manager-image.outputs.WORKER_MANAGER_IMAGE }}
-        run: php app/bin/console app:snapshot:exists --expect-exists 1
+          IMAGE_ID: ${{ steps.worker-manager-image.outputs.WORKER_MANAGER_IMAGE }}
+          EXPECTED_EXISTS: "true"
+        run: ./vendor/smartassert/bash-ga-deploy-tools/src/digitalocean-snapshot/verify-existence.sh
 
       - name: Create
         id: instance
