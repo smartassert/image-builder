@@ -52,7 +52,8 @@ jobs:
       - name: Output version
         env:
           VERSION: ${{ steps.version.outputs.value }}
-        run: echo "$VERSION"
+        run: |
+          [ "" != "$VERSION" ] && echo "$VERSION"
 
       - name: Set snapshot name
         id: snapshot-name
