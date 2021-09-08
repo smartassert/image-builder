@@ -31,6 +31,13 @@ jobs:
           path: ./vendor/smartassert/bash-ga-ci-tools
           ref: main
 
+      - name: Checkout bash-ga-deploy-tools
+        uses: actions/checkout@v2
+        with:
+          repository: smartassert/bash-ga-deploy-tools
+          path: ./vendor/smartassert/bash-ga-deploy-tools
+          ref: main
+
       - name: Setup php
         uses: shivammathur/setup-php@v2
         with:
@@ -51,28 +58,25 @@ jobs:
 
       - name: Output version
         env:
-          VERSION: ${{ steps.version.outputs.value }}
+          VALUE: ${{ steps.version.outputs.value }}
         run: |
-          [ "" != "$VERSION" ] && echo "$VERSION"
+          [ "" != "$VALUE" ] && echo "$VALUE"
 
       - name: Set snapshot name
         id: snapshot-name
         env:
           EVENT_NAME: ${{ github.event_name }}
           PR_NUMBER: ${{ github.event.number }}
-          RELEASE_VERSION: ${{ steps.version.outputs.value }}
+          VERSION: ${{ steps.version.outputs.value }}
         run: |
-          cd app
-          SNAPSHOT_NAME=$(
-            php bin/console app:snapshot:create-name \
-            --event-name $EVENT_NAME \
-            --pull-request-number $PR_NUMBER \
-            --release-version $RELEASE_VERSION
-          )
+          SNAPSHOT_NAME=$(./vendor/smartassert/bash-ga-deploy-tools/src/digitalocean-snapshot/create-name.sh)
           echo "::set-output name=value::$SNAPSHOT_NAME"
 
       - name: Output snapshot name
-        run: echo ${{ steps.snapshot-name.outputs.value }}
+        env:
+          VALUE: ${{ steps.snapshot-name.outputs.value }}
+        run: |
+          [ "" != "$VALUE" ] && echo "$VALUE"
 
       - name: Deploy after building image?
         id: should-deploy
