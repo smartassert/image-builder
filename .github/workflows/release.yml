@@ -36,6 +36,9 @@ jobs:
           ls -la
           ls -la ./vendor
           ls -la ./vendor/smartassert
+          ls -la ./vendor/smartassert/bash-ga-ci-tools
+          ls -la ./vendor/smartassert/bash-ga-ci-tools/src
+          ls -la ./vendor/smartassert/bash-ga-ci-tools/src/select-defined-variable-or-default.sh
 
       - name: Setup php
         uses: shivammathur/setup-php@v2
