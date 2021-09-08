@@ -12,9 +12,13 @@ on:
       - published
 
 jobs:
-  build:
-    name: Release
+  setup:
+    name: Setup
     runs-on: ubuntu-latest
+    outputs:
+      snapshot-name: ${{ steps.snapshot-name.outputs.value }}
+      should-deploy: ${{ steps.should-deploy.outputs.value }}
+      version: ${{ steps.version.outputs.value }}
 
     steps:
       - name: Checkout
@@ -38,8 +42,13 @@ jobs:
         run: |
           [[ ! -z "$RELEASE_TAG_NAME" ]] && echo "::set-output name=value::$RELEASE_TAG_NAME" || echo "::set-output name=value::master"
 
+      - name: Output version
+        env:
+          VERSION: ${{ steps.version.outputs.value }}
+        run: echo "$VERSION"
+
       - name: Set snapshot name
-        id: snapshot_name
+        id: snapshot-name
         env:
           EVENT_NAME: ${{ github.event_name }}
           PR_NUMBER: ${{ github.event.number }}
@@ -54,8 +63,45 @@ jobs:
           )
           echo "::set-output name=value::$SNAPSHOT_NAME"
 
-      - name: Verify snapshot name
-        run: echo ${{ steps.snapshot_name.outputs.value }}
+      - name: Output snapshot name
+        run: echo ${{ steps.snapshot-name.outputs.value }}
+
+      - name: Deploy after building image?
+        id: should-deploy
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+        run: |
+          SHOULD_DEPLOY=false
+          if [ "release" = "$EVENT_NAME"]; then
+            SHOULD_DEPLOY=true
+          fi
+
+          echo "::set-output name=value::$SHOULD_DEPLOY"
+
+      - name: Output should deploy
+        run: echo ${{ steps.should-deploy.outputs.value }}
+
+  create-image:
+    needs: setup
+    name: Create image
+    runs-on: ubuntu-latest
+    outputs:
+      image-id: ${{ steps.image.outputs.id }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Setup php
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8
+
+      - name: Download dependencies
+        uses: php-actions/composer@v6
+        with:
+          args: --ignore-platform-reqs --quiet
+          working_dir: app
 
       - name: Install packer
         run: |
@@ -71,16 +117,16 @@ jobs:
       - name: Verify image configuration
         env:
           DIGITALOCEAN_API_TOKEN: ${{ secrets.DIGITALOCEAN_API_TOKEN }}
-          SNAPSHOT_NAME: ${{ steps.snapshot_name.outputs.value }}
+          SNAPSHOT_NAME: ${{ needs.setup.outputs.snapshot-name }}
         run: |
           export echo $(cat build.env | tr '\n' ' ')
           packer validate image.pkr.hcl
 
       - name: Create image and snapshot
-        id: snapshot
+        id: image
         env:
           DIGITALOCEAN_API_TOKEN: ${{ secrets.DIGITALOCEAN_API_TOKEN }}
-          SNAPSHOT_NAME: ${{ steps.snapshot_name.outputs.value }}
+          SNAPSHOT_NAME: ${{ needs.setup.outputs.snapshot-name }}
         run: |
           export echo $(cat build.env | tr '\n' ' ')
           packer build image.pkr.hcl | tee packer.log
@@ -91,25 +137,59 @@ jobs:
       - name: Verify snapshot exists
         env:
           DIGITALOCEAN_API_TOKEN: ${{ secrets.DIGITALOCEAN_API_TOKEN }}
-          ID: ${{ steps.snapshot.outputs.id }}
+          ID: ${{ steps.image.outputs.id }}
         run: |
           cd app
           WORKER_MANAGER_IMAGE=$ID php bin/console app:snapshot:exists --expect-exists 1
 
-      - name: Remove created image if not a release
-        if: ${{ github.event_name != 'release' }}
-        env:
-          DIGITALOCEAN_API_TOKEN: ${{ secrets.DIGITALOCEAN_API_TOKEN }}
-          ID: ${{ steps.snapshot.outputs.id }}
-        run: |
-          cd app
-          php bin/console app:snapshot:delete --id $ID
-          WORKER_MANAGER_IMAGE=$ID php bin/console app:snapshot:exists --expect-exists 0
+  update-stored-snapshot-id:
+    needs: [setup, create-image]
+    name: Update stored snapshot ID
+    runs-on: ubuntu-latest
+    if: ${{ needs.setup.outputs.should-deploy == 'true' }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
 
       - name: Trigger update worker manager image workflow if a release
-        if: ${{ github.event_name == 'release' }}
         uses: benc-uk/workflow-dispatch@v1
         with:
           workflow: Update worker manager image
           token: ${{ secrets.PAT_TOKEN_SELF }}
-          inputs: '{ "image": "${{ steps.snapshot.outputs.id }}", "commit_message": "Automatic worker-manager-image.env for release ${{ github.event.release.tag_name }} ${{ steps.snapshot.outputs.id }}" }'
+          inputs: |
+            {
+              "image": "${{ needs.create-image.outputs.image-id }}",
+              "commit_message": "Automatic worker-manager-image.env for release ${{ needs.setup.outputs.version }} ${{ needs.create-image.outputs.image-id }}"
+            }
+
+  remove-snapshot:
+    needs: create-image
+    name: Remove snapshot if not deploying
+    runs-on: ubuntu-latest
+    if: ${{ needs.setup.outputs.should-deploy == 'false' }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Setup php
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8
+
+      - name: Download dependencies
+        uses: php-actions/composer@v6
+        with:
+          args: --ignore-platform-reqs --quiet
+          working_dir: app
+
+      - name: Remove snapshot
+        if: ${{ github.event_name != 'release' }}
+        env:
+          DIGITALOCEAN_API_TOKEN: ${{ secrets.DIGITALOCEAN_API_TOKEN }}
+          ID: ${{ needs.create-image.outputs.image-id }}
+        run: |
+          cd app
+          php bin/console app:snapshot:delete --id $ID
+          WORKER_MANAGER_IMAGE=$ID php bin/console app:snapshot:exists --expect-exists 0
