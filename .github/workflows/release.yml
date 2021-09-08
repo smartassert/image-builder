@@ -56,7 +56,14 @@ jobs:
         env:
           VALUE1: ${{ github.event.release.tag_name }}
           DEFAULT: master
-        run: echo "::set-output name=value::$(./vendor/smartassert/bash-ga-cli-tools/src/select-defined-variable-or-default.sh)"
+        run: |
+          ls -la
+          ls -la ./vendor
+          ls -la ./vendor/smartassert
+          ls -la ./vendor/smartassert/bash-ga-ci-tools
+          ls -la ./vendor/smartassert/bash-ga-ci-tools/src
+          ls -la ./vendor/smartassert/bash-ga-ci-tools/src/select-defined-variable-or-default.sh
+          echo "::set-output name=value::$(./vendor/smartassert/bash-ga-cli-tools/src/select-defined-variable-or-default.sh)"
 
       - name: Output version
         env:
