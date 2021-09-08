@@ -31,6 +31,10 @@ jobs:
           path: ./vendor/smartassert/bash-ga-ci-tools
           ref: main
 
+      - name: Verify bash-ga-cli-tools checkout
+        run: |
+          ls -la
+
       - name: Setup php
         uses: shivammathur/setup-php@v2
         with:
