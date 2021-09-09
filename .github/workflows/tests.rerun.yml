@@ -8,10 +8,14 @@ on:
       - completed
 
 jobs:
-  on-failure:
+  setup:
     name: Re-run workflow on failure
     runs-on: ubuntu-latest
     if: ${{ github.event.workflow_run.conclusion == 'failure' }}
+    outputs:
+      should-retry: ${{ steps.should-retry.outputs.value }}
+      run-id: ${{ github.event.workflow_run.id }}
+      comment: ${{ steps.comment.outputs.value }}
 
     steps:
       - name: Dump context
@@ -23,31 +27,21 @@ jobs:
         id: maximum-duration
         run: echo "::set-output name=value::300"
 
-      - name: Calculate duration
+      - name: Set duration
         id: duration
         env:
           CREATED_AT: ${{ github.event.workflow_run.created_at }}
           UPDATED_AT: ${{ github.event.workflow_run.updated_at }}
-        run: |
-          DURATION=$(./ci/scripts/tests-rerun-calculate-duration.sh)
-          echo "::set-output name=duration::$DURATION"
+        run: echo "::set-output name=duration::$(./ci/scripts/tests-rerun-calculate-duration.sh)"
 
-      - name: Should retry?
+      - name: Set 'should retry'?
         id: should-retry
         env:
           MAXIMUM_DURATION: ${{ steps.maximum-duration.outputs.value }}
           DURATION: ${{ steps.duration.outputs.value }}
-        run: echo "::set-output name=decision::$(./ci/scripts/tests-rerun-should-retry.sh)"
+        run: echo "::set-output name=value::$(./ci/scripts/tests-rerun-should-retry.sh)"
 
-      - name: Retry if allowed
-        if: ${{ steps.should-retry.outputs.decision == 'true' }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.PAT_TOKEN_SELF }}
-          RUN_ID: ${{ github.event.workflow_run.id }}
-          REPO: ${{ github.repository }}
-        run: gh run rerun $RUN_ID --repo $REPO
-
-      - name: Build comment
+      - name: Set comment
         id: comment
         if: ${{ steps.should-retry.outputs.decision == 'true' }}
         env:
@@ -57,13 +51,50 @@ jobs:
           WORKFLOW: ${{ github.event.workflow.name }}
         run: |
           COMMENT="Retrying \"$WORKFLOW\". Duration: $DURATION. Maximum duration: $MAXIMUM_DURATION"
-          echo "::set-output name=comment::$COMMENT"
+          echo "::set-output name=value::$COMMENT"
 
-      - name: Comment on related PRs
-        if: ${{ steps.should-retry.outputs.decision == 'true' }}
+  verify-setup:
+    name: Verify setup
+    runs-on: ubuntu-latest
+    needs: setup
+
+    steps:
+      - name: Output 'should retry'
+        env:
+          VALUE: ${{ needs.setup.outputs.should-retry }}
+        run: |
+          [ "" != "$VALUE" ] && echo "$VALUE"
+
+      - name: Output run id
+        env:
+          VALUE: ${{ needs.setup.outputs.run-id }}
+        run: |
+          [ "" != "$VALUE" ] && echo "$VALUE"
+
+      - name: Output comment
+        env:
+          VALUE: ${{ needs.setup.outputs.comment }}
+        run: |
+          [ "" != "$VALUE" ] && echo "$VALUE"
+
+  retry:
+    name: Retry and comment
+    runs-on: ubuntu-latest
+    needs: [setup, verify-setup]
+    if: ${{ needs.setup.outputs.should-retry == 'true' }}
+
+    steps:
+      - name: Retry
+        env:
+          GITHUB_TOKEN: ${{ secrets.PAT_TOKEN_SELF }}
+          RUN_ID: ${{ needs.setup.outputs.run-id }}
+          REPO: ${{ github.repository }}
+        run: gh run rerun "$RUN_ID" --repo "$REPO"
+
+      - name: Comment
         env:
           PULL_REQUESTS: ${{ toJson(github.event.workflow_run.pull_requests) }}
-          COMMENT: ${{ steps.comment.outputs.comment }}
+          COMMENT: ${{ needs.setup.outputs.comment }}
           GITHUB_TOKEN: ${{ secrets.PAT_TOKEN_SELF }}
           REPO: ${{ github.repository }}
         run: ./ci/scripts/tests-rerun-comment-on-pull-requests.sh
