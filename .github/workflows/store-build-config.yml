@@ -3,6 +3,11 @@ name: Store build config
 on:
   repository_dispatch:
     types: [worker-manager-release]
+  workflow_dispatch:
+    inputs:
+      worker-manager-version:
+        description: Worker manager version
+        required: true
 
 jobs:
   build:
