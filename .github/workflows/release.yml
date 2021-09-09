@@ -168,7 +168,7 @@ jobs:
         id: image
         env:
           PACKER_LOG_PATH: ./packer.log
-        run: echo "::set-output name=id::$(./vendor/smartassert/bash-ga-deploy-tools/src/extract-id-from-packer-log.sh)"
+        run: echo "::set-output name=id::$(./vendor/smartassert/bash-ga-deploy-tools/src/digitalocean-snapshot/extract-id-from-packer-log.sh)"
 
       - name: Verify snapshot exists
         env:
