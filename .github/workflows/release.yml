@@ -156,17 +156,24 @@ jobs:
           WORKER_MANAGER_VERSION: ${{ needs.setup.outputs.worker-manager-version }}
         run: packer validate image.pkr.hcl
 
+      - name: Set packer log path
+        id: packer-log-path
+        run: echo "::set-output name=value::./packer.log"
+
       - name: Create image and snapshot
-        id: image
         env:
           DIGITALOCEAN_API_TOKEN: ${{ secrets.DIGITALOCEAN_API_TOKEN }}
           SNAPSHOT_NAME: ${{ needs.setup.outputs.snapshot-name }}
           WORKER_MANAGER_VERSION: ${{ needs.setup.outputs.worker-manager-version }}
-        run: |
-          packer build image.pkr.hcl | tee packer.log
-          ID=$(cat packer.log | tail -1 | grep -P -o 'ID: \d+' | tr -d 'ID: ')
+          PACKER_LOG_PATH: ${{ steps.packer-log-path.outputs.value }}
+          PACKER_LOG: 1
+        run: packer build -machine-readable image.pkr.hcl
 
-          echo "::set-output name=id::$ID"
+      - name: Extract image ID from packer log
+        id: image
+        env:
+          PACKER_LOG_PATH: ${{ steps.packer-log-path.outputs.value }}
+        run: echo "::set-output name=id::$(./vendor/smartassert/bash-ga-deploy-tools/src/digitalocean-snapshot/extract-id-from-packer-log.sh)"
 
       - name: Verify snapshot exists
         env:
