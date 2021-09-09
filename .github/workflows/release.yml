@@ -130,15 +130,6 @@ jobs:
         id: packer-log-path
         run: echo "::set-output name=value::./packer.log"
 
-      - name: Create image and snapshot
-        env:
-          DIGITALOCEAN_API_TOKEN: ${{ secrets.DIGITALOCEAN_API_TOKEN }}
-          SNAPSHOT_NAME: ${{ needs.setup.outputs.snapshot-name }}
-          WORKER_MANAGER_VERSION: ${{ needs.setup.outputs.worker-manager-version }}
-          PACKER_LOG_PATH: ${{ steps.packer-log-path.outputs.value }}
-          PACKER_LOG: 1
-        run: packer build -machine-readable image.pkr.hcl
-
       - name: Create image
         uses: hashicorp/packer-github-actions@master
         env:
