@@ -9,7 +9,7 @@ on:
 
 jobs:
   setup:
-    name: Re-run workflow on failure
+    name: Setup
     runs-on: ubuntu-latest
     if: ${{ github.event.workflow_run.conclusion == 'failure' }}
     outputs:
@@ -18,6 +18,9 @@ jobs:
       comment: ${{ steps.comment.outputs.value }}
 
     steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
       - name: Dump context
         env:
           GITHUB_CONTEXT: ${{ toJson(github) }}
@@ -32,14 +35,18 @@ jobs:
         env:
           CREATED_AT: ${{ github.event.workflow_run.created_at }}
           UPDATED_AT: ${{ github.event.workflow_run.updated_at }}
-        run: echo "::set-output name=duration::$(./ci/scripts/tests-rerun-calculate-duration.sh)"
+        run: |
+          DURATION=$(./ci/scripts/tests-rerun-calculate-duration.sh)
+          echo "::set-output name=duration::$DURATION"
 
       - name: Set 'should retry'?
         id: should-retry
         env:
           MAXIMUM_DURATION: ${{ steps.maximum-duration.outputs.value }}
           DURATION: ${{ steps.duration.outputs.value }}
-        run: echo "::set-output name=value::$(./ci/scripts/tests-rerun-should-retry.sh)"
+        run: |
+          SHOULD_RETRY=$(./ci/scripts/tests-rerun-should-retry.sh)
+          echo "::set-output name=value::$SHOULD_RETRY"
 
       - name: Set comment
         id: comment
@@ -85,6 +92,9 @@ jobs:
     if: ${{ github.event.workflow_run.conclusion == 'failure' && needs.setup.outputs.should-retry == 'true' }}
 
     steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
       - name: Retry
         env:
           GITHUB_TOKEN: ${{ secrets.PAT_TOKEN_SELF }}
