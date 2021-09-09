@@ -47,7 +47,7 @@ jobs:
         id: auto-commit-action
         uses: stefanzweifel/git-auto-commit-action@v4
         with:
-          commit_message: "Automatic build.env for worker manager release ${{ github.event.client_payload.worker_manager_version }}"
+          commit_message: "Automatic build.env for worker manager release ${{ steps.worker-manager-version.outputs.value }}"
 
       - name: Get latest commit hash
         id: commit_hash
