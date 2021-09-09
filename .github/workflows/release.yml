@@ -46,17 +46,6 @@ jobs:
           path: ./vendor/smartassert/bash-read-env-file
           ref: main
 
-      - name: Setup php
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: 8
-
-      - name: Download dependencies
-        uses: php-actions/composer@v6
-        with:
-          args: --ignore-platform-reqs --quiet
-          working_dir: app
-
       - name: Set version
         id: version
         env:
@@ -115,6 +104,10 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       image-id: ${{ steps.image.outputs.id }}
+    env:
+      DIGITALOCEAN_API_TOKEN: ${{ secrets.DIGITALOCEAN_API_TOKEN }}
+      SNAPSHOT_NAME: ${{ needs.setup.outputs.snapshot-name }}
+      WORKER_MANAGER_VERSION: ${{ needs.setup.outputs.worker-manager-version }}
 
     steps:
       - name: Checkout
@@ -127,47 +120,25 @@ jobs:
           path: ./vendor/smartassert/bash-ga-deploy-tools
           ref: main
 
-      - name: Setup php
-        uses: shivammathur/setup-php@v2
+      - name: Validate image configuration
+        uses: hashicorp/packer-github-actions@master
         with:
-          php-version: 8
-
-      - name: Download dependencies
-        uses: php-actions/composer@v6
-        with:
-          args: --ignore-platform-reqs --quiet
-          working_dir: app
-
-      - name: Install packer
-        run: |
-          curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo apt-key add -
-          sudo apt-add-repository "deb [arch=amd64] https://apt.releases.hashicorp.com $(lsb_release -cs) main"
-          sudo apt-get update && sudo apt-get install packer
-
-      - name: Verify packer installation
-        run: |
-          packer --version
-          if [ $? -ne 0 ]; then exit 1; fi; exit 0;
-
-      - name: Verify image configuration
-        env:
-          DIGITALOCEAN_API_TOKEN: ${{ secrets.DIGITALOCEAN_API_TOKEN }}
-          SNAPSHOT_NAME: ${{ needs.setup.outputs.snapshot-name }}
-          WORKER_MANAGER_VERSION: ${{ needs.setup.outputs.worker-manager-version }}
-        run: packer validate image.pkr.hcl
+          command: validate
+          target: image.pkr.hcl
 
       - name: Set packer log path
         id: packer-log-path
         run: echo "::set-output name=value::./packer.log"
 
-      - name: Create image and snapshot
+      - name: Create image
+        uses: hashicorp/packer-github-actions@master
         env:
-          DIGITALOCEAN_API_TOKEN: ${{ secrets.DIGITALOCEAN_API_TOKEN }}
-          SNAPSHOT_NAME: ${{ needs.setup.outputs.snapshot-name }}
-          WORKER_MANAGER_VERSION: ${{ needs.setup.outputs.worker-manager-version }}
           PACKER_LOG_PATH: ${{ steps.packer-log-path.outputs.value }}
           PACKER_LOG: 1
-        run: packer build -machine-readable image.pkr.hcl
+        with:
+          command: build
+          arguments: "-machine-readable"
+          target: image.pkr.hcl
 
       - name: Extract image ID from packer log
         id: image
@@ -175,9 +146,8 @@ jobs:
           PACKER_LOG_PATH: ${{ steps.packer-log-path.outputs.value }}
         run: echo "::set-output name=id::$(./vendor/smartassert/bash-ga-deploy-tools/src/digitalocean-snapshot/extract-id-from-packer-log.sh)"
 
-      - name: Verify snapshot exists
+      - name: Verify image exists
         env:
-          DIGITALOCEAN_API_TOKEN: ${{ secrets.DIGITALOCEAN_API_TOKEN }}
           IMAGE_ID: ${{ steps.image.outputs.id }}
           EXPECTED_EXISTS: "true"
         run: ./vendor/smartassert/bash-ga-deploy-tools/src/digitalocean-snapshot/verify-existence.sh
@@ -219,17 +189,6 @@ jobs:
           repository: smartassert/bash-ga-deploy-tools
           path: ./vendor/smartassert/bash-ga-deploy-tools
           ref: main
-
-      - name: Setup php
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: 8
-
-      - name: Download dependencies
-        uses: php-actions/composer@v6
-        with:
-          args: --ignore-platform-reqs --quiet
-          working_dir: app
 
       - name: Remove snapshot
         env:
