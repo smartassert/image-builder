@@ -50,7 +50,6 @@ jobs:
 
       - name: Set comment
         id: comment
-        if: ${{ steps.should-retry.outputs.decision == 'true' }}
         env:
           GITHUB_TOKEN: ${{ secrets.PAT_TOKEN_SELF }}
           MAXIMUM_DURATION: ${{ steps.maximum-duration.outputs.value }}
