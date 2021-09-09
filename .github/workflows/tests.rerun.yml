@@ -37,7 +37,7 @@ jobs:
           UPDATED_AT: ${{ github.event.workflow_run.updated_at }}
         run: |
           DURATION=$(./ci/scripts/tests-rerun-calculate-duration.sh)
-          echo "::set-output name=duration::$DURATION"
+          echo "::set-output name=value::$DURATION"
 
       - name: Set 'should retry'?
         id: should-retry
