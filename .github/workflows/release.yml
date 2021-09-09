@@ -19,6 +19,7 @@ jobs:
       snapshot-name: ${{ steps.snapshot-name.outputs.value }}
       should-deploy: ${{ steps.should-deploy.outputs.value }}
       version: ${{ steps.version.outputs.value }}
+      worker-manager-version: ${{ steps.build-config.outputs.WORKER_MANAGER_VERSION }}
 
     steps:
       - name: Checkout
@@ -36,6 +37,13 @@ jobs:
         with:
           repository: smartassert/bash-ga-deploy-tools
           path: ./vendor/smartassert/bash-ga-deploy-tools
+          ref: main
+
+      - name: Checkout bash-read-env-file
+        uses: actions/checkout@v2
+        with:
+          repository: smartassert/bash-read-env-file
+          path: ./vendor/smartassert/bash-read-env-file
           ref: main
 
       - name: Setup php
@@ -89,6 +97,18 @@ jobs:
       - name: Output should deploy
         run: echo ${{ steps.should-deploy.outputs.value }}
 
+      - name: Read build config
+        id: build-config
+        env:
+          ENV_FILE_PATH: ./build.env
+        run: ./vendor/smartassert/bash-read-env-file/src/read-env-file-ga.sh
+
+      - name: Output worker manager version
+        env:
+          VALUE: ${{ steps.build-config.outputs.WORKER_MANAGER_VERSION }}
+        run: |
+          [ "" != "$VALUE" ] && echo "$VALUE"
+
   create-image:
     needs: setup
     name: Create image
@@ -133,17 +153,16 @@ jobs:
         env:
           DIGITALOCEAN_API_TOKEN: ${{ secrets.DIGITALOCEAN_API_TOKEN }}
           SNAPSHOT_NAME: ${{ needs.setup.outputs.snapshot-name }}
-        run: |
-          export echo $(cat build.env | tr '\n' ' ')
-          packer validate image.pkr.hcl
+          WORKER_MANAGER_VERSION: ${{ needs.setup.outputs.worker-manager-version }}
+        run: packer validate image.pkr.hcl
 
       - name: Create image and snapshot
         id: image
         env:
           DIGITALOCEAN_API_TOKEN: ${{ secrets.DIGITALOCEAN_API_TOKEN }}
           SNAPSHOT_NAME: ${{ needs.setup.outputs.snapshot-name }}
+          WORKER_MANAGER_VERSION: ${{ needs.setup.outputs.worker-manager-version }}
         run: |
-          export echo $(cat build.env | tr '\n' ' ')
           packer build image.pkr.hcl | tee packer.log
           ID=$(cat packer.log | tail -1 | grep -P -o 'ID: \d+' | tr -d 'ID: ')
 
