@@ -38,13 +38,16 @@ jobs:
         id: update
         env:
           WORKER_MANAGER_VERSION: ${{ steps.worker-manager-version.outputs.value }}
-        run: echo "WORKER_MANAGER_VERSION=$WORKER_MANAGER_VERSION" >> build.env
+        run: echo "WORKER_MANAGER_VERSION=$WORKER_MANAGER_VERSION" > build.env
+
+      - name: Remove non-committable dependencies
+        run: rm -Rf ./vendor
 
       - name: Commit changes
         id: auto-commit-action
         uses: stefanzweifel/git-auto-commit-action@v4
         with:
-          commit_message: "Automatic build.env for worker manager release ${{ github.event.client_payload.worker_manager_version }}"
+          commit_message: "Automatic build.env for worker manager release ${{ steps.worker-manager-version.outputs.value }}"
 
       - name: Get latest commit hash
         id: commit_hash
@@ -56,18 +59,18 @@ jobs:
       - name: Create release notes
         if: ${{ steps.auto-commit-action.outputs.changes_detected == 'true' }}
         id: release_notes
+        env:
+          WORKER_MANAGER_VERSION: ${{ steps.worker-manager-version.outputs.value }}
         run: |
-          rm -f release-notes.md
-          export echo $(cat build.env | tr '\n' ' ')
-          echo "- worker manager: $WORKER_MANAGER_VERSION" >> release-notes.md
+          echo "- worker manager: $WORKER_MANAGER_VERSION" > release-notes.md
 
       - name: Create release
         if: ${{ steps.auto-commit-action.outputs.changes_detected == 'true' }}
         env:
           GITHUB_TOKEN: ${{ secrets.PAT_TOKEN_SELF }}
-          TAG: ${{ github.event.client_payload.worker_manager_version }}
+          TAG: ${{ steps.worker-manager-version.outputs.value }}
           TARGET: ${{ steps.commit_hash.outputs.value }}
-          TITLE: "Automatic release ${{ github.event.client_payload.worker_manager_version }}"
+          TITLE: "Automatic release ${{ steps.worker-manager-version.outputs.value }}"
           NOTES: ${{ steps.release_notes.outputs.value }}
         run: |
           gh release create $TAG --target $TARGET --title "$TITLE" --notes-file ./release-notes.md
