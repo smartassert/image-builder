@@ -68,9 +68,9 @@ jobs:
         if: ${{ steps.auto-commit-action.outputs.changes_detected == 'true' }}
         env:
           GITHUB_TOKEN: ${{ secrets.PAT_TOKEN_SELF }}
-          TAG: ${{ github.event.client_payload.worker_manager_version }}
+          TAG: ${{ steps.worker-manager-version.outputs.value }}
           TARGET: ${{ steps.commit_hash.outputs.value }}
-          TITLE: "Automatic release ${{ github.event.client_payload.worker_manager_version }}"
+          TITLE: "Automatic release ${{ steps.worker-manager-version.outputs.value }}"
           NOTES: ${{ steps.release_notes.outputs.value }}
         run: |
           gh release create $TAG --target $TARGET --title "$TITLE" --notes-file ./release-notes.md
