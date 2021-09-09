@@ -37,7 +37,7 @@ jobs:
       - name: Update build.env
         id: update
         env:
-          WORKER_MANAGER_VERSION: ${{ github.event.client_payload.worker_manager_version }}
+          WORKER_MANAGER_VERSION: ${{ steps.worker-manager-version.outputs.value }}
         run: echo "WORKER_MANAGER_VERSION=$WORKER_MANAGER_VERSION" >> build.env
 
       - name: Commit changes
