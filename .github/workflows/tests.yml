@@ -16,6 +16,10 @@ jobs:
     runs-on: ${{ matrix.operating-system }}
 
     steps:
+      - name: Intentional failure
+        run:
+          exit 1
+
       - name: Checkout code
         uses: actions/checkout@v2
 
