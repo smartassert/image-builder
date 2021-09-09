@@ -151,7 +151,7 @@ jobs:
 
       - name: Verify image exists
         env:
-          IMAGE_ID: ${{ steps.image.outpUse actions/packer-github-actionsuts.id }}
+          IMAGE_ID: ${{ steps.image.outputs.id }}
           EXPECTED_EXISTS: "true"
         run: ./vendor/smartassert/bash-ga-deploy-tools/src/digitalocean-snapshot/verify-existence.sh
 
