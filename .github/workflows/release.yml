@@ -104,6 +104,8 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       image-id: ${{ steps.image.outputs.id }}
+    env:
+      DIGITALOCEAN_API_TOKEN: ${{ secrets.DIGITALOCEAN_API_TOKEN }}
 
     steps:
       - name: Checkout
@@ -119,7 +121,6 @@ jobs:
       - name: Validate image configuration
         uses: hashicorp/packer-github-actions@master
         env:
-          DIGITALOCEAN_API_TOKEN: ${{ secrets.DIGITALOCEAN_API_TOKEN }}
           SNAPSHOT_NAME: ${{ needs.setup.outputs.snapshot-name }}
           WORKER_MANAGER_VERSION: ${{ needs.setup.outputs.worker-manager-version }}
         with:
@@ -133,7 +134,6 @@ jobs:
       - name: Create image
         uses: hashicorp/packer-github-actions@master
         env:
-          DIGITALOCEAN_API_TOKEN: ${{ secrets.DIGITALOCEAN_API_TOKEN }}
           SNAPSHOT_NAME: ${{ needs.setup.outputs.snapshot-name }}
           WORKER_MANAGER_VERSION: ${{ needs.setup.outputs.worker-manager-version }}
           PACKER_LOG_PATH: ${{ steps.packer-log-path.outputs.value }}
@@ -151,7 +151,6 @@ jobs:
 
       - name: Verify image exists
         env:
-          DIGITALOCEAN_API_TOKEN: ${{ secrets.DIGITALOCEAN_API_TOKEN }}
           IMAGE_ID: ${{ steps.image.outpUse actions/packer-github-actionsuts.id }}
           EXPECTED_EXISTS: "true"
         run: ./vendor/smartassert/bash-ga-deploy-tools/src/digitalocean-snapshot/verify-existence.sh
