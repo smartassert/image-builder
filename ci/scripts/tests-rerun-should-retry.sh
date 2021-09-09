@@ -11,9 +11,4 @@ if [ -z "$MAXIMUM_DURATION" ]; then
   exit "$EXIT_CODE_MAXIMUM_DURATION_MISSING"
 fi
 
-SHOULD_RETRY="false"
-if [ $DURATION -lt $MAXIMUM_DURATION ] || [ $DURATION = $MAXIMUM_DURATION ]; then
-  SHOULD_RETRY="true"
-fi
-
-echo "$SHOULD_RETRY"
+[ $DURATION -lt $MAXIMUM_DURATION ] || [ $DURATION = $MAXIMUM_DURATION ] && echo "true" || echo "false"
