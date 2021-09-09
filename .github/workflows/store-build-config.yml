@@ -3,6 +3,11 @@ name: Store build config
 on:
   repository_dispatch:
     types: [worker-manager-release]
+  workflow_dispatch:
+    inputs:
+      worker-manager-version:
+        description: Worker manager version
+        required: true
 
 jobs:
   build:
@@ -15,10 +20,24 @@ jobs:
         with:
           token: ${{ secrets.PAT_TOKEN_SELF }}
 
+      - name: Checkout bash-ga-ci-tools
+        uses: actions/checkout@v2
+        with:
+          repository: smartassert/bash-ga-ci-tools
+          path: ./vendor/smartassert/bash-ga-ci-tools
+          ref: main
+
+      - name: Set worker manager version
+        id: worker-manager-version
+        env:
+          VALUE1: ${{ github.event.client_payload.worker_manager_version }}
+          VALUE2: ${{ github.event.inputs.worker-manager-version }}
+        run: echo "::set-output name=value::$(./vendor/smartassert/bash-ga-ci-tools/src/select-exclusive-value-from-two-values.sh)"
+
       - name: Update build.env
         id: update
         env:
-          WORKER_MANAGER_VERSION: ${{ github.event.client_payload.worker_manager_version }}
+          WORKER_MANAGER_VERSION: ${{ steps.worker-manager-version.outputs.value }}
         run: echo "WORKER_MANAGER_VERSION=$WORKER_MANAGER_VERSION" >> build.env
 
       - name: Commit changes
