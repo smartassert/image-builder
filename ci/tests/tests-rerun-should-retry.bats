@@ -12,27 +12,27 @@ main() {
   bash "${BATS_TEST_DIRNAME}/../scripts/$script_name"
 }
 
-@test "$script_name: no arguments fails with exit code 3" {
+@test "$script_name: no arguments outputs 'false'" {
   run main
 
-  assert_failure "3"
-  assert_output ""
+  assert_success
+  assert_output "false"
 }
 
-@test "$script_name: MAXIMUM_DURATION set, DURATION missing fails with exit code 3" {
+@test "$script_name: MAXIMUM_DURATION set, DURATION missing  outputs 'false'" {
   MAXIMUM_DURATION="10" \
   run main
 
-  assert_failure "3"
-  assert_output ""
+  assert_success
+  assert_output "false"
 }
 
-@test "$script_name: DURATION set, MAXIMUM_DURATION missing fails with exit code 4" {
+@test "$script_name: DURATION set, MAXIMUM_DURATION missing  outputs 'false'" {
   DURATION="20" \
   run main
 
-  assert_failure "4"
-  assert_output ""
+  assert_success
+  assert_output "false"
 }
 
 @test "$script_name: DURATION less than MAXIMUM_DURATION outputs 'true'" {
