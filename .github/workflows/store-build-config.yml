@@ -19,34 +19,22 @@ jobs:
         id: update
         env:
           WORKER_MANAGER_VERSION: ${{ github.event.client_payload.worker_manager_version }}
-        run: |
-          cp build.env build.old
-          rm -f build.env
-          echo "WORKER_MANAGER_VERSION=$WORKER_MANAGER_VERSION" >> build.env
-
-          if cmp --quiet build.env build.old ; then
-            echo "::set-output name=has_changes::false"
-          else
-            echo "::set-output name=has_changes::true"
-          fi
-
-          rm build.old
+        run: echo "WORKER_MANAGER_VERSION=$WORKER_MANAGER_VERSION" >> build.env
 
       - name: Commit changes
-        if: ${{ steps.update.outputs.has_changes == 'true' }}
         uses: stefanzweifel/git-auto-commit-action@v4
         with:
           commit_message: "Automatic build.env for worker manager release ${{ github.event.client_payload.worker_manager_version }}"
 
       - name: Get latest commit hash
         id: commit_hash
-        if: ${{ steps.update.outputs.has_changes == 'true' }}
+        if: ${{ steps.auto-commit-action.outputs.changes_detected }}
         run: |
           COMMIT_HASH=$(git rev-parse HEAD)
           echo "::set-output name=value::$COMMIT_HASH"
 
       - name: Create release notes
-        if: ${{ steps.update.outputs.has_changes == 'true' }}
+        if: ${{ steps.auto-commit-action.outputs.changes_detected }}
         id: release_notes
         run: |
           rm -f release-notes.md
@@ -54,7 +42,7 @@ jobs:
           echo "- worker manager: $WORKER_MANAGER_VERSION" >> release-notes.md
 
       - name: Create release
-        if: ${{ steps.update.outputs.has_changes == 'true' }}
+        if: ${{ steps.auto-commit-action.outputs.changes_detected }}
         env:
           GITHUB_TOKEN: ${{ secrets.PAT_TOKEN_SELF }}
           TAG: ${{ github.event.client_payload.worker_manager_version }}
