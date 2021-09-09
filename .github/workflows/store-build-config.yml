@@ -40,6 +40,9 @@ jobs:
           WORKER_MANAGER_VERSION: ${{ steps.worker-manager-version.outputs.value }}
         run: echo "WORKER_MANAGER_VERSION=$WORKER_MANAGER_VERSION" > build.env
 
+      - name: Remove non-committable dependencies
+        run: rm -Rf ./vendor
+
       - name: Commit changes
         id: auto-commit-action
         uses: stefanzweifel/git-auto-commit-action@v4
