@@ -81,14 +81,10 @@ jobs:
       - name: Deploy after building image?
         id: should-deploy
         env:
-          EVENT_NAME: ${{ github.event_name }}
-        run: |
-          SHOULD_DEPLOY=false
-          if [ "release" = "$EVENT_NAME"]; then
-            SHOULD_DEPLOY=true
-          fi
-
-          echo "::set-output name=value::$SHOULD_DEPLOY"
+          EXPECTED: release
+          ACTUAL: ${{ github.event_name }}
+          DEFAULT: false
+        run: echo "::set-output name=value::$(./vendor/smartassert/bash-ga-ci-tools/src/boolean-if-actual-is-expected-else-default.sh)"
 
       - name: Output should deploy
         run: echo ${{ steps.should-deploy.outputs.value }}
