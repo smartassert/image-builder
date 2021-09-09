@@ -57,7 +57,7 @@ jobs:
           WORKER_MANAGER_IMAGE: ${{ steps.worker-manager-image.outputs.WORKER_MANAGER_IMAGE }}
         run: |
           CREATE_OUTPUT=$(php app/bin/console app:instance:create)
-          echo "::set-output name=id::$(echo $CREATE_OUTPUT | jq ".id")"
+          echo "::set-output name=id::$(echo "$CREATE_OUTPUT" | jq ".id")"
 
       - name: Health check
         env:
@@ -68,4 +68,4 @@ jobs:
         if:  ${{ failure() }}
         env:
           INSTANCE_ID: ${{ steps.instance.outputs.id }}
-        run: php app/bin/console app:instance:destroy --id=$INSTANCE_ID
+        run: php app/bin/console app:instance:destroy --id="$INSTANCE_ID"
