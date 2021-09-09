@@ -18,6 +18,9 @@ jobs:
       comment: ${{ steps.comment.outputs.value }}
 
     steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
       - name: Dump context
         env:
           GITHUB_CONTEXT: ${{ toJson(github) }}
