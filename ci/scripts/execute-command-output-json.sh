@@ -17,7 +17,7 @@ if [ "0" != "$EXIT_CODE" ]; then
 fi
 
 JQ_STD_ERR="/tmp/jq.log"
-echo $COMMAND_OUTPUT | jq "." 2>"$JQ_STD_ERR"
+jq "." 2>"$JQ_STD_ERR" <<< "$COMMAND_OUTPUT"
 JQ_EXIT_CODE="$?"
 if [ "0" != "$JQ_EXIT_CODE" ]; then
   echo "{
