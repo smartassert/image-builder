@@ -63,26 +63,21 @@ jobs:
     name: Verify setup
     runs-on: ubuntu-latest
     needs: setup
-    if: ${{ github.event.workflow_run.conclusion == 'failure' }}
 
     steps:
-      - name: Output 'should retry'
-        env:
-          VALUE: ${{ needs.setup.outputs.should-retry }}
-        run: |
-          [ "" != "$VALUE" ] && echo "$VALUE"
+      - name: Checkout bash-ga-ci-tools
+        uses: actions/checkout@v2
+        with:
+          repository: smartassert/bash-ga-ci-tools
+          path: ./vendor/smartassert/bash-ga-ci-tools
+          ref: main
 
-      - name: Output run id
+      - name: Output
         env:
-          VALUE: ${{ needs.setup.outputs.run-id }}
+          OUTPUTS: ${{ toJson(needs.setup.outputs) }}
         run: |
-          [ "" != "$VALUE" ] && echo "$VALUE"
-
-      - name: Output comment
-        env:
-          VALUE: ${{ needs.setup.outputs.comment }}
-        run: |
-          [ "" != "$VALUE" ] && echo "$VALUE"
+          echo "$OUTPUTS"
+          ./vendor/smartassert/bash-ga-ci-tools/src/json-contains-no-empty-values.sh
 
   retry:
     name: Retry and comment

@@ -53,12 +53,6 @@ jobs:
           DEFAULT: master
         run: echo "::set-output name=value::$(./vendor/smartassert/bash-ga-ci-tools/src/select-defined-variable-or-default.sh)"
 
-      - name: Output version
-        env:
-          VALUE: ${{ steps.version.outputs.value }}
-        run: |
-          [ "" != "$VALUE" ] && echo "$VALUE"
-
       - name: Set snapshot name
         id: snapshot-name
         env:
@@ -69,12 +63,6 @@ jobs:
           SNAPSHOT_NAME=$(./vendor/smartassert/bash-ga-deploy-tools/src/digitalocean-snapshot/create-name.sh)
           echo "::set-output name=value::$SNAPSHOT_NAME"
 
-      - name: Output snapshot name
-        env:
-          VALUE: ${{ steps.snapshot-name.outputs.value }}
-        run: |
-          [ "" != "$VALUE" ] && echo "$VALUE"
-
       - name: Deploy after building image?
         id: should-deploy
         env:
@@ -83,23 +71,34 @@ jobs:
           DEFAULT: false
         run: echo "::set-output name=value::$(./vendor/smartassert/bash-ga-ci-tools/src/boolean-if-actual-is-expected-else-default.sh)"
 
-      - name: Output should deploy
-        run: echo ${{ steps.should-deploy.outputs.value }}
-
       - name: Read build config
         id: build-config
         env:
           ENV_FILE_PATH: ./build.env
         run: ./vendor/smartassert/bash-read-env-file/src/read-env-file-ga.sh
 
-      - name: Output worker manager version
+  verify-setup:
+    name: Verify setup
+    runs-on: ubuntu-latest
+    needs: setup
+
+    steps:
+      - name: Checkout bash-ga-ci-tools
+        uses: actions/checkout@v2
+        with:
+          repository: smartassert/bash-ga-ci-tools
+          path: ./vendor/smartassert/bash-ga-ci-tools
+          ref: main
+
+      - name: Output
         env:
-          VALUE: ${{ steps.build-config.outputs.WORKER_MANAGER_VERSION }}
+          OUTPUTS: ${{ toJson(needs.setup.outputs) }}
         run: |
-          [ "" != "$VALUE" ] && echo "$VALUE"
+          echo "$OUTPUTS"
+          ./vendor/smartassert/bash-ga-ci-tools/src/json-contains-no-empty-values.sh
 
   create-image:
-    needs: setup
+    needs: [setup, verify-setup]
     name: Create image
     runs-on: ubuntu-latest
     outputs:
