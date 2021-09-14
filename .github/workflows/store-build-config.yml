@@ -52,6 +52,7 @@ jobs:
     needs: [setup, verify-setup]
     outputs:
       create-release: ${{ steps.auto-commit-action.outputs.changes_detected }}
+      commit-hash: ${{ steps.auto-commit-action.outputs.commit_hash }}
 
     steps:
       - name: Checkout
@@ -83,10 +84,6 @@ jobs:
         with:
           token: ${{ secrets.PAT_TOKEN_SELF }}
 
-      - name: Get latest commit hash
-        id: commit_hash
-        run: echo "::set-output name=value::$(git rev-parse HEAD)"
-
       - name: Create release notes
         id: release_notes
         env:
@@ -98,7 +95,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.PAT_TOKEN_SELF }}
           TAG: ${{ needs.setup.outputs.worker-manager-version }}
-          TARGET: ${{ steps.commit_hash.outputs.value }}
+          TARGET: ${{ needs.update-build-configuration.outputs.commit-hash }}
           TITLE: "Automatic release ${{ needs.setup.outputs.worker-manager-version }}"
           NOTES: ${{ steps.release_notes.outputs.value }}
         run: |
