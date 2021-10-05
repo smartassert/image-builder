@@ -2,6 +2,7 @@
 
 namespace App\Tests\Unit\Model;
 
+use App\Model\Filter;
 use App\Model\Instance;
 use App\Tests\Services\DropletDataFactory;
 use App\Tests\Services\InstanceFactory;
@@ -93,6 +94,81 @@ class InstanceTest extends TestCase
                     ],
                 ]),
                 'expectedLabel' => '789 (tag1, tag2, tag3)',
+            ],
+        ];
+    }
+
+    /**
+     * @dataProvider isMatchedByDataProvider
+     */
+    public function testIsMatchedBy(Instance $instance, Filter $filter, bool $expected): void
+    {
+        self::assertSame($expected, $instance->isMatchedBy($filter));
+    }
+
+    /**
+     * @return array<mixed>
+     */
+    public function isMatchedByDataProvider(): array
+    {
+        $messageQueueSizeFilter = new Filter('message-queue-size', Filter::OPERATOR_EQUALS, 0);
+        $notContainsIpFilter = new Filter('ips', Filter::OPERATOR_NOT_CONTAINS, '127.0.0.1');
+
+        return [
+            'equals, instance does not have state property' => [
+                'instance' => InstanceFactory::create([
+                    'id' => 1,
+                ]),
+                'filter' => $messageQueueSizeFilter,
+                'expected' => false,
+            ],
+            'equals, instance has state property, property does not match' => [
+                'instance' => InstanceFactory::create([
+                    'id' => 2,
+                ])->withAdditionalState([
+                    'message-queue-size' => 12,
+                ]),
+                'filter' => $messageQueueSizeFilter,
+                'expected' => false,
+            ],
+            'equals, instance has state property, property matches' => [
+                'instance' => InstanceFactory::create([
+                    'id' => 3,
+                ])->withAdditionalState([
+                    'message-queue-size' => 0,
+                ]),
+                'filter' => $messageQueueSizeFilter,
+                'expected' => true,
+            ],
+            'contains, instance does not have state property' => [
+                'instance' => InstanceFactory::create([
+                    'id' => 4,
+                ]),
+                'filter' => $notContainsIpFilter,
+                'expected' => true,
+            ],
+            'contains, instance has state property, property does not match' => [
+                'instance' => InstanceFactory::create(DropletDataFactory::createWithIps(
+                    5,
+                    [
+                        '127.0.0.2',
+                        '127.0.0.3',
+                    ]
+                )),
+                'filter' => $notContainsIpFilter,
+                'expected' => true,
+            ],
+            'contains, instance has state property, property matches' => [
+                'instance' => InstanceFactory::create(DropletDataFactory::createWithIps(
+                    6,
+                    [
+                        '127.0.0.1',
+                        '127.0.0.2',
+                        '127.0.0.3',
+                    ]
+                )),
+                'filter' => $notContainsIpFilter,
+                'expected' => false,
             ],
         ];
     }

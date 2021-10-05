@@ -132,6 +132,25 @@ class Instance
         return new \DateTimeImmutable($this->droplet->createdAt);
     }
 
+    public function isMatchedBy(Filter $filter): bool
+    {
+        $state = $this->getState();
+        $operator = $filter->getOperator();
+
+        if (Filter::OPERATOR_EQUALS === $operator) {
+            return $filter->getValue() === ($state[$filter->getField()] ?? null);
+        }
+
+        if (Filter::OPERATOR_NOT_CONTAINS === $operator) {
+            $haystack = ($state[$filter->getField()] ?? []);
+            $haystack = is_array($haystack) ? $haystack : [];
+
+            return !in_array($filter->getValue(), $haystack);
+        }
+
+        return false;
+    }
+
     private function getFirstPublicV4IpAddress(): ?string
     {
         foreach ($this->droplet->networks as $network) {
