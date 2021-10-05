@@ -9,6 +9,11 @@ class Instance
     private ?string $version = null;
     private ?int $messageQueueSize = null;
 
+    /**
+     * @var array<string, int|string>
+     */
+    private array $state = [];
+
     public function __construct(private Droplet $droplet)
     {
     }
@@ -23,6 +28,14 @@ class Instance
         return $this->droplet;
     }
 
+    /**
+     * @return array<string, int|string>
+     */
+    public function getState(): array
+    {
+        return $this->state;
+    }
+
     public function getVersion(): ?string
     {
         return $this->version;
@@ -32,6 +45,17 @@ class Instance
     {
         $new = clone $this;
         $new->version = $version;
+
+        return $new;
+    }
+
+    /**
+     * @param array<string, int|string> $state
+     */
+    public function withState(array $state): self
+    {
+        $new = clone $this;
+        $new->state = $state;
 
         return $new;
     }
