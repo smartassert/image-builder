@@ -10,7 +10,7 @@ class Instance
     private ?int $messageQueueSize = null;
 
     /**
-     * @var array<string, int|string>
+     * @var array<int|string, mixed>
      */
     private array $state = [];
 
@@ -29,7 +29,7 @@ class Instance
     }
 
     /**
-     * @return array<string, int|string>
+     * @return array<int|string, mixed>
      */
     public function getState(): array
     {
@@ -50,7 +50,7 @@ class Instance
     }
 
     /**
-     * @param array<string, int|string> $state
+     * @param array<int|string, mixed> $state
      */
     public function withState(array $state): self
     {
