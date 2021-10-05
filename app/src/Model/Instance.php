@@ -52,7 +52,7 @@ class Instance
     /**
      * @param array<int|string, mixed> $state
      */
-    public function withState(array $state): self
+    public function withAdditionalState(array $state): self
     {
         $new = clone $this;
         $new->state = $state;
