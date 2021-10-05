@@ -5,7 +5,7 @@ namespace App\Model;
 class Filter
 {
     public const OPERATOR_EQUALS = '=';
-    public const OPERATOR_NOT_EQUALS = '!=';
+    public const OPERATOR_NOT_CONTAINS = '!contains';
     public const OPERATOR_DEFAULT = self::OPERATOR_EQUALS;
 
     private const KEY_FIELD = 'field';
@@ -47,7 +47,14 @@ class Filter
         $value = $data[self::KEY_VALUE] ?? null;
 
         $fieldIsValid = is_string($field);
-        $operatorIsValid = self::OPERATOR_EQUALS === $operator || self::OPERATOR_NOT_EQUALS === $operator;
+        $operatorIsValid = in_array(
+            $operator,
+            [
+                self::OPERATOR_EQUALS,
+                self::OPERATOR_NOT_CONTAINS
+            ]
+        );
+
         $valueIsValid = is_bool($value) || is_int($value) || is_string($value) || is_float($value);
 
         return $fieldIsValid && $operatorIsValid && $valueIsValid

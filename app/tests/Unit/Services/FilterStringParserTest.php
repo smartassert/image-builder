@@ -77,16 +77,16 @@ class FilterStringParserTest extends TestCase
                     new Filter('title', '=', 'Expected Title'),
                 ],
             ],
-            'single valid filter, operator !=' => [
+            'single valid filter, operator !contains' => [
                 'filter' => json_encode([
                     [
-                        'field' => 'title',
-                        'operator' => '!=',
-                        'value' => 'Expected Title',
+                        'field' => 'ips',
+                        'operator' => '!contains',
+                        'value' => '127.0.0.1',
                     ],
                 ]),
                 'expectedFilters' => [
-                    new Filter('title', '!=', 'Expected Title'),
+                    new Filter('ips', '!contains', '127.0.0.1'),
                 ],
             ],
             'single valid filter, operator missing, operator defaults to =' => [
@@ -108,14 +108,14 @@ class FilterStringParserTest extends TestCase
                         'value' => 0,
                     ],
                     [
-                        'field' => 'title',
-                        'operator' => '!=',
-                        'value' => 'Not This Title',
+                        'field' => 'ips',
+                        'operator' => '!contains',
+                        'value' => '127.0.0.1',
                     ],
                 ]),
                 'expectedFilters' => [
                     new Filter('length', '=', 0),
-                    new Filter('title', '!=', 'Not This Title'),
+                    new Filter('ips', '!contains', '127.0.0.1'),
                 ],
             ],
         ];
