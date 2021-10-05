@@ -24,6 +24,8 @@ class InstanceHydrator
             $instance = $instance->withMessageQueueSize($status->getMessageQueueSize());
         }
 
-        return $instance;
+        return $instance->withState(
+            $this->instanceClient->getState($instance)
+        );
     }
 }

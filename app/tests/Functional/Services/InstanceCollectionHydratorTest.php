@@ -41,24 +41,39 @@ class InstanceCollectionHydratorTest extends KernelTestCase
                 'ipAddress' => '127.0.0.1',
                 'version' => '0.1',
                 'message-queue-size' => 14,
+                'state' => [
+                    'key1' => 'value1',
+                ],
             ],
             456 => [
                 'ipAddress' => '127.0.0.2',
                 'version' => '0.2',
                 'message-queue-size' => 7,
+                'state' => [
+                    'key2' => 'value2',
+                ],
             ],
         ];
 
         $instances = [];
         foreach ($instanceCollectionData as $dropletId => $instanceData) {
             $instances[] = new Instance($this->createDroplet($dropletId, $instanceData['ipAddress']));
-            $this->mockHandler->append($this->httpResponseFactory->createFromArray([
-                HttpResponseFactory::KEY_STATUS_CODE => 200,
-                HttpResponseFactory::KEY_BODY => json_encode([
-                    'version' => $instanceData['version'],
-                    'message-queue-size' => $instanceData['message-queue-size'],
+            $this->mockHandler->append(
+                $this->httpResponseFactory->createFromArray([
+                    HttpResponseFactory::KEY_STATUS_CODE => 200,
+                    HttpResponseFactory::KEY_BODY => json_encode([
+                        'version' => $instanceData['version'],
+                        'message-queue-size' => $instanceData['message-queue-size'],
+                    ]),
                 ]),
-            ]));
+                $this->httpResponseFactory->createFromArray([
+                    HttpResponseFactory::KEY_STATUS_CODE => 200,
+                    HttpResponseFactory::KEY_HEADERS => [
+                        'content-type' => 'application/json',
+                    ],
+                    HttpResponseFactory::KEY_BODY => json_encode($instanceData['state']),
+                ])
+            );
         }
 
         $instanceCollection = new InstanceCollection($instances);
@@ -68,8 +83,10 @@ class InstanceCollectionHydratorTest extends KernelTestCase
             $expectedData = $instanceCollectionData[$hydratedInstance->getId()];
             $expectedVersion = $expectedData['version'];
             $expectedMessageQueueSize = $expectedData['message-queue-size'];
+            $expectedStateData = $expectedData['state'];
             self::assertSame($expectedVersion, $hydratedInstance->getVersion());
             self::assertSame($expectedMessageQueueSize, $hydratedInstance->getMessageQueueSize());
+            self::assertSame($expectedStateData, $hydratedInstance->getState());
         }
     }
 

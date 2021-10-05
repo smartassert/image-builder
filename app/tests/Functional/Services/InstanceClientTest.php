@@ -159,4 +159,67 @@ class InstanceClientTest extends KernelTestCase
             ],
         ];
     }
+
+    /**
+     * @dataProvider getStateDataProvider
+     *
+     * @param array<mixed> $responseData
+     * @param array<mixed> $expectedState
+     */
+    public function testGetState(array $responseData, array $expectedState): void
+    {
+        $this->mockHandler->append($this->httpResponseFactory->createFromArray($responseData));
+
+        $instance = InstanceFactory::create(['id' => 123]);
+
+        self::assertSame(
+            $expectedState,
+            $this->instanceClient->getState($instance)
+        );
+    }
+
+    /**
+     * @return array<mixed>
+     */
+    public function getStateDataProvider(): array
+    {
+        $data = [
+            'string' => 'content',
+            'boolean' => true,
+            'int' => 123,
+            'float' => M_PI,
+            'array' => [
+                'key1' => 'value1',
+                'key2' => 'value2',
+                'key3' => 'value3',
+            ],
+        ];
+
+        return [
+            'response not an array' => [
+                'responseData' => [
+                    HttpResponseFactory::KEY_STATUS_CODE => 200,
+                    HttpResponseFactory::KEY_BODY => 'string content',
+                ],
+                'expectedState' => [],
+            ],
+            'response content type not "application/json"' => [
+                'responseData' => [
+                    HttpResponseFactory::KEY_STATUS_CODE => 200,
+                    HttpResponseFactory::KEY_BODY => (string) json_encode($data),
+                ],
+                'expectedState' => [],
+            ],
+            'response is json array' => [
+                'responseData' => [
+                    HttpResponseFactory::KEY_STATUS_CODE => 200,
+                    HttpResponseFactory::KEY_HEADERS => [
+                        'content-type' => 'application/json',
+                    ],
+                    HttpResponseFactory::KEY_BODY => (string) json_encode($data),
+                ],
+                'expectedState' => $data,
+            ],
+        ];
+    }
 }

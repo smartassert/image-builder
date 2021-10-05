@@ -149,6 +149,18 @@ class InstanceListCommandTest extends KernelTestCase
             ]
         ];
 
+        $instanceResponseStateData = [
+            [
+                'key1' => 'value1',
+            ],
+            [
+                'key2' => 'value2',
+            ],
+            [
+                'key3' => 'value3',
+            ]
+        ];
+
         $collectionHttpResponses = [
             'droplets' => [
                 HttpResponseFactory::KEY_STATUS_CODE => 200,
@@ -159,17 +171,38 @@ class InstanceListCommandTest extends KernelTestCase
                     'droplets' => $dropletData,
                 ]),
             ],
-            'droplet 123' => [
+            '123-status' => [
                 HttpResponseFactory::KEY_STATUS_CODE => 200,
                 HttpResponseFactory::KEY_BODY => json_encode($instanceResponseData[0]),
             ],
-            'droplet 456' => [
+            '123-state' => [
+                HttpResponseFactory::KEY_STATUS_CODE => 200,
+                HttpResponseFactory::KEY_HEADERS => [
+                    'content-type' => 'application/json',
+                ],
+                HttpResponseFactory::KEY_BODY => json_encode($instanceResponseStateData[0]),
+            ],
+            '456-status' => [
                 HttpResponseFactory::KEY_STATUS_CODE => 200,
                 HttpResponseFactory::KEY_BODY => json_encode($instanceResponseData[1]),
             ],
-            'droplet 789' => [
+            '456-state' => [
+                HttpResponseFactory::KEY_STATUS_CODE => 200,
+                HttpResponseFactory::KEY_HEADERS => [
+                    'content-type' => 'application/json',
+                ],
+                HttpResponseFactory::KEY_BODY => json_encode($instanceResponseStateData[1]),
+            ],
+            '789-status' => [
                 HttpResponseFactory::KEY_STATUS_CODE => 200,
                 HttpResponseFactory::KEY_BODY => json_encode($instanceResponseData[2]),
+            ],
+            '789-state' => [
+                HttpResponseFactory::KEY_STATUS_CODE => 200,
+                HttpResponseFactory::KEY_HEADERS => [
+                    'content-type' => 'application/json',
+                ],
+                HttpResponseFactory::KEY_BODY => json_encode($instanceResponseStateData[2]),
             ],
         ];
 
@@ -224,10 +257,8 @@ class InstanceListCommandTest extends KernelTestCase
                             ],
                         ]),
                     ],
-                    'droplet status' => [
-                        HttpResponseFactory::KEY_STATUS_CODE => 200,
-                        HttpResponseFactory::KEY_BODY => json_encode($instanceResponseData[0]),
-                    ],
+                    '123-status' => $collectionHttpResponses['123-status'],
+                    '123-state' => $collectionHttpResponses['123-state'],
                 ],
                 'expectedReturnCode' => Command::SUCCESS,
                 'expectedOutput' => (string) json_encode([
@@ -252,29 +283,7 @@ class InstanceListCommandTest extends KernelTestCase
                 'input' => [
                     '--with-empty-message-queue' => true,
                 ],
-                'httpResponseDataCollection' => [
-                    'droplets' => [
-                        HttpResponseFactory::KEY_STATUS_CODE => 200,
-                        HttpResponseFactory::KEY_HEADERS => [
-                            'content-type' => 'application/json; charset=utf-8',
-                        ],
-                        HttpResponseFactory::KEY_BODY => (string) json_encode([
-                            'droplets' => $dropletData,
-                        ]),
-                    ],
-                    'droplet 123' => [
-                        HttpResponseFactory::KEY_STATUS_CODE => 200,
-                        HttpResponseFactory::KEY_BODY => json_encode($instanceResponseData[0]),
-                    ],
-                    'droplet 456' => [
-                        HttpResponseFactory::KEY_STATUS_CODE => 200,
-                        HttpResponseFactory::KEY_BODY => json_encode($instanceResponseData[1]),
-                    ],
-                    'droplet 789' => [
-                        HttpResponseFactory::KEY_STATUS_CODE => 200,
-                        HttpResponseFactory::KEY_BODY => json_encode($instanceResponseData[2]),
-                    ],
-                ],
+                'httpResponseDataCollection' => $collectionHttpResponses,
                 'expectedReturnCode' => Command::SUCCESS,
                 'expectedOutput' => (string) json_encode([
                     'instances' => [
