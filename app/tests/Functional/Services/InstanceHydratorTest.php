@@ -36,13 +36,28 @@ class InstanceHydratorTest extends KernelTestCase
         $version = 'version-string';
         $messageQueueSize = 8;
 
-        $this->mockHandler->append($this->httpResponseFactory->createFromArray([
-            HttpResponseFactory::KEY_STATUS_CODE => 200,
-            HttpResponseFactory::KEY_BODY => json_encode([
-                'version' => $version,
-                'message-queue-size' => $messageQueueSize,
+        $stateData = [
+            'key1' => 'value1',
+            'key2' => 'value2',
+            'key3' => 'value3',
+        ];
+
+        $this->mockHandler->append(
+            $this->httpResponseFactory->createFromArray([
+                HttpResponseFactory::KEY_STATUS_CODE => 200,
+                HttpResponseFactory::KEY_BODY => json_encode([
+                    'version' => $version,
+                    'message-queue-size' => $messageQueueSize,
+                ]),
             ]),
-        ]));
+            $this->httpResponseFactory->createFromArray([
+                HttpResponseFactory::KEY_STATUS_CODE => 200,
+                HttpResponseFactory::KEY_HEADERS => [
+                    'content-type' => 'application/json',
+                ],
+                HttpResponseFactory::KEY_BODY => json_encode($stateData),
+            ])
+        );
 
         $instance = InstanceFactory::create(['id' => 123]);
 
@@ -52,5 +67,6 @@ class InstanceHydratorTest extends KernelTestCase
         $instance = $this->instanceHydrator->hydrate($instance);
         self::assertSame($version, $instance->getVersion());
         self::assertSame($messageQueueSize, $instance->getMessageQueueSize());
+        self::assertSame($stateData, $instance->getState());
     }
 }
