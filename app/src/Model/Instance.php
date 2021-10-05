@@ -33,7 +33,12 @@ class Instance
      */
     public function getState(): array
     {
-        return $this->state;
+        return array_merge(
+            $this->state,
+            [
+                'ips' => $this->getIps(),
+            ]
+        );
     }
 
     public function getVersion(): ?string
@@ -92,6 +97,20 @@ class Instance
         }
 
         return false;
+    }
+
+    /**
+     * @return string[]
+     */
+    public function getIps(): array
+    {
+        $ips = [];
+
+        foreach ($this->droplet->networks as $network) {
+            $ips[] = $network->ipAddress;
+        }
+
+        return array_unique($ips);
     }
 
     public function getLabel(): string
