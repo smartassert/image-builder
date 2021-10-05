@@ -149,18 +149,6 @@ class InstanceListCommandTest extends KernelTestCase
             ]
         ];
 
-        $instanceResponseStateData = [
-            [
-                'key1' => 'value1',
-            ],
-            [
-                'key2' => 'value2',
-            ],
-            [
-                'key3' => 'value3',
-            ]
-        ];
-
         $collectionHttpResponses = [
             'droplets' => [
                 HttpResponseFactory::KEY_STATUS_CODE => 200,
@@ -180,7 +168,7 @@ class InstanceListCommandTest extends KernelTestCase
                 HttpResponseFactory::KEY_HEADERS => [
                     'content-type' => 'application/json',
                 ],
-                HttpResponseFactory::KEY_BODY => json_encode($instanceResponseStateData[0]),
+                HttpResponseFactory::KEY_BODY => json_encode($instanceResponseData[0]),
             ],
             '456-status' => [
                 HttpResponseFactory::KEY_STATUS_CODE => 200,
@@ -191,7 +179,7 @@ class InstanceListCommandTest extends KernelTestCase
                 HttpResponseFactory::KEY_HEADERS => [
                     'content-type' => 'application/json',
                 ],
-                HttpResponseFactory::KEY_BODY => json_encode($instanceResponseStateData[1]),
+                HttpResponseFactory::KEY_BODY => json_encode($instanceResponseData[1]),
             ],
             '789-status' => [
                 HttpResponseFactory::KEY_STATUS_CODE => 200,
@@ -202,7 +190,7 @@ class InstanceListCommandTest extends KernelTestCase
                 HttpResponseFactory::KEY_HEADERS => [
                     'content-type' => 'application/json',
                 ],
-                HttpResponseFactory::KEY_BODY => json_encode($instanceResponseStateData[2]),
+                HttpResponseFactory::KEY_BODY => json_encode($instanceResponseData[2]),
             ],
         ];
 

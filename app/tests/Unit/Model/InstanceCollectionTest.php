@@ -2,11 +2,9 @@
 
 namespace App\Tests\Unit\Model;
 
+use App\Model\Filter;
 use App\Model\Instance;
 use App\Model\InstanceCollection;
-use App\Model\InstanceMatcher\InstanceEmptyMessageQueueMatcher;
-use App\Model\InstanceMatcher\InstanceMatcherInterface;
-use App\Model\InstanceMatcher\InstanceNotHasIpMatcher;
 use App\Tests\Services\DropletDataFactory;
 use App\Tests\Services\InstanceFactory;
 use PHPUnit\Framework\TestCase;
@@ -51,7 +49,7 @@ class InstanceCollectionTest extends TestCase
      */
     public function testFilter(
         InstanceCollection $collection,
-        InstanceMatcherInterface $filter,
+        Filter $filter,
         InstanceCollection $expectedCollection
     ): void {
         self::assertEquals(
@@ -72,18 +70,33 @@ class InstanceCollectionTest extends TestCase
 
         $instanceWithNonEmptyMessageQueue = InstanceFactory::create([
             'id' => 123,
-        ])->withMessageQueueSize(1);
+        ])
+            ->withMessageQueueSize(1)
+            ->withAdditionalState([
+                'message-queue-size' => 1,
+            ])
+        ;
 
         $instanceWithEmptyMessageQueue1 = InstanceFactory::create([
             'id' => 456,
-        ])->withMessageQueueSize(0);
+        ])
+            ->withMessageQueueSize(0)
+            ->withAdditionalState([
+                'message-queue-size' => 0,
+            ])
+        ;
 
         $instanceWithEmptyMessageQueue2 = InstanceFactory::create([
             'id' => 789,
-        ])->withMessageQueueSize(0);
+        ])
+            ->withMessageQueueSize(0)
+            ->withAdditionalState([
+                'message-queue-size' => 0,
+            ])
+        ;
 
-        $notHasIpFilter = new InstanceNotHasIpMatcher($ip);
-        $hasEmptyMessageQueueFilter = new InstanceEmptyMessageQueueMatcher();
+        $notHasIpFilter = new Filter('ips', Filter::OPERATOR_NOT_CONTAINS, $ip);
+        $hasEmptyMessageQueueFilter = new Filter('message-queue-size', Filter::OPERATOR_EQUALS, 0);
 
         return [
             'empty, not has IP filter' => [
