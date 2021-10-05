@@ -37,6 +37,26 @@ class InstanceClient
 
     /**
      * @throws ClientExceptionInterface
+     *
+     * @return array<int|string, mixed>
+     */
+    public function getState(Instance $instance): array
+    {
+        $url = $instance->getUrl() . '/';
+        $request = $this->requestFactory->createRequest('GET', $url);
+
+        $response = $this->httpClient->sendRequest($request);
+        if ('application/json' !== $response->getHeaderLine('content-type')) {
+            return [];
+        }
+
+        $responseData = json_decode($response->getBody()->getContents(), true);
+
+        return is_array($responseData) ? $responseData : [];
+    }
+
+    /**
+     * @throws ClientExceptionInterface
      */
     public function getHealth(Instance $instance): InstanceHealth
     {
