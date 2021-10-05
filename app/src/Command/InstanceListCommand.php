@@ -2,9 +2,8 @@
 
 namespace App\Command;
 
+use App\Model\Filter;
 use App\Model\InstanceCollection;
-use App\Model\InstanceMatcher\InstanceEmptyMessageQueueMatcher;
-use App\Model\InstanceMatcher\InstanceNotHasIpMatcher;
 use App\Services\InstanceCollectionHydrator;
 use App\Services\InstanceRepository;
 use DigitalOceanV2\Exception\ExceptionInterface;
@@ -94,11 +93,11 @@ class InstanceListCommand extends Command
         $instances = $this->instanceCollectionHydrator->hydrate($instances);
 
         if (true === $withEmptyMessageQueue) {
-            $instances = $instances->filter(new InstanceEmptyMessageQueueMatcher());
+            $instances = $instances->filter(new Filter('message-queue-size', Filter::OPERATOR_EQUALS, 0));
         }
 
         if (is_string($withoutIp)) {
-            $instances = $instances->filter(new InstanceNotHasIpMatcher($withoutIp));
+            $instances = $instances->filter(new Filter('ips', Filter::OPERATOR_NOT_CONTAINS, $withoutIp));
         }
 
         return $instances;

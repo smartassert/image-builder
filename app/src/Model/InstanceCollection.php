@@ -2,7 +2,6 @@
 
 namespace App\Model;
 
-use App\Model\InstanceMatcher\InstanceMatcherInterface;
 use App\Model\InstanceSorter\InstanceCreatedDateSorter;
 use App\Model\InstanceSorter\InstanceSorterInterface;
 
@@ -61,12 +60,12 @@ class InstanceCollection implements \IteratorAggregate, \Countable
         return new InstanceCollection($instances);
     }
 
-    public function filter(InstanceMatcherInterface $filter): self
+    public function filter(Filter $filter): self
     {
         $instances = [];
 
         foreach ($this as $instance) {
-            if ($filter->matches($instance)) {
+            if ($instance->isMatchedBy($filter)) {
                 $instances[] = $instance;
             }
         }
