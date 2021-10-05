@@ -4,6 +4,7 @@ namespace App\Command;
 
 use App\Model\Filter;
 use App\Model\InstanceCollection;
+use App\Services\FilterStringParser;
 use App\Services\InstanceCollectionHydrator;
 use App\Services\InstanceRepository;
 use DigitalOceanV2\Exception\ExceptionInterface;
@@ -20,12 +21,12 @@ use Symfony\Component\Console\Output\OutputInterface;
 class InstanceListCommand extends Command
 {
     public const NAME = 'app:instance:list';
-    public const OPTION_WITH_EMPTY_MESSAGE_QUEUE = 'with-empty-message-queue';
-    public const OPTION_WITHOUT_IP = 'without-ip';
+    public const OPTION_FILTER = 'filter';
 
     public function __construct(
         private InstanceRepository $instanceRepository,
         private InstanceCollectionHydrator $instanceCollectionHydrator,
+        private FilterStringParser $filterStringParser,
     ) {
         parent::__construct(null);
     }
@@ -34,16 +35,10 @@ class InstanceListCommand extends Command
     {
         $this
             ->addOption(
-                self::OPTION_WITH_EMPTY_MESSAGE_QUEUE,
-                null,
-                InputOption::VALUE_NONE,
-                'Include only instances with an empty message queue'
-            )
-            ->addOption(
-                self::OPTION_WITHOUT_IP,
+                self::OPTION_FILTER,
                 null,
                 InputOption::VALUE_OPTIONAL,
-                'Include only instances without a specific IP'
+                'Filter'
             )
         ;
     }
@@ -53,17 +48,12 @@ class InstanceListCommand extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $withEmptyMessageQueue = $input->getOption(self::OPTION_WITH_EMPTY_MESSAGE_QUEUE);
-        if (!is_bool($withEmptyMessageQueue)) {
-            $withEmptyMessageQueue = false;
-        }
+        $filterString = $input->getOption('filter');
+        $filters = is_string($filterString)
+            ? $this->filterStringParser->parse($filterString)
+            : [];
 
-        $withoutIp = $input->getOption(self::OPTION_WITHOUT_IP);
-        if (!is_string($withoutIp)) {
-            $withoutIp = null;
-        }
-
-        $instances = $this->findInstances($withEmptyMessageQueue, $withoutIp);
+        $instances = $this->findInstances($filters);
 
         $collectionData = [];
 
@@ -83,21 +73,17 @@ class InstanceListCommand extends Command
     }
 
     /**
+     * @param Filter[] $filters
+     *
      * @throws ExceptionInterface
      */
-    private function findInstances(
-        bool $withEmptyMessageQueue = false,
-        ?string $withoutIp = null,
-    ): InstanceCollection {
+    private function findInstances(array $filters): InstanceCollection
+    {
         $instances = $this->instanceRepository->findAll();
         $instances = $this->instanceCollectionHydrator->hydrate($instances);
 
-        if (true === $withEmptyMessageQueue) {
-            $instances = $instances->filter(new Filter('message-queue-size', Filter::OPERATOR_EQUALS, 0));
-        }
-
-        if (is_string($withoutIp)) {
-            $instances = $instances->filter(new Filter('ips', Filter::OPERATOR_NOT_CONTAINS, $withoutIp));
+        foreach ($filters as $filter) {
+            $instances = $instances->filter($filter);
         }
 
         return $instances;
