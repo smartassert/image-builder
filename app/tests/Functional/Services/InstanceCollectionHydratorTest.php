@@ -2,12 +2,11 @@
 
 namespace App\Tests\Functional\Services;
 
-use App\Model\Instance;
 use App\Model\InstanceCollection;
 use App\Services\InstanceCollectionHydrator;
 use App\Tests\Services\DropletDataFactory;
 use App\Tests\Services\HttpResponseFactory;
-use DigitalOceanV2\Entity\Droplet as DropletEntity;
+use App\Tests\Services\InstanceFactory;
 use GuzzleHttp\Handler\MockHandler;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
@@ -55,9 +54,26 @@ class InstanceCollectionHydratorTest extends KernelTestCase
             ],
         ];
 
+        $expectedStateData = [
+            123 => [
+                'key1' => 'value1',
+                'ips' => [
+                    '127.0.0.1',
+                ],
+            ],
+            456 => [
+                'key2' => 'value2',
+                'ips' => [
+                    '127.0.0.2',
+                ],
+            ],
+        ];
+
         $instances = [];
         foreach ($instanceCollectionData as $dropletId => $instanceData) {
-            $instances[] = new Instance($this->createDroplet($dropletId, $instanceData['ipAddress']));
+            $instances[] = InstanceFactory::create(
+                DropletDataFactory::createWithIps($dropletId, [$instanceData['ipAddress']])
+            );
             $this->mockHandler->append(
                 $this->httpResponseFactory->createFromArray([
                     HttpResponseFactory::KEY_STATUS_CODE => 200,
@@ -83,15 +99,10 @@ class InstanceCollectionHydratorTest extends KernelTestCase
             $expectedData = $instanceCollectionData[$hydratedInstance->getId()];
             $expectedVersion = $expectedData['version'];
             $expectedMessageQueueSize = $expectedData['message-queue-size'];
-            $expectedStateData = $expectedData['state'];
+            $expectedInstanceStateData = $expectedStateData[$hydratedInstance->getId()];
             self::assertSame($expectedVersion, $hydratedInstance->getVersion());
             self::assertSame($expectedMessageQueueSize, $hydratedInstance->getMessageQueueSize());
-            self::assertSame($expectedStateData, $hydratedInstance->getState());
+            self::assertSame($expectedInstanceStateData, $hydratedInstance->getState());
         }
-    }
-
-    private function createDroplet(int $id, string $ipAddress): DropletEntity
-    {
-        return new DropletEntity(DropletDataFactory::createWithIps($id, [$ipAddress]));
     }
 }

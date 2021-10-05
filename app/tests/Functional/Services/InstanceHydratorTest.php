@@ -3,6 +3,7 @@
 namespace App\Tests\Functional\Services;
 
 use App\Services\InstanceHydrator;
+use App\Tests\Services\DropletDataFactory;
 use App\Tests\Services\HttpResponseFactory;
 use App\Tests\Services\InstanceFactory;
 use GuzzleHttp\Handler\MockHandler;
@@ -59,7 +60,8 @@ class InstanceHydratorTest extends KernelTestCase
             ])
         );
 
-        $instance = InstanceFactory::create(['id' => 123]);
+        $ips = ['127.0.0.1', '10.0.0.1'];
+        $instance = InstanceFactory::create(DropletDataFactory::createWithIps(123, $ips));
 
         self::assertNull($instance->getVersion());
         self::assertNull($instance->getMessageQueueSize());
@@ -67,6 +69,14 @@ class InstanceHydratorTest extends KernelTestCase
         $instance = $this->instanceHydrator->hydrate($instance);
         self::assertSame($version, $instance->getVersion());
         self::assertSame($messageQueueSize, $instance->getMessageQueueSize());
-        self::assertSame($stateData, $instance->getState());
+        self::assertSame(
+            array_merge(
+                $stateData,
+                [
+                    'ips' => $ips,
+                ]
+            ),
+            $instance->getState()
+        );
     }
 }
