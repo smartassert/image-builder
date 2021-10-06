@@ -3,6 +3,7 @@
 namespace App\Tests\Functional\Command;
 
 use App\Command\InstanceListCommand;
+use App\Model\Filter;
 use App\Tests\Services\HttpResponseFactory;
 use DigitalOceanV2\Exception\RuntimeException;
 use GuzzleHttp\Handler\MockHandler;
@@ -267,9 +268,15 @@ class InstanceListCommandTest extends KernelTestCase
                     ],
                 ]),
             ],
-            'many instances, --with-empty-message-queue-size' => [
+            'many instances, filter to message-queue-size=0' => [
                 'input' => [
-                    '--with-empty-message-queue' => true,
+                    '--filter' => (string) json_encode([
+                        [
+                            'field' => 'message-queue-size',
+                            'operator' => Filter::OPERATOR_EQUALS,
+                            'value' => 0,
+                        ],
+                    ]),
                 ],
                 'httpResponseDataCollection' => $collectionHttpResponses,
                 'expectedReturnCode' => Command::SUCCESS,
@@ -279,9 +286,15 @@ class InstanceListCommandTest extends KernelTestCase
                     ],
                 ]),
             ],
-            'many instances, --without-ip' => [
+            'many instances, filter to not contains IP 127.0.0.1' => [
                 'input' => [
-                    '--without-ip' => '127.0.0.1',
+                    '--filter' => (string) json_encode([
+                        [
+                            'field' => 'ips',
+                            'operator' => Filter::OPERATOR_NOT_CONTAINS,
+                            'value' => '127.0.0.1',
+                        ],
+                    ]),
                 ],
                 'httpResponseDataCollection' => $collectionHttpResponses,
                 'expectedReturnCode' => Command::SUCCESS,
@@ -292,10 +305,20 @@ class InstanceListCommandTest extends KernelTestCase
                     ],
                 ]),
             ],
-            'many instances, , --with-empty-message-queue-size, --without-ip' => [
+            'many instances, filter to message-queue-size=0, not contains IP 127.0.0.1' => [
                 'input' => [
-                    '--with-empty-message-queue' => true,
-                    '--without-ip' => '127.0.0.1',
+                    '--filter' => (string) json_encode([
+                        [
+                            'field' => 'message-queue-size',
+                            'operator' => Filter::OPERATOR_EQUALS,
+                            'value' => 0,
+                        ],
+                        [
+                            'field' => 'ips',
+                            'operator' => Filter::OPERATOR_NOT_CONTAINS,
+                            'value' => '127.0.0.1',
+                        ],
+                    ]),
                 ],
                 'httpResponseDataCollection' => $collectionHttpResponses,
                 'expectedReturnCode' => Command::SUCCESS,
