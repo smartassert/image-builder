@@ -35,7 +35,8 @@ jobs:
         env:
           IP: ${{ steps.ip.outputs.value }}
         run: |
-          INSTANCES=$(php app/bin/console app:instance:list --with-empty-message-queue --without-ip="$IP")
+          INSTANCES=$(php app/bin/console app:instance:list --include='[{"message-queue-size":0}]' --exclude='[{"ips":"127.0.0.1"}]')
+
           echo "::set-output name=value::$INSTANCES"
 
       - name: Destroy matching instances
