@@ -110,19 +110,17 @@ class Instance implements \JsonSerializable
 
         if (array_key_exists($field, $state)) {
             $stateValue = $state[$field];
-            $filterValue = $filter->getValue();
-            $filterMatchType = $filter->getMatchType();
+            $value = $filter->getValue();
+            $matchType = $filter->getMatchType();
 
             if (is_scalar($stateValue)) {
-                return
-                    FilterInterface::MATCH_TYPE_POSITIVE === $filterMatchType && $stateValue === $filterValue
-                    || FilterInterface::MATCH_TYPE_NEGATIVE === $filterMatchType && $stateValue !== $filterValue;
+                return FilterInterface::MATCH_TYPE_POSITIVE === $matchType && $stateValue === $value
+                     || FilterInterface::MATCH_TYPE_NEGATIVE === $matchType && $stateValue !== $value;
             }
 
             if (is_array($stateValue)) {
-                return
-                    FilterInterface::MATCH_TYPE_POSITIVE === $filterMatchType && in_array($filterValue, $stateValue)
-                    || FilterInterface::MATCH_TYPE_NEGATIVE === $filterMatchType && !in_array($filterValue, $stateValue);
+                return FilterInterface::MATCH_TYPE_POSITIVE === $matchType && in_array($value, $stateValue)
+                    || FilterInterface::MATCH_TYPE_NEGATIVE === $matchType && !in_array($value, $stateValue);
             }
         }
 
