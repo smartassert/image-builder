@@ -61,9 +61,6 @@ class InstanceListCommand extends Command
             $this->createFilterCollection($input, self::OPTION_EXCLUDE, FilterInterface::MATCH_TYPE_NEGATIVE)
         );
 
-        var_dump($filters);
-        exit();
-
         $output->write((string) json_encode($this->findInstances($filters)));
 
         return Command::SUCCESS;
