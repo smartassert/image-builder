@@ -39,22 +39,28 @@ jobs:
           args: --ignore-platform-reqs --quiet
           working_dir: app
 
-      - name: Read build config
+      - name: Read worker-manager-image build config
         id: worker-manager-image
         env:
           ENV_FILE_PATH: ./worker-manager-image.env
         run: ./vendor/smartassert/bash-read-env-file/src/read-env-file-ga.sh
 
-      - name: Check snapshot exists
+      - name: Setup build config
+        id: build-config
         env:
           IMAGE_ID: ${{ steps.worker-manager-image.outputs.WORKER_MANAGER_IMAGE }}
+        run: echo "::set-output name=IMAGE_ID::$IMAGE_ID"
+
+      - name: Check snapshot exists
+        env:
+          IMAGE_ID: ${{ steps.build-config.outputs.IMAGE_ID }}
           EXPECTED_EXISTS: "true"
         run: ./vendor/smartassert/bash-ga-deploy-tools/src/digitalocean-snapshot/verify-existence.sh
 
       - name: Create
         id: instance
         env:
-          WORKER_MANAGER_IMAGE: ${{ steps.worker-manager-image.outputs.WORKER_MANAGER_IMAGE }}
+          IMAGE_ID: ${{ steps.build-config.outputs.IMAGE_ID }}
         run: |
           CREATE_OUTPUT=$(php app/bin/console app:instance:create)
           echo "::set-output name=id::$(echo "$CREATE_OUTPUT" | jq ".id")"
