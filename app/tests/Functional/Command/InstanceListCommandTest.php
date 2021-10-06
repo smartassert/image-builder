@@ -159,16 +159,25 @@ class InstanceListCommandTest extends KernelTestCase
                     'droplets' => $dropletData,
                 ]),
             ],
-            'droplet 123' => [
+            '123-state' => [
                 HttpResponseFactory::KEY_STATUS_CODE => 200,
+                HttpResponseFactory::KEY_HEADERS => [
+                    'content-type' => 'application/json',
+                ],
                 HttpResponseFactory::KEY_BODY => json_encode($instanceResponseData[0]),
             ],
-            'droplet 456' => [
+            '456-state' => [
                 HttpResponseFactory::KEY_STATUS_CODE => 200,
+                HttpResponseFactory::KEY_HEADERS => [
+                    'content-type' => 'application/json',
+                ],
                 HttpResponseFactory::KEY_BODY => json_encode($instanceResponseData[1]),
             ],
-            'droplet 789' => [
+            '789-state' => [
                 HttpResponseFactory::KEY_STATUS_CODE => 200,
+                HttpResponseFactory::KEY_HEADERS => [
+                    'content-type' => 'application/json',
+                ],
                 HttpResponseFactory::KEY_BODY => json_encode($instanceResponseData[2]),
             ],
         ];
@@ -176,18 +185,33 @@ class InstanceListCommandTest extends KernelTestCase
         $expectedOutputData = [
             [
                 'id' => 123,
-                'version' => '0.1',
-                'message-queue-size' => 3,
+                'state' => [
+                    'ips' => [
+                        '127.0.0.1',
+                    ],
+                    'version' => '0.1',
+                    'message-queue-size' => 3,
+                ],
             ],
             [
                 'id' => 456,
-                'version' => '0.2',
-                'message-queue-size' => 7,
+                'state' => [
+                    'ips' => [
+                        '127.0.0.2',
+                    ],
+                    'version' => '0.2',
+                    'message-queue-size' => 7,
+                ],
             ],
             [
                 'id' => 789,
-                'version' => '0.3',
-                'message-queue-size' => 0,
+                'state' => [
+                    'ips' => [
+                        '127.0.0.3',
+                    ],
+                    'version' => '0.3',
+                    'message-queue-size' => 0,
+                ],
             ],
         ];
 
@@ -206,9 +230,7 @@ class InstanceListCommandTest extends KernelTestCase
                     ],
                 ],
                 'expectedReturnCode' => Command::SUCCESS,
-                'expectedOutput' => (string) json_encode([
-                    'instances' => [],
-                ]),
+                'expectedOutput' => (string) json_encode([]),
             ],
             'single instance' => [
                 'input' => [],
@@ -224,16 +246,11 @@ class InstanceListCommandTest extends KernelTestCase
                             ],
                         ]),
                     ],
-                    'droplet status' => [
-                        HttpResponseFactory::KEY_STATUS_CODE => 200,
-                        HttpResponseFactory::KEY_BODY => json_encode($instanceResponseData[0]),
-                    ],
+                    '123-state' => $collectionHttpResponses['123-state'],
                 ],
                 'expectedReturnCode' => Command::SUCCESS,
                 'expectedOutput' => (string) json_encode([
-                    'instances' => [
-                        $expectedOutputData[0],
-                    ],
+                    $expectedOutputData[0],
                 ]),
             ],
             'many instances, no filter' => [
@@ -241,71 +258,57 @@ class InstanceListCommandTest extends KernelTestCase
                 'httpResponseDataCollection' => $collectionHttpResponses,
                 'expectedReturnCode' => Command::SUCCESS,
                 'expectedOutput' => (string) json_encode([
-                    'instances' => [
-                        $expectedOutputData[0],
-                        $expectedOutputData[1],
-                        $expectedOutputData[2],
-                    ],
+                    $expectedOutputData[0],
+                    $expectedOutputData[1],
+                    $expectedOutputData[2],
                 ]),
             ],
-            'many instances, --with-empty-message-queue-size' => [
+            'many instances, filter to message-queue-size=0' => [
                 'input' => [
-                    '--with-empty-message-queue' => true,
-                ],
-                'httpResponseDataCollection' => [
-                    'droplets' => [
-                        HttpResponseFactory::KEY_STATUS_CODE => 200,
-                        HttpResponseFactory::KEY_HEADERS => [
-                            'content-type' => 'application/json; charset=utf-8',
+                    '--include' => (string) json_encode([
+                        [
+                            'message-queue-size' => 0,
                         ],
-                        HttpResponseFactory::KEY_BODY => (string) json_encode([
-                            'droplets' => $dropletData,
-                        ]),
-                    ],
-                    'droplet 123' => [
-                        HttpResponseFactory::KEY_STATUS_CODE => 200,
-                        HttpResponseFactory::KEY_BODY => json_encode($instanceResponseData[0]),
-                    ],
-                    'droplet 456' => [
-                        HttpResponseFactory::KEY_STATUS_CODE => 200,
-                        HttpResponseFactory::KEY_BODY => json_encode($instanceResponseData[1]),
-                    ],
-                    'droplet 789' => [
-                        HttpResponseFactory::KEY_STATUS_CODE => 200,
-                        HttpResponseFactory::KEY_BODY => json_encode($instanceResponseData[2]),
-                    ],
-                ],
-                'expectedReturnCode' => Command::SUCCESS,
-                'expectedOutput' => (string) json_encode([
-                    'instances' => [
-                        $expectedOutputData[2],
-                    ],
-                ]),
-            ],
-            'many instances, --without-ip' => [
-                'input' => [
-                    '--without-ip' => '127.0.0.1',
+                    ]),
                 ],
                 'httpResponseDataCollection' => $collectionHttpResponses,
                 'expectedReturnCode' => Command::SUCCESS,
                 'expectedOutput' => (string) json_encode([
-                    'instances' => [
-                        $expectedOutputData[1],
-                        $expectedOutputData[2],
-                    ],
+                    $expectedOutputData[2],
                 ]),
             ],
-            'many instances, , --with-empty-message-queue-size, --without-ip' => [
+            'many instances, filter to not contains IP 127.0.0.1' => [
                 'input' => [
-                    '--with-empty-message-queue' => true,
-                    '--without-ip' => '127.0.0.1',
+                    '--exclude' => (string) json_encode([
+                        [
+                            'ips' => '127.0.0.1',
+                        ],
+                    ]),
                 ],
                 'httpResponseDataCollection' => $collectionHttpResponses,
                 'expectedReturnCode' => Command::SUCCESS,
                 'expectedOutput' => (string) json_encode([
-                    'instances' => [
-                        $expectedOutputData[2],
-                    ],
+                    $expectedOutputData[1],
+                    $expectedOutputData[2],
+                ]),
+            ],
+            'many instances, filter to message-queue-size=0, not contains IP 127.0.0.1' => [
+                'input' => [
+                    '--include' => (string) json_encode([
+                        [
+                            'message-queue-size' => 0,
+                        ],
+                    ]),
+                    '--exclude' => (string) json_encode([
+                        [
+                            'ips' => '127.0.0.1',
+                        ],
+                    ]),
+                ],
+                'httpResponseDataCollection' => $collectionHttpResponses,
+                'expectedReturnCode' => Command::SUCCESS,
+                'expectedOutput' => (string) json_encode([
+                    $expectedOutputData[2],
                 ]),
             ],
         ];

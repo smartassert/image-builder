@@ -4,7 +4,6 @@ namespace App\Services;
 
 use App\Model\Instance;
 use App\Model\InstanceHealth;
-use App\Model\InstanceStatus;
 use Psr\Http\Client\ClientExceptionInterface;
 use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\RequestFactoryInterface;
@@ -19,20 +18,22 @@ class InstanceClient
 
     /**
      * @throws ClientExceptionInterface
+     *
+     * @return array<int|string, mixed>
      */
-    public function getStatus(Instance $instance): ?InstanceStatus
+    public function getState(Instance $instance): array
     {
         $url = $instance->getUrl() . '/';
         $request = $this->requestFactory->createRequest('GET', $url);
 
         $response = $this->httpClient->sendRequest($request);
-        $responseData = json_decode($response->getBody()->getContents(), true);
-
-        if (is_array($responseData)) {
-            return $this->createInstanceStatus($responseData);
+        if ('application/json' !== $response->getHeaderLine('content-type')) {
+            return [];
         }
 
-        return null;
+        $responseData = json_decode($response->getBody()->getContents(), true);
+
+        return is_array($responseData) ? $responseData : [];
     }
 
     /**
@@ -47,21 +48,5 @@ class InstanceClient
         $responseData = json_decode($response->getBody()->getContents(), true);
 
         return new InstanceHealth(is_array($responseData) ? $responseData : []);
-    }
-
-    /**
-     * @param array<mixed> $data
-     */
-    private function createInstanceStatus(array $data): ?InstanceStatus
-    {
-        $version = $data['version'] ?? null;
-        $version = is_string($version) ? $version : null;
-
-        $messageQueueSize = $data['message-queue-size'] ?? null;
-        $messageQueueSize = is_int($messageQueueSize) ? $messageQueueSize : null;
-
-        return is_string($version) && is_int($messageQueueSize)
-            ? new InstanceStatus($version, $messageQueueSize)
-            : null;
     }
 }

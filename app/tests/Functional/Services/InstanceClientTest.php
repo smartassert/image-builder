@@ -5,7 +5,6 @@ namespace App\Tests\Functional\Services;
 use App\Model\Instance;
 use App\Model\InstanceHealth;
 use App\Model\InstanceServiceAvailabilityInterface;
-use App\Model\InstanceStatus;
 use App\Services\InstanceClient;
 use App\Tests\Services\HttpResponseFactory;
 use App\Tests\Services\InstanceFactory;
@@ -33,88 +32,6 @@ class InstanceClientTest extends KernelTestCase
         $httpResponseFactory = self::getContainer()->get(HttpResponseFactory::class);
         \assert($httpResponseFactory instanceof HttpResponseFactory);
         $this->httpResponseFactory = $httpResponseFactory;
-    }
-
-    /**
-     * @dataProvider getStatusReturnsNullDataProvider
-     */
-    public function testGetStatusReturnsNull(string $responseBody): void
-    {
-        $this->mockHandler->append($this->httpResponseFactory->createFromArray([
-            HttpResponseFactory::KEY_STATUS_CODE => 200,
-            HttpResponseFactory::KEY_BODY => $responseBody,
-        ]));
-
-        $instance = InstanceFactory::create(['id' => 123]);
-
-        self::assertNull($this->instanceClient->getStatus($instance));
-    }
-
-    /**
-     * @return array<mixed>
-     */
-    public function getStatusReturnsNullDataProvider(): array
-    {
-        return [
-            'response not an array' => [
-                'responseBody' => 'string',
-            ],
-            'version not present' => [
-                'responseBody' => json_encode([
-                    'message-queue-size' => 2,
-                ]),
-            ],
-            'version not a string' => [
-                'responseBody' => json_encode([
-                    'version' => true,
-                    'message-queue-size' => 2,
-                ]),
-            ],
-            'message-queue-size not present' => [
-                'responseBody' => json_encode([
-                    'version' => '0.8',
-                ]),
-            ],
-            'message-queue-size not an integer' => [
-                'responseBody' => json_encode([
-                    'version' => '0.8',
-                    'message-queue-size' => true,
-                ]),
-            ],
-        ];
-    }
-
-    /**
-     * @dataProvider getStatusReturnInstanceStatusDataProvider
-     */
-    public function testGetStatusReturnsInstanceStatus(
-        string $responseBody,
-        InstanceStatus $expectedInstanceStatus
-    ): void {
-        $this->mockHandler->append($this->httpResponseFactory->createFromArray([
-            HttpResponseFactory::KEY_STATUS_CODE => 200,
-            HttpResponseFactory::KEY_BODY => $responseBody,
-        ]));
-
-        $instance = InstanceFactory::create(['id' => 123]);
-
-        self::assertEquals($expectedInstanceStatus, $this->instanceClient->getStatus($instance));
-    }
-
-    /**
-     * @return array<mixed>
-     */
-    public function getStatusReturnInstanceStatusDataProvider(): array
-    {
-        return [
-            'default' => [
-                'responseBody' => json_encode([
-                    'version' => '0.8',
-                    'message-queue-size' => 12,
-                ]),
-                'expectedInstanceStatus' => new InstanceStatus('0.8', 12),
-            ],
-        ];
     }
 
     /**
@@ -156,6 +73,69 @@ class InstanceClientTest extends KernelTestCase
                     'service1' => InstanceServiceAvailabilityInterface::AVAILABILITY_AVAILABLE,
                     'service2' => InstanceServiceAvailabilityInterface::AVAILABILITY_AVAILABLE,
                 ]),
+            ],
+        ];
+    }
+
+    /**
+     * @dataProvider getStateDataProvider
+     *
+     * @param array<mixed> $responseData
+     * @param array<mixed> $expectedState
+     */
+    public function testGetState(array $responseData, array $expectedState): void
+    {
+        $this->mockHandler->append($this->httpResponseFactory->createFromArray($responseData));
+
+        $instance = InstanceFactory::create(['id' => 123]);
+
+        self::assertSame(
+            $expectedState,
+            $this->instanceClient->getState($instance)
+        );
+    }
+
+    /**
+     * @return array<mixed>
+     */
+    public function getStateDataProvider(): array
+    {
+        $data = [
+            'string' => 'content',
+            'boolean' => true,
+            'int' => 123,
+            'float' => M_PI,
+            'array' => [
+                'key1' => 'value1',
+                'key2' => 'value2',
+                'key3' => 'value3',
+            ],
+        ];
+
+        return [
+            'response not an array' => [
+                'responseData' => [
+                    HttpResponseFactory::KEY_STATUS_CODE => 200,
+                    HttpResponseFactory::KEY_BODY => 'string content',
+                ],
+                'expectedState' => [],
+            ],
+            'response content type not "application/json"' => [
+                'responseData' => [
+                    HttpResponseFactory::KEY_STATUS_CODE => 200,
+                    HttpResponseFactory::KEY_BODY => (string) json_encode($data),
+                ],
+                'expectedState' => [],
+            ],
+            'response is json array' => [
+                'responseData' => [
+                    HttpResponseFactory::KEY_STATUS_CODE => 200,
+                    HttpResponseFactory::KEY_HEADERS => [
+                        'content-type' => 'application/json',
+                    ],
+                    HttpResponseFactory::KEY_BODY => (string) json_encode($data),
+                ],
+                'expectedState' => $data,
             ],
         ];
     }

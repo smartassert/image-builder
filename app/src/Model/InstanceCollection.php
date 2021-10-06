@@ -2,14 +2,13 @@
 
 namespace App\Model;
 
-use App\Model\InstanceMatcher\InstanceMatcherInterface;
 use App\Model\InstanceSorter\InstanceCreatedDateSorter;
 use App\Model\InstanceSorter\InstanceSorterInterface;
 
 /**
  * @implements \IteratorAggregate<Instance>
  */
-class InstanceCollection implements \IteratorAggregate, \Countable
+class InstanceCollection implements \IteratorAggregate, \Countable, \JsonSerializable
 {
     /**
      * @var Instance[]
@@ -61,17 +60,30 @@ class InstanceCollection implements \IteratorAggregate, \Countable
         return new InstanceCollection($instances);
     }
 
-    public function filter(InstanceMatcherInterface $filter): self
+    public function filter(Filter $filter): self
     {
         $instances = [];
 
         foreach ($this as $instance) {
-            if ($filter->matches($instance)) {
+            if ($instance->isMatchedBy($filter)) {
                 $instances[] = $instance;
             }
         }
 
         return new InstanceCollection($instances);
+    }
+
+    /**
+     * @return array<mixed>
+     */
+    public function jsonSerialize(): array
+    {
+        $data = [];
+        foreach ($this as $instance) {
+            $data[] = $instance->jsonSerialize();
+        }
+
+        return $data;
     }
 
     private function sortByCreatedDate(): self

@@ -4,10 +4,12 @@ namespace App\Model;
 
 use DigitalOceanV2\Entity\Droplet;
 
-class Instance
+class Instance implements \JsonSerializable
 {
-    private ?string $version = null;
-    private ?int $messageQueueSize = null;
+    /**
+     * @var array<int|string, mixed>
+     */
+    private array $state = [];
 
     public function __construct(private Droplet $droplet)
     {
@@ -23,28 +25,26 @@ class Instance
         return $this->droplet;
     }
 
-    public function getVersion(): ?string
+    /**
+     * @return array<int|string, mixed>
+     */
+    public function getState(): array
     {
-        return $this->version;
+        return array_merge(
+            $this->state,
+            [
+                'ips' => $this->getIps(),
+            ]
+        );
     }
 
-    public function withVersion(string $version): self
+    /**
+     * @param array<int|string, mixed> $state
+     */
+    public function withAdditionalState(array $state): self
     {
         $new = clone $this;
-        $new->version = $version;
-
-        return $new;
-    }
-
-    public function getMessageQueueSize(): ?int
-    {
-        return $this->messageQueueSize;
-    }
-
-    public function withMessageQueueSize(int $messageQueueSize): self
-    {
-        $new = clone $this;
-        $new->messageQueueSize = $messageQueueSize;
+        $new->state = $state;
 
         return $new;
     }
@@ -70,6 +70,20 @@ class Instance
         return false;
     }
 
+    /**
+     * @return string[]
+     */
+    public function getIps(): array
+    {
+        $ips = [];
+
+        foreach ($this->droplet->networks as $network) {
+            $ips[] = $network->ipAddress;
+        }
+
+        return array_unique($ips);
+    }
+
     public function getLabel(): string
     {
         $tagsComponent = implode(', ', $this->droplet->tags);
@@ -87,6 +101,41 @@ class Instance
     public function getCreatedAt(): \DateTimeInterface
     {
         return new \DateTimeImmutable($this->droplet->createdAt);
+    }
+
+    public function isMatchedBy(Filter $filter): bool
+    {
+        $state = $this->getState();
+        $field = $filter->getField();
+
+        if (array_key_exists($field, $state)) {
+            $stateValue = $state[$field];
+            $value = $filter->getValue();
+            $matchType = $filter->getMatchType();
+
+            if (is_scalar($stateValue)) {
+                return FilterInterface::MATCH_TYPE_POSITIVE === $matchType && $stateValue === $value
+                     || FilterInterface::MATCH_TYPE_NEGATIVE === $matchType && $stateValue !== $value;
+            }
+
+            if (is_array($stateValue)) {
+                return FilterInterface::MATCH_TYPE_POSITIVE === $matchType && in_array($value, $stateValue)
+                    || FilterInterface::MATCH_TYPE_NEGATIVE === $matchType && !in_array($value, $stateValue);
+            }
+        }
+
+        return FilterInterface::MATCH_TYPE_POSITIVE !== $filter->getMatchType();
+    }
+
+    /**
+     * @return array<mixed>
+     */
+    public function jsonSerialize(): array
+    {
+        return [
+            'id' => $this->getId(),
+            'state' => $this->getState(),
+        ];
     }
 
     private function getFirstPublicV4IpAddress(): ?string
