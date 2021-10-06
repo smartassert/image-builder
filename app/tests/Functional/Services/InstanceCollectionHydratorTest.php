@@ -97,10 +97,9 @@ class InstanceCollectionHydratorTest extends KernelTestCase
 
         foreach ($hydratedCollection as $hydratedInstance) {
             $expectedData = $instanceCollectionData[$hydratedInstance->getId()];
-            $expectedVersion = $expectedData['version'];
             $expectedMessageQueueSize = $expectedData['message-queue-size'];
             $expectedInstanceStateData = $expectedStateData[$hydratedInstance->getId()];
-            self::assertSame($expectedVersion, $hydratedInstance->getVersion());
+
             self::assertSame($expectedMessageQueueSize, $hydratedInstance->getMessageQueueSize());
             self::assertSame($expectedInstanceStateData, $hydratedInstance->getState());
         }
