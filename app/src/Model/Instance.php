@@ -106,20 +106,27 @@ class Instance implements \JsonSerializable
     public function isMatchedBy(Filter $filter): bool
     {
         $state = $this->getState();
-        $operator = $filter->getOperator();
+        $field = $filter->getField();
 
-        if (Filter::OPERATOR_EQUALS === $operator) {
-            return $filter->getValue() === ($state[$filter->getField()] ?? null);
+        if (array_key_exists($field, $state)) {
+            $stateValue = $state[$field];
+            $filterValue = $filter->getValue();
+            $filterMatchType = $filter->getMatchType();
+
+            if (is_scalar($stateValue)) {
+                return
+                    FilterInterface::MATCH_TYPE_POSITIVE === $filterMatchType && $stateValue === $filterValue
+                    || FilterInterface::MATCH_TYPE_NEGATIVE === $filterMatchType && $stateValue !== $filterValue;
+            }
+
+            if (is_array($stateValue)) {
+                return
+                    FilterInterface::MATCH_TYPE_POSITIVE === $filterMatchType && in_array($filterValue, $stateValue)
+                    || FilterInterface::MATCH_TYPE_NEGATIVE === $filterMatchType && !in_array($filterValue, $stateValue);
+            }
         }
 
-        if (Filter::OPERATOR_NOT_CONTAINS === $operator) {
-            $haystack = ($state[$filter->getField()] ?? []);
-            $haystack = is_array($haystack) ? $haystack : [];
-
-            return !in_array($filter->getValue(), $haystack);
-        }
-
-        return false;
+        return FilterInterface::MATCH_TYPE_POSITIVE !== $filter->getMatchType();
     }
 
     /**

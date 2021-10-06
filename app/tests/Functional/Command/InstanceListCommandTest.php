@@ -3,7 +3,6 @@
 namespace App\Tests\Functional\Command;
 
 use App\Command\InstanceListCommand;
-use App\Model\Filter;
 use App\Tests\Services\HttpResponseFactory;
 use DigitalOceanV2\Exception\RuntimeException;
 use GuzzleHttp\Handler\MockHandler;
@@ -266,11 +265,9 @@ class InstanceListCommandTest extends KernelTestCase
             ],
             'many instances, filter to message-queue-size=0' => [
                 'input' => [
-                    '--filter' => (string) json_encode([
+                    '--include' => (string) json_encode([
                         [
-                            'field' => 'message-queue-size',
-                            'operator' => Filter::OPERATOR_EQUALS,
-                            'value' => 0,
+                            'message-queue-size' => 0,
                         ],
                     ]),
                 ],
@@ -282,11 +279,9 @@ class InstanceListCommandTest extends KernelTestCase
             ],
             'many instances, filter to not contains IP 127.0.0.1' => [
                 'input' => [
-                    '--filter' => (string) json_encode([
+                    '--exclude' => (string) json_encode([
                         [
-                            'field' => 'ips',
-                            'operator' => Filter::OPERATOR_NOT_CONTAINS,
-                            'value' => '127.0.0.1',
+                            'ips' => '127.0.0.1',
                         ],
                     ]),
                 ],
@@ -299,16 +294,14 @@ class InstanceListCommandTest extends KernelTestCase
             ],
             'many instances, filter to message-queue-size=0, not contains IP 127.0.0.1' => [
                 'input' => [
-                    '--filter' => (string) json_encode([
+                    '--include' => (string) json_encode([
                         [
-                            'field' => 'message-queue-size',
-                            'operator' => Filter::OPERATOR_EQUALS,
-                            'value' => 0,
+                            'message-queue-size' => 0,
                         ],
+                    ]),
+                    '--exclude' => (string) json_encode([
                         [
-                            'field' => 'ips',
-                            'operator' => Filter::OPERATOR_NOT_CONTAINS,
-                            'value' => '127.0.0.1',
+                            'ips' => '127.0.0.1',
                         ],
                     ]),
                 ],
