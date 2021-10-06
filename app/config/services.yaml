@@ -5,8 +5,8 @@
 # https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
 parameters:
     instance_collection_tag: '%env(DIGITALOCEAN_DROPLET_TAG)%'
-    worker_manager_image: '%env(IMAGE_ID)%'
-    instance_tag: '%instance_collection_tag%-%worker_manager_image%'
+    image_id: '%env(IMAGE_ID)%'
+    instance_tag: '%instance_collection_tag%-%image_id%'
     ip_create_assignment_timeout_in_seconds: '%env(IP_CREATE_ASSIGNMENT_TIMEOUT_IN_SECONDS)%'
     ip_create_assignment_retry_in_seconds: '%env(IP_CREATE_ASSIGNMENT_RETRY_IN_SECONDS)%'
 
@@ -83,7 +83,7 @@ services:
             $defaults:
                 region: '%env(DIGITALOCEAN_DROPLET_REGION)%'
                 size: '%env(DIGITALOCEAN_DROPLET_SIZE)%'
-                image: '%worker_manager_image%'
+                image: '%image_id%'
                 tags:
                     - '%instance_collection_tag%'
                     - '%instance_tag%'
