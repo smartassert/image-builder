@@ -8,7 +8,7 @@ use App\Model\InstanceSorter\InstanceSorterInterface;
 /**
  * @implements \IteratorAggregate<Instance>
  */
-class InstanceCollection implements \IteratorAggregate, \Countable
+class InstanceCollection implements \IteratorAggregate, \Countable, \JsonSerializable
 {
     /**
      * @var Instance[]
@@ -71,6 +71,19 @@ class InstanceCollection implements \IteratorAggregate, \Countable
         }
 
         return new InstanceCollection($instances);
+    }
+
+    /**
+     * @return array<mixed>
+     */
+    public function jsonSerialize(): array
+    {
+        $data = [];
+        foreach ($this as $instance) {
+            $data[] = $instance->jsonSerialize();
+        }
+
+        return $data;
     }
 
     private function sortByCreatedDate(): self

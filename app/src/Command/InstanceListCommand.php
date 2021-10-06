@@ -53,21 +53,7 @@ class InstanceListCommand extends Command
             ? $this->filterStringParser->parse($filterString)
             : [];
 
-        $instances = $this->findInstances($filters);
-
-        $collectionData = [];
-
-        foreach ($instances as $instance) {
-            $collectionData[] = [
-                'id' => $instance->getId(),
-                'version' => $instance->getVersion(),
-                'message-queue-size' => $instance->getMessageQueueSize(),
-            ];
-        }
-
-        $output->write((string) json_encode([
-            'instances' => $collectionData,
-        ]));
+        $output->write((string) json_encode($this->findInstances($filters)));
 
         return Command::SUCCESS;
     }

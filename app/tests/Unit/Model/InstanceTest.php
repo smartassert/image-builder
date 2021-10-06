@@ -172,4 +172,91 @@ class InstanceTest extends TestCase
             ],
         ];
     }
+
+    /**
+     * @dataProvider jsonSerializeDataProvider
+     *
+     * @param array<mixed> $expected
+     */
+    public function testJsonSerialize(Instance $instance, array $expected): void
+    {
+        self::assertSame($expected, $instance->jsonSerialize());
+    }
+
+    /**
+     * @return array<mixed>
+     */
+    public function jsonSerializeDataProvider(): array
+    {
+        return [
+            'id-only' => [
+                'instance' => InstanceFactory::create([
+                    'id' => 123,
+                ]),
+                'expected' => [
+                    'id' => 123,
+                    'state' => [
+                        'ips' => [],
+                    ],
+                ],
+            ],
+            'id and IP addresses' => [
+                'instance' => InstanceFactory::create(DropletDataFactory::createWithIps(
+                    456,
+                    [
+                        '127.0.0.1',
+                        '10.0.0.1',
+                    ]
+                )),
+                'expected' => [
+                    'id' => 456,
+                    'state' => [
+                        'ips' => [
+                            '127.0.0.1',
+                            '10.0.0.1',
+                        ],
+                    ],
+                ],
+            ],
+            'id, no IP addresses, additional custom state' => [
+                'instance' => InstanceFactory::create([
+                    'id' => 789
+                ])->withAdditionalState([
+                    'key1' => 'value1',
+                    'key2' => 'value2',
+                ]),
+                'expected' => [
+                    'id' => 789,
+                    'state' => [
+                        'key1' => 'value1',
+                        'key2' => 'value2',
+                        'ips' => [],
+                    ],
+                ],
+            ],
+            'id, IP addresses, additional custom state' => [
+                'instance' => InstanceFactory::create(DropletDataFactory::createWithIps(
+                    321,
+                    [
+                        '127.0.0.2',
+                        '10.0.0.2',
+                    ]
+                ))->withAdditionalState([
+                    'key1' => 'value1',
+                    'key2' => 'value2',
+                ]),
+                'expected' => [
+                    'id' => 321,
+                    'state' => [
+                        'key1' => 'value1',
+                        'key2' => 'value2',
+                        'ips' => [
+                            '127.0.0.2',
+                            '10.0.0.2',
+                        ],
+                    ],
+                ],
+            ],
+        ];
+    }
 }

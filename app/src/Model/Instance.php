@@ -4,7 +4,7 @@ namespace App\Model;
 
 use DigitalOceanV2\Entity\Droplet;
 
-class Instance
+class Instance implements \JsonSerializable
 {
     private ?string $version = null;
     private ?int $messageQueueSize = null;
@@ -149,6 +149,17 @@ class Instance
         }
 
         return false;
+    }
+
+    /**
+     * @return array<mixed>
+     */
+    public function jsonSerialize(): array
+    {
+        return [
+            'id' => $this->getId(),
+            'state' => $this->getState(),
+        ];
     }
 
     private function getFirstPublicV4IpAddress(): ?string
