@@ -2,8 +2,6 @@
 
 namespace App\Exception;
 
-use Throwable;
-
 class EmptyEnvironmentVariableException extends \RuntimeException
 {
     public function __construct(
