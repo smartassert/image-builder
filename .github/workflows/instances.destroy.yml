@@ -27,12 +27,15 @@ jobs:
 
       - name: Get floating IP
         id: ip
+        env:
+          INSTANCE_COLLECTION_TAG: worker-manager
         run: echo "::set-output name=value::$(php app/bin/console app:ip:get)"
 
       - name: Get list of instances to destroy
         id: instances
         if: ${{ steps.ip.outputs.value != '' }}
         env:
+          INSTANCE_COLLECTION_TAG: worker-manager
           IP: ${{ steps.ip.outputs.value }}
         run: |
           INSTANCES=$(php app/bin/console app:instance:list --include='[{"message-queue-size":0}]' --exclude='[{"ips":"127.0.0.1"}]')
@@ -42,6 +45,7 @@ jobs:
       - name: Destroy matching instances
         if: ${{ steps.instances.outputs.value != '' }}
         env:
+          INSTANCE_COLLECTION_TAG: worker-manager
           INSTANCES: ${{ steps.instances.outputs.value }}
         run: |
           INSTANCE_IDS=$(echo "$INSTANCES" | jq '.instances[] | .id' | sed ':a;N;$!ba;s/\n/ /g')

@@ -61,12 +61,14 @@ jobs:
         id: instance
         env:
           IMAGE_ID: ${{ steps.build-config.outputs.IMAGE_ID }}
+          INSTANCE_COLLECTION_TAG: worker-manager
         run: |
           CREATE_OUTPUT=$(php app/bin/console app:instance:create)
           echo "::set-output name=id::$(echo "$CREATE_OUTPUT" | jq ".id")"
 
       - name: Health check
         env:
+          INSTANCE_COLLECTION_TAG: worker-manager
           COMMAND: "php app/bin/console app:instance:is-healthy --id=${{ steps.instance.outputs.id }}"
         run: ./ci/scripts/execute-command-output-json.sh
 
@@ -74,4 +76,5 @@ jobs:
         if:  ${{ failure() }}
         env:
           INSTANCE_ID: ${{ steps.instance.outputs.id }}
+          INSTANCE_COLLECTION_TAG: worker-manager
         run: php app/bin/console app:instance:destroy --id="$INSTANCE_ID"
