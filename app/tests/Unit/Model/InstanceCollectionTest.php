@@ -168,6 +168,96 @@ class InstanceCollectionTest extends TestCase
         ];
     }
 
+    /**
+     * @dataProvider jsonSerializeDataProvider
+     *
+     * @param array<mixed> $expected
+     */
+    public function testJsonSerialize(InstanceCollection $collection, array $expected): void
+    {
+        self::assertSame($expected, $collection->jsonSerialize());
+    }
+
+    /**
+     * @return array<mixed>
+     */
+    public function jsonSerializeDataProvider(): array
+    {
+        return [
+            'empty' => [
+                'collection' => new InstanceCollection([]),
+                'expected' => [],
+            ],
+            'single, id-only' => [
+                'collection' => new InstanceCollection([
+                    InstanceFactory::create([
+                        'id' => 123,
+                    ])
+                ]),
+                'expected' => [
+                    [
+                        'id' => 123,
+                        'state' => [
+                            'ips' => [],
+                        ],
+                    ],
+                ],
+            ],
+            'multiple' => [
+                'collection' => new InstanceCollection([
+                    InstanceFactory::create([
+                        'id' => 465,
+                    ]),
+                    InstanceFactory::create(DropletDataFactory::createWithIps(
+                        789,
+                        [
+                            '127.0.0.1',
+                            '10.0.0.1',
+                        ],
+                    )),
+                    InstanceFactory::create(DropletDataFactory::createWithIps(
+                        321,
+                        [
+                            '127.0.0.2',
+                            '10.0.0.2',
+                        ],
+                    ))->withAdditionalState([
+                        'key1' => 'value1',
+                        'key2' => 'value2',
+                    ]),
+                ]),
+                'expected' => [
+                    [
+                        'id' => 465,
+                        'state' => [
+                            'ips' => [],
+                        ],
+                    ],
+                    [
+                        'id' => 789,
+                        'state' => [
+                            'ips' => [
+                                '127.0.0.1',
+                                '10.0.0.1',
+                            ],
+                        ],
+                    ],
+                    [
+                        'id' => 321,
+                        'state' => [
+                            'key1' => 'value1',
+                            'key2' => 'value2',
+                            'ips' => [
+                                '127.0.0.2',
+                                '10.0.0.2',
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ];
+    }
+
     private function createSortedCollection(): InstanceCollection
     {
         return new InstanceCollection([
