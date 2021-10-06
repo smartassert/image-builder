@@ -34,9 +34,6 @@ class InstanceHydratorTest extends KernelTestCase
 
     public function testHydrate(): void
     {
-        $version = 'version-string';
-        $messageQueueSize = 8;
-
         $stateData = [
             'key1' => 'value1',
             'key2' => 'value2',
@@ -44,13 +41,6 @@ class InstanceHydratorTest extends KernelTestCase
         ];
 
         $this->mockHandler->append(
-            $this->httpResponseFactory->createFromArray([
-                HttpResponseFactory::KEY_STATUS_CODE => 200,
-                HttpResponseFactory::KEY_BODY => json_encode([
-                    'version' => $version,
-                    'message-queue-size' => $messageQueueSize,
-                ]),
-            ]),
             $this->httpResponseFactory->createFromArray([
                 HttpResponseFactory::KEY_STATUS_CODE => 200,
                 HttpResponseFactory::KEY_HEADERS => [
@@ -62,10 +52,8 @@ class InstanceHydratorTest extends KernelTestCase
 
         $ips = ['127.0.0.1', '10.0.0.1'];
         $instance = InstanceFactory::create(DropletDataFactory::createWithIps(123, $ips));
-        self::assertNull($instance->getMessageQueueSize());
 
         $instance = $this->instanceHydrator->hydrate($instance);
-        self::assertSame($messageQueueSize, $instance->getMessageQueueSize());
         self::assertSame(
             array_merge(
                 $stateData,

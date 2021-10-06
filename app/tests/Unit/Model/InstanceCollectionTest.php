@@ -71,7 +71,6 @@ class InstanceCollectionTest extends TestCase
         $instanceWithNonEmptyMessageQueue = InstanceFactory::create([
             'id' => 123,
         ])
-            ->withMessageQueueSize(1)
             ->withAdditionalState([
                 'message-queue-size' => 1,
             ])
@@ -80,7 +79,6 @@ class InstanceCollectionTest extends TestCase
         $instanceWithEmptyMessageQueue1 = InstanceFactory::create([
             'id' => 456,
         ])
-            ->withMessageQueueSize(0)
             ->withAdditionalState([
                 'message-queue-size' => 0,
             ])
@@ -89,7 +87,6 @@ class InstanceCollectionTest extends TestCase
         $instanceWithEmptyMessageQueue2 = InstanceFactory::create([
             'id' => 789,
         ])
-            ->withMessageQueueSize(0)
             ->withAdditionalState([
                 'message-queue-size' => 0,
             ])

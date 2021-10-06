@@ -38,17 +38,17 @@ class InstanceCollectionHydratorTest extends KernelTestCase
         $instanceCollectionData = [
             123 => [
                 'ipAddress' => '127.0.0.1',
-                'version' => '0.1',
-                'message-queue-size' => 14,
                 'state' => [
+                    'version' => '0.1',
+                    'message-queue-size' => 14,
                     'key1' => 'value1',
                 ],
             ],
             456 => [
                 'ipAddress' => '127.0.0.2',
-                'version' => '0.2',
-                'message-queue-size' => 7,
                 'state' => [
+                    'version' => '0.2',
+                    'message-queue-size' => 7,
                     'key2' => 'value2',
                 ],
             ],
@@ -56,12 +56,16 @@ class InstanceCollectionHydratorTest extends KernelTestCase
 
         $expectedStateData = [
             123 => [
+                'version' => '0.1',
+                'message-queue-size' => 14,
                 'key1' => 'value1',
                 'ips' => [
                     '127.0.0.1',
                 ],
             ],
             456 => [
+                'version' => '0.2',
+                'message-queue-size' => 7,
                 'key2' => 'value2',
                 'ips' => [
                     '127.0.0.2',
@@ -77,13 +81,6 @@ class InstanceCollectionHydratorTest extends KernelTestCase
             $this->mockHandler->append(
                 $this->httpResponseFactory->createFromArray([
                     HttpResponseFactory::KEY_STATUS_CODE => 200,
-                    HttpResponseFactory::KEY_BODY => json_encode([
-                        'version' => $instanceData['version'],
-                        'message-queue-size' => $instanceData['message-queue-size'],
-                    ]),
-                ]),
-                $this->httpResponseFactory->createFromArray([
-                    HttpResponseFactory::KEY_STATUS_CODE => 200,
                     HttpResponseFactory::KEY_HEADERS => [
                         'content-type' => 'application/json',
                     ],
@@ -96,11 +93,8 @@ class InstanceCollectionHydratorTest extends KernelTestCase
         $hydratedCollection = $this->instanceCollectionHydrator->hydrate($instanceCollection);
 
         foreach ($hydratedCollection as $hydratedInstance) {
-            $expectedData = $instanceCollectionData[$hydratedInstance->getId()];
-            $expectedMessageQueueSize = $expectedData['message-queue-size'];
             $expectedInstanceStateData = $expectedStateData[$hydratedInstance->getId()];
 
-            self::assertSame($expectedMessageQueueSize, $hydratedInstance->getMessageQueueSize());
             self::assertSame($expectedInstanceStateData, $hydratedInstance->getState());
         }
     }
