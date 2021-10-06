@@ -3,6 +3,7 @@
 namespace App\Tests\Unit\Model;
 
 use App\Model\Filter;
+use App\Model\FilterInterface;
 use App\Model\Instance;
 use App\Model\InstanceCollection;
 use App\Tests\Services\DropletDataFactory;
@@ -92,8 +93,8 @@ class InstanceCollectionTest extends TestCase
             ])
         ;
 
-        $notHasIpFilter = new Filter('ips', Filter::OPERATOR_NOT_CONTAINS, $ip);
-        $hasEmptyMessageQueueFilter = new Filter('message-queue-size', Filter::OPERATOR_EQUALS, 0);
+        $notHasIpFilter = new Filter('ips', $ip, FilterInterface::MATCH_TYPE_NEGATIVE);
+        $hasEmptyMessageQueueFilter = new Filter('message-queue-size', 0, FilterInterface::MATCH_TYPE_POSITIVE);
 
         return [
             'empty, not has IP filter' => [

@@ -3,6 +3,7 @@
 namespace App\Tests\Unit\Model;
 
 use App\Model\Filter;
+use App\Model\FilterInterface;
 use App\Model\Instance;
 use App\Tests\Services\DropletDataFactory;
 use App\Tests\Services\InstanceFactory;
@@ -99,7 +100,10 @@ class InstanceTest extends TestCase
     }
 
     /**
-     * @dataProvider isMatchedByDataProvider
+     * @dataProvider positiveScalarIsMatchedByDataProvider
+     * @dataProvider negativeScalarIsMatchedByDataProvider
+     * @dataProvider arrayIsMatchedByDataProvider
+     * @dataProvider notSetIsMatchedByDataProvider
      */
     public function testIsMatchedBy(Instance $instance, Filter $filter, bool $expected): void
     {
@@ -109,66 +113,247 @@ class InstanceTest extends TestCase
     /**
      * @return array<mixed>
      */
-    public function isMatchedByDataProvider(): array
+    public function positiveScalarIsMatchedByDataProvider(): array
     {
-        $messageQueueSizeFilter = new Filter('message-queue-size', Filter::OPERATOR_EQUALS, 0);
-        $notContainsIpFilter = new Filter('ips', Filter::OPERATOR_NOT_CONTAINS, '127.0.0.1');
+        $booleanFilter = new Filter('is-active', true, FilterInterface::MATCH_TYPE_POSITIVE);
+        $floatFilter = new Filter('radius', M_PI, FilterInterface::MATCH_TYPE_POSITIVE);
+        $integerFilter = new Filter('message-queue-size', 0, FilterInterface::MATCH_TYPE_POSITIVE);
+        $stringFilter = new Filter('message', 'ok', FilterInterface::MATCH_TYPE_POSITIVE);
 
         return [
-            'equals, instance does not have state property' => [
+            'positive, scalar(boolean), matches' => [
                 'instance' => InstanceFactory::create([
                     'id' => 1,
-                ]),
-                'filter' => $messageQueueSizeFilter,
-                'expected' => false,
-            ],
-            'equals, instance has state property, property does not match' => [
-                'instance' => InstanceFactory::create([
-                    'id' => 2,
                 ])->withAdditionalState([
-                    'message-queue-size' => 12,
+                    'is-active' => true,
                 ]),
-                'filter' => $messageQueueSizeFilter,
+                'filter' => $booleanFilter,
+                'expected' => true,
+            ],
+            'positive, scalar(boolean), not matches' => [
+                'instance' => InstanceFactory::create([
+                    'id' => 1,
+                ])->withAdditionalState([
+                    'is-active' => false,
+                ]),
+                'filter' => $booleanFilter,
                 'expected' => false,
             ],
-            'equals, instance has state property, property matches' => [
+            'positive, scalar(float), matches' => [
                 'instance' => InstanceFactory::create([
-                    'id' => 3,
+                    'id' => 1,
+                ])->withAdditionalState([
+                    'radius' => M_PI,
+                ]),
+                'filter' => $floatFilter,
+                'expected' => true,
+            ],
+            'positive, scalar(float), not matches' => [
+                'instance' => InstanceFactory::create([
+                    'id' => 1,
+                ])->withAdditionalState([
+                    'radius' => M_PI_2,
+                ]),
+                'filter' => $floatFilter,
+                'expected' => false,
+            ],
+            'positive, scalar(integer), matches' => [
+                'instance' => InstanceFactory::create([
+                    'id' => 1,
                 ])->withAdditionalState([
                     'message-queue-size' => 0,
                 ]),
-                'filter' => $messageQueueSizeFilter,
+                'filter' => $integerFilter,
                 'expected' => true,
             ],
-            'contains, instance does not have state property' => [
+            'positive, scalar(integer), not matches' => [
                 'instance' => InstanceFactory::create([
-                    'id' => 4,
+                    'id' => 1,
+                ])->withAdditionalState([
+                    'message-queue-size' => 1,
                 ]),
-                'filter' => $notContainsIpFilter,
+                'filter' => $integerFilter,
+                'expected' => false,
+            ],
+            'positive, scalar(string), matches' => [
+                'instance' => InstanceFactory::create([
+                    'id' => 1,
+                ])->withAdditionalState([
+                    'message' => 'ok',
+                ]),
+                'filter' => $stringFilter,
                 'expected' => true,
             ],
-            'contains, instance has state property, property does not match' => [
-                'instance' => InstanceFactory::create(DropletDataFactory::createWithIps(
-                    5,
-                    [
-                        '127.0.0.2',
-                        '127.0.0.3',
-                    ]
-                )),
-                'filter' => $notContainsIpFilter,
+            'positive, scalar(string), not matches' => [
+                'instance' => InstanceFactory::create([
+                    'id' => 1,
+                ])->withAdditionalState([
+                    'message' => 'not ok',
+                ]),
+                'filter' => $stringFilter,
+                'expected' => false,
+            ],
+        ];
+    }
+
+    /**
+     * @return array<mixed>
+     */
+    public function negativeScalarIsMatchedByDataProvider(): array
+    {
+        $booleanFilter = new Filter('is-active', true, FilterInterface::MATCH_TYPE_NEGATIVE);
+        $floatFilter = new Filter('radius', M_PI, FilterInterface::MATCH_TYPE_NEGATIVE);
+        $integerFilter = new Filter('message-queue-size', 0, FilterInterface::MATCH_TYPE_NEGATIVE);
+        $stringFilter = new Filter('message', 'ok', FilterInterface::MATCH_TYPE_NEGATIVE);
+
+        return [
+            'negative, scalar(boolean), matches' => [
+                'instance' => InstanceFactory::create([
+                    'id' => 1,
+                ])->withAdditionalState([
+                    'is-active' => true,
+                ]),
+                'filter' => $booleanFilter,
+                'expected' => false,
+            ],
+            'negative, scalar(boolean), not matches' => [
+                'instance' => InstanceFactory::create([
+                    'id' => 1,
+                ])->withAdditionalState([
+                    'is-active' => false,
+                ]),
+                'filter' => $booleanFilter,
                 'expected' => true,
             ],
-            'contains, instance has state property, property matches' => [
+            'negative, scalar(float), matches' => [
+                'instance' => InstanceFactory::create([
+                    'id' => 1,
+                ])->withAdditionalState([
+                    'radius' => M_PI,
+                ]),
+                'filter' => $floatFilter,
+                'expected' => false,
+            ],
+            'negative, scalar(float), not matches' => [
+                'instance' => InstanceFactory::create([
+                    'id' => 1,
+                ])->withAdditionalState([
+                    'radius' => M_PI_2,
+                ]),
+                'filter' => $floatFilter,
+                'expected' => true,
+            ],
+            'negative, scalar(integer), matches' => [
+                'instance' => InstanceFactory::create([
+                    'id' => 1,
+                ])->withAdditionalState([
+                    'message-queue-size' => 0,
+                ]),
+                'filter' => $integerFilter,
+                'expected' => false,
+            ],
+            'negative, scalar(integer), not matches' => [
+                'instance' => InstanceFactory::create([
+                    'id' => 1,
+                ])->withAdditionalState([
+                    'message-queue-size' => 1,
+                ]),
+                'filter' => $integerFilter,
+                'expected' => true,
+            ],
+            'negative, scalar(string), matches' => [
+                'instance' => InstanceFactory::create([
+                    'id' => 1,
+                ])->withAdditionalState([
+                    'message' => 'ok',
+                ]),
+                'filter' => $stringFilter,
+                'expected' => false,
+            ],
+            'negative, scalar(string), not matches' => [
+                'instance' => InstanceFactory::create([
+                    'id' => 1,
+                ])->withAdditionalState([
+                    'message' => 'not ok',
+                ]),
+                'filter' => $stringFilter,
+                'expected' => true,
+            ],
+        ];
+    }
+
+    /**
+     * @return array<mixed>
+     */
+    public function arrayIsMatchedByDataProvider(): array
+    {
+        return [
+            'positive, array, matches' => [
                 'instance' => InstanceFactory::create(DropletDataFactory::createWithIps(
-                    6,
+                    1,
                     [
                         '127.0.0.1',
-                        '127.0.0.2',
-                        '127.0.0.3',
+                        '10.0.0.1',
                     ]
                 )),
-                'filter' => $notContainsIpFilter,
+                'filter' => new Filter('ips', '127.0.0.1', FilterInterface::MATCH_TYPE_POSITIVE),
+                'expected' => true,
+            ],
+            'positive, array, not matches' => [
+                'instance' => InstanceFactory::create(DropletDataFactory::createWithIps(
+                    1,
+                    [
+                        '127.0.0.1',
+                        '10.0.0.1',
+                    ]
+                )),
+                'filter' => new Filter('ips', '127.0.0.2', FilterInterface::MATCH_TYPE_POSITIVE),
                 'expected' => false,
+            ],
+            'negative, array, matches' => [
+                'instance' => InstanceFactory::create(DropletDataFactory::createWithIps(
+                    1,
+                    [
+                        '127.0.0.1',
+                        '10.0.0.1',
+                    ]
+                )),
+                'filter' => new Filter('ips', '127.0.0.1', FilterInterface::MATCH_TYPE_NEGATIVE),
+                'expected' => false,
+            ],
+            'negative, array, not matches' => [
+                'instance' => InstanceFactory::create(DropletDataFactory::createWithIps(
+                    1,
+                    [
+                        '127.0.0.1',
+                        '10.0.0.1',
+                    ]
+                )),
+                'filter' => new Filter('ips', '127.0.0.2', FilterInterface::MATCH_TYPE_NEGATIVE),
+                'expected' => true,
+            ],
+        ];
+    }
+
+    /**
+     * @return array<mixed>
+     */
+    public function notSetIsMatchedByDataProvider(): array
+    {
+        return [
+            'positive, not set, matches' => [
+                'instance' => InstanceFactory::create([
+                    'id' => 1,
+                ]),
+                'filter' => new Filter('is-active', true, FilterInterface::MATCH_TYPE_POSITIVE),
+                'expected' => false,
+            ],
+            'negative, not set, matches' => [
+                'instance' => InstanceFactory::create([
+                    'id' => 1,
+                ]),
+                'filter' => new Filter('is-active', true, FilterInterface::MATCH_TYPE_NEGATIVE),
+                'expected' => true,
             ],
         ];
     }

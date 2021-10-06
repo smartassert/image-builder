@@ -3,8 +3,9 @@
 namespace App\Command;
 
 use App\Model\Filter;
+use App\Model\FilterInterface;
 use App\Model\InstanceCollection;
-use App\Services\FilterStringParser;
+use App\Services\FilterFactory;
 use App\Services\InstanceCollectionHydrator;
 use App\Services\InstanceRepository;
 use DigitalOceanV2\Exception\ExceptionInterface;
@@ -21,12 +22,13 @@ use Symfony\Component\Console\Output\OutputInterface;
 class InstanceListCommand extends Command
 {
     public const NAME = 'app:instance:list';
-    public const OPTION_FILTER = 'filter';
+    public const OPTION_INCLUDE = 'include';
+    public const OPTION_EXCLUDE = 'exclude';
 
     public function __construct(
         private InstanceRepository $instanceRepository,
         private InstanceCollectionHydrator $instanceCollectionHydrator,
-        private FilterStringParser $filterStringParser,
+        private FilterFactory $filterFactory,
     ) {
         parent::__construct(null);
     }
@@ -35,10 +37,16 @@ class InstanceListCommand extends Command
     {
         $this
             ->addOption(
-                self::OPTION_FILTER,
+                self::OPTION_INCLUDE,
                 null,
                 InputOption::VALUE_OPTIONAL,
-                'Filter'
+                'Include instances matching this filter'
+            )
+            ->addOption(
+                self::OPTION_EXCLUDE,
+                null,
+                InputOption::VALUE_OPTIONAL,
+                'Exclude instances matching this filter'
             )
         ;
     }
@@ -48,10 +56,10 @@ class InstanceListCommand extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $filterString = $input->getOption('filter');
-        $filters = is_string($filterString)
-            ? $this->filterStringParser->parse($filterString)
-            : [];
+        $filters = array_merge(
+            $this->createFilterCollection($input, self::OPTION_INCLUDE, FilterInterface::MATCH_TYPE_POSITIVE),
+            $this->createFilterCollection($input, self::OPTION_EXCLUDE, FilterInterface::MATCH_TYPE_NEGATIVE)
+        );
 
         $output->write((string) json_encode($this->findInstances($filters)));
 
@@ -73,5 +81,22 @@ class InstanceListCommand extends Command
         }
 
         return $instances;
+    }
+
+    /**
+     * @param FilterInterface::MATCH_TYPE_* $matchType
+     *
+     * @return Filter[]
+     */
+    private function createFilterCollection(InputInterface $input, string $optionName, string $matchType): array
+    {
+        $filterString = $input->getOption($optionName);
+        if (!is_string($filterString)) {
+            return [];
+        }
+
+        return FilterInterface::MATCH_TYPE_NEGATIVE === $matchType
+            ? $this->filterFactory->createNegativeFiltersFromString($filterString)
+            : $this->filterFactory->createPositiveFiltersFromString($filterString);
     }
 }
