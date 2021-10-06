@@ -62,12 +62,9 @@ class InstanceHydratorTest extends KernelTestCase
 
         $ips = ['127.0.0.1', '10.0.0.1'];
         $instance = InstanceFactory::create(DropletDataFactory::createWithIps(123, $ips));
-
-        self::assertNull($instance->getVersion());
         self::assertNull($instance->getMessageQueueSize());
 
         $instance = $this->instanceHydrator->hydrate($instance);
-        self::assertSame($version, $instance->getVersion());
         self::assertSame($messageQueueSize, $instance->getMessageQueueSize());
         self::assertSame(
             array_merge(

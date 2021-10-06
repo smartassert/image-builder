@@ -6,7 +6,6 @@ use DigitalOceanV2\Entity\Droplet;
 
 class Instance implements \JsonSerializable
 {
-    private ?string $version = null;
     private ?int $messageQueueSize = null;
 
     /**
@@ -39,19 +38,6 @@ class Instance implements \JsonSerializable
                 'ips' => $this->getIps(),
             ]
         );
-    }
-
-    public function getVersion(): ?string
-    {
-        return $this->version;
-    }
-
-    public function withVersion(string $version): self
-    {
-        $new = clone $this;
-        $new->version = $version;
-
-        return $new;
     }
 
     /**

@@ -20,7 +20,6 @@ class InstanceHydrator
     {
         $status = $this->instanceClient->getStatus($instance);
         if ($status instanceof InstanceStatus) {
-            $instance = $instance->withVersion($status->getVersion());
             $instance = $instance->withMessageQueueSize($status->getMessageQueueSize());
         }
 
