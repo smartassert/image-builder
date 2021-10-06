@@ -6,8 +6,6 @@ use DigitalOceanV2\Entity\Droplet;
 
 class Instance implements \JsonSerializable
 {
-    private ?int $messageQueueSize = null;
-
     /**
      * @var array<int|string, mixed>
      */
@@ -47,19 +45,6 @@ class Instance implements \JsonSerializable
     {
         $new = clone $this;
         $new->state = $state;
-
-        return $new;
-    }
-
-    public function getMessageQueueSize(): ?int
-    {
-        return $this->messageQueueSize;
-    }
-
-    public function withMessageQueueSize(int $messageQueueSize): self
-    {
-        $new = clone $this;
-        $new->messageQueueSize = $messageQueueSize;
 
         return $new;
     }
