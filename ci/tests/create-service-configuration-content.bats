@@ -13,27 +13,23 @@ main() {
 }
 
 @test "$script_name: content is created from all variables being set" {
-  SERVICE_ID="service-name" \
   IMAGE_ID="123456789" \
   STATE_URL="/" \
   HEALTH_CHECK_URL="/health-check" \
   run main
 
   assert_success
-  assert_output "COLLECTION_TAG=service-name
-IMAGE_ID=123456789
+  assert_output "IMAGE_ID=123456789
 STATE_URL=/
 HEALTH_CHECK_URL=/health-check"
 }
 
 @test "$script_name: content is created with empty values when variables are not set" {
-  SERVICE_ID="service-name" \
   IMAGE_ID="123456789" \
   run main
 
   assert_success
-  assert_output "COLLECTION_TAG=service-name
-IMAGE_ID=123456789
+  assert_output "IMAGE_ID=123456789
 STATE_URL=
 HEALTH_CHECK_URL="
 }

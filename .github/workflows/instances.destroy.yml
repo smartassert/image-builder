@@ -18,21 +18,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
-      - name: Checkout bash-read-env-file
-        uses: actions/checkout@v2
-        with:
-          repository: smartassert/bash-read-env-file
-          path: ./vendor/smartassert/bash-read-env-file
-          ref: main
-
-      - name: Read service configuration
-        id: build-config
+      - name: Verify service configuration exists
         env:
           ENV_FILE_PATH: ./services/${{ github.event.inputs.service_id }}/configuration.env
           SERVICE_ID: ${{ github.event.inputs.service_id }}
-        run: |
-          ./ci/scripts/check-service-configuration-exists.sh
-          ./vendor/smartassert/bash-read-env-file/src/read-env-file-ga.sh
+        run: ./ci/scripts/check-service-configuration-exists.sh
 
       - name: Setup php
         uses: shivammathur/setup-php@v2
@@ -48,14 +38,14 @@ jobs:
       - name: Get floating IP
         id: ip
         env:
-          INSTANCE_COLLECTION_TAG: ${{ steps.build-config.outputs.COLLECTION_TAG }}
+          INSTANCE_COLLECTION_TAG: ${{ github.event.inputs.service_id }}
         run: echo "::set-output name=value::$(php app/bin/console app:ip:get)"
 
       - name: Get list of instances to destroy
         id: instances
         if: ${{ steps.ip.outputs.value != '' }}
         env:
-          INSTANCE_COLLECTION_TAG: ${{ steps.build-config.outputs.COLLECTION_TAG }}
+          INSTANCE_COLLECTION_TAG: ${{ github.event.inputs.service_id }}
           IP: ${{ steps.ip.outputs.value }}
         run: |
           INSTANCES=$(php app/bin/console app:instance:list --include='[{"message-queue-size":0}]' --exclude='[{"ips":"127.0.0.1"}]')
@@ -65,7 +55,7 @@ jobs:
       - name: Destroy matching instances
         if: ${{ steps.instances.outputs.value != '' }}
         env:
-          INSTANCE_COLLECTION_TAG: ${{ steps.build-config.outputs.COLLECTION_TAG }}
+          INSTANCE_COLLECTION_TAG: ${{ github.event.inputs.service_id }}
           INSTANCES: ${{ steps.instances.outputs.value }}
         run: |
           INSTANCE_IDS=$(echo "$INSTANCES" | jq '.instances[] | .id' | sed ':a;N;$!ba;s/\n/ /g')
