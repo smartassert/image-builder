@@ -60,6 +60,6 @@ jobs:
           STATE_URL: ${{ github.event.inputs.state_url }}
           HEALTH_CHECK_URL: ${{ github.event.inputs.health_check_url }}
         run: |
-          ./scripts/create-service-configuration-content.sh > "$DIRECTORY/$SERVICE_ID/configuration.env"
-          ls -la "$DIRECTORY/$SERVICE_ID"
-          cat "$DIRECTORY/$SERVICE_ID/configuration.env"
+          ./scripts/create-service-configuration-content.sh > "$DIRECTORY/configuration.env"
+          ls -la "$DIRECTORY"
+          cat "$DIRECTORY/configuration.env"
