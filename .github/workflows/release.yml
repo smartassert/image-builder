@@ -161,17 +161,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
-      - name: Trigger update worker manager image workflow if a release
-        uses: benc-uk/workflow-dispatch@v1
-        with:
-          workflow: Update worker manager image
-          token: ${{ secrets.PAT_TOKEN_SELF }}
-          inputs: |
-            {
-              "image": "${{ needs.create-image.outputs.image-id }}",
-              "commit_message": "Automatic worker-manager-image.env for release ${{ needs.setup.outputs.version }} ${{ needs.create-image.outputs.image-id }}"
-            }
-
       - name: Trigger service.configure workflow if a release
         uses: benc-uk/workflow-dispatch@v1
         with:
