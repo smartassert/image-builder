@@ -34,3 +34,32 @@ jobs:
         run: |
           [[ -n "$SERVICE_ID" ]] || (echo "Event service_id not set" && exit 1)
           [[ -n "$IMAGE_ID" ]] || (echo "Event image_id not set" && exit 1)
+
+  store:
+    name: Store ${{ github.event.inputs.service_id }}
+    runs-on: ubuntu-latest
+    needs: setup
+
+    steps:
+      - name: Define service configuration directory
+        id: directory_path
+        env:
+          SERVICE_ID: ${{ github.event.inputs.service_id }}
+        run: echo "::set-output name=value::./services/$SERVICE_ID"
+
+      - name: Create service configuration directory
+        env:
+          DIRECTORY: ${{ steps.directory_path.outputs.value }}
+        run: mkdir -p "$DIRECTORY"
+
+      - name: Store service configuration
+        env:
+          DIRECTORY: ${{ steps.directory_path.outputs.value }}
+          SERVICE_ID: ${{ github.event.inputs.service_id }}
+          IMAGE_ID: ${{ github.event.inputs.service_id }}
+          STATE_URL: ${{ github.event.inputs.state_url }}
+          HEALTH_CHECK_URL: ${{ github.event.inputs.health_check_url }}
+        run: |
+          ./scripts/create-service-configuration-content.sh > "$DIRECTORY/$SERVICE_ID/configuration.env"
+          ls -la "$DIRECTORY/$SERVICE_ID"
+          cat "$DIRECTORY/$SERVICE_ID/configuration.env"
