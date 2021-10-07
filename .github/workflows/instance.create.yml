@@ -49,66 +49,39 @@ jobs:
           ENV_FILE_PATH: ./worker-manager-image.env
         run: ./vendor/smartassert/bash-read-env-file/src/read-env-file-ga.sh
 
-#      - name: Define service configuration file path
-#        id: config-path
-#        env:
-#          SERVICE_ID: ${{ github.event.inputs.service_id }}
-#        run: |
-#          echo "::set-output name=value::./services/$SERVICE_ID/configuration.env"
-
-      - name: Read service-specific configuration
-        id: foo-config
+      - name: Read service configuration
+        id: build-config
         env:
           ENV_FILE_PATH: ./services/${{ github.event.inputs.service_id }}/configuration.env
           SERVICE_ID: ${{ github.event.inputs.service_id }}
         run: |
-          echo "$ENV_FILE_PATH"
-          ls -la "$ENV_FILE_PATH"
-          cat "$ENV_FILE_PATH"
-
-          if [ ! -f "$ENV_FILE_PATH" ]; then
-            echo "Configuration for service $SERVICE_ID not found: $ENV_FILE_PATH"
-            exit 1
-          fi
-
+          ./vendor/smartassert/bash-read-env-file/src/check-service-configuration-exists.sh
           ./vendor/smartassert/bash-read-env-file/src/read-env-file-ga.sh
 
-      - name: Output service-specific configuration
+      - name: Check snapshot exists
         env:
-          OUTPUTS: ${{ toJson(steps.foo-config.outputs) }}
-        run: |
-          echo "$OUTPUTS"
+          IMAGE_ID: ${{ steps.build-config.outputs.IMAGE_ID }}
+          EXPECTED_EXISTS: "true"
+        run: ./vendor/smartassert/bash-ga-deploy-tools/src/digitalocean-snapshot/verify-existence.sh
 
-#      - name: Setup build config
-#        id: build-config
-#        env:
-#          IMAGE_ID: ${{ steps.worker-manager-image.outputs.WORKER_MANAGER_IMAGE }}
-#        run: echo "::set-output name=IMAGE_ID::$IMAGE_ID"
-#
-#      - name: Check snapshot exists
-#        env:
-#          IMAGE_ID: ${{ steps.build-config.outputs.IMAGE_ID }}
-#          EXPECTED_EXISTS: "true"
-#        run: ./vendor/smartassert/bash-ga-deploy-tools/src/digitalocean-snapshot/verify-existence.sh
-#
-#      - name: Create
-#        id: instance
-#        env:
-#          IMAGE_ID: ${{ steps.build-config.outputs.IMAGE_ID }}
-#          INSTANCE_COLLECTION_TAG: worker-manager
-#        run: |
-#          CREATE_OUTPUT=$(php app/bin/console app:instance:create)
-#          echo "::set-output name=id::$(echo "$CREATE_OUTPUT" | jq ".id")"
-#
-#      - name: Health check
-#        env:
-#          INSTANCE_COLLECTION_TAG: worker-manager
-#          COMMAND: "php app/bin/console app:instance:is-healthy --id=${{ steps.instance.outputs.id }}"
-#        run: ./ci/scripts/execute-command-output-json.sh
-#
-#      - name: Remove instance if health check failed
-#        if:  ${{ failure() }}
-#        env:
-#          INSTANCE_ID: ${{ steps.instance.outputs.id }}
-#          INSTANCE_COLLECTION_TAG: worker-manager
-#        run: php app/bin/console app:instance:destroy --id="$INSTANCE_ID"
+      - name: Create
+        id: instance
+        env:
+          IMAGE_ID: ${{ steps.build-config.outputs.IMAGE_ID }}
+          INSTANCE_COLLECTION_TAG: ${{ steps.build-config.outputs.COLLECTION_TAG }}
+        run: |
+          CREATE_OUTPUT=$(php app/bin/console app:instance:create)
+          echo "::set-output name=id::$(echo "$CREATE_OUTPUT" | jq ".id")"
+
+      - name: Health check
+        env:
+          INSTANCE_COLLECTION_TAG: worker-manager
+          COMMAND: "php app/bin/console app:instance:is-healthy --id=${{ steps.instance.outputs.id }}"
+        run: ./ci/scripts/execute-command-output-json.sh
+
+      - name: Remove instance if health check failed
+        if:  ${{ failure() }}
+        env:
+          INSTANCE_ID: ${{ steps.instance.outputs.id }}
+          INSTANCE_COLLECTION_TAG: ${{ steps.build-config.outputs.COLLECTION_TAG }}
+        run: php app/bin/console app:instance:destroy --id="$INSTANCE_ID"
