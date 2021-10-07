@@ -11,10 +11,10 @@ on:
         required: true
       state_url:
         description: URL from which to get instance state
-        required: true
+        required: false
       health_check_url:
         description: URL from which to check that an instance is healthy
-        required: true
+        required: false
 
 jobs:
   setup:
