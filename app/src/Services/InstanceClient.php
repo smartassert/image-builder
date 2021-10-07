@@ -13,6 +13,8 @@ class InstanceClient
     public function __construct(
         private ClientInterface $httpClient,
         private RequestFactoryInterface $requestFactory,
+        private string $stateUrl,
+        private string $healthCheckUrl
     ) {
     }
 
@@ -23,7 +25,7 @@ class InstanceClient
      */
     public function getState(Instance $instance): array
     {
-        $url = $instance->getUrl() . '/';
+        $url = $instance->getUrl() . $this->stateUrl;
         $request = $this->requestFactory->createRequest('GET', $url);
 
         $response = $this->httpClient->sendRequest($request);
@@ -41,7 +43,7 @@ class InstanceClient
      */
     public function getHealth(Instance $instance): InstanceHealth
     {
-        $url = $instance->getUrl() . '/health-check';
+        $url = $instance->getUrl() . $this->healthCheckUrl;
         $request = $this->requestFactory->createRequest('GET', $url);
 
         $response = $this->httpClient->sendRequest($request);
