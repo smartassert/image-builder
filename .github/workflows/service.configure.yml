@@ -44,7 +44,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Define service configuration directory
+      - name: Define service configuration directory path
         id: directory_path
         env:
           SERVICE_ID: ${{ github.event.inputs.service_id }}
@@ -55,14 +55,27 @@ jobs:
           DIRECTORY: ${{ steps.directory_path.outputs.value }}
         run: mkdir -p "$DIRECTORY"
 
-      - name: Store service configuration
+      - name: Define service configuration file path
+        id: file_path
         env:
           DIRECTORY: ${{ steps.directory_path.outputs.value }}
+        run: echo "::set-output name=value::$DIRECTORY/configuration.env"
+
+      - name: Store service configuration
+        env:
+          FILE_PATH: ${{ steps.file_path.outputs.value }}
           SERVICE_ID: ${{ github.event.inputs.service_id }}
           IMAGE_ID: ${{ github.event.inputs.service_id }}
           STATE_URL: ${{ github.event.inputs.state_url }}
           HEALTH_CHECK_URL: ${{ github.event.inputs.health_check_url }}
+        run: ./ci/scripts/create-service-configuration-content.sh > "$FILE_PATH"
+
+      - name: Commit
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: "Automatic configuration update for ${{ steps.file_path.outputs.value }}"
+
+      - name: Examine commits
         run: |
-          ./ci/scripts/create-service-configuration-content.sh > "$DIRECTORY/configuration.env"
-          ls -la "$DIRECTORY"
-          cat "$DIRECTORY/configuration.env"
+          git status
+          git log
