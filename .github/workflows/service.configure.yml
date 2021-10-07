@@ -73,7 +73,7 @@ jobs:
       - name: Commit
         uses: stefanzweifel/git-auto-commit-action@v4
         with:
-          commit_message: "Automatic configuration update for ${{ steps.file_path.outputs.value }}"
+          commit_message: "Automatic configuration update for ${{ github.event.inputs.service_id }}"
 
       - name: Examine commits
         run: |
