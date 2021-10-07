@@ -43,12 +43,6 @@ jobs:
           args: --ignore-platform-reqs --quiet
           working_dir: app
 
-      - name: Read worker-manager-image build config
-        id: worker-manager-image
-        env:
-          ENV_FILE_PATH: ./worker-manager-image.env
-        run: ./vendor/smartassert/bash-read-env-file/src/read-env-file-ga.sh
-
       - name: Read service configuration
         id: build-config
         env:
