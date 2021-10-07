@@ -48,20 +48,20 @@ jobs:
       - name: Get floating IP
         id: ip
         env:
-          INSTANCE_COLLECTION_TAG: ${{ steps.build-config.outputs.COLLECTION_TAG }}
+          INSTANCE_COLLECTION_TAG: ${{ github.event.inputs.service_id }}
         run: |
           echo "::set-output name=value::$(php app/bin/console app:ip:get)"
 
       - name: Re-assign IP if found
         if: ${{ steps.ip.outputs.value != '' }}
         env:
-          INSTANCE_COLLECTION_TAG: ${{ steps.build-config.outputs.COLLECTION_TAG }}
+          INSTANCE_COLLECTION_TAG: ${{ github.event.inputs.service_id }}
           COMMAND: "php app/bin/console app:ip:assign"
         run: ./ci/scripts/execute-command-output-json.sh
 
       - name: Create IP if none found
         if: ${{ steps.ip.outputs.value == '' }}
         env:
-          INSTANCE_COLLECTION_TAG: ${{ steps.build-config.outputs.COLLECTION_TAG }}
+          INSTANCE_COLLECTION_TAG: ${{ github.event.inputs.service_id }}
           COMMAND: "php app/bin/console app:ip:create"
         run: ./ci/scripts/execute-command-output-json.sh
