@@ -5,4 +5,4 @@ if [ ! -f "$ENV_FILE_PATH" ]; then
   exit 1
 fi
 
-echo "$(<$ENV_FILE_PATH)"
+echo "$(<"$ENV_FILE_PATH")"
