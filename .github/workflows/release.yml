@@ -172,6 +172,19 @@ jobs:
               "commit_message": "Automatic worker-manager-image.env for release ${{ needs.setup.outputs.version }} ${{ needs.create-image.outputs.image-id }}"
             }
 
+      - name: Trigger service.configure workflow if a release
+        uses: benc-uk/workflow-dispatch@v1
+        with:
+          workflow: service.configure
+          token: ${{ secrets.PAT_TOKEN_SELF }}
+          inputs: |
+            {
+              "service_id": "worker-manager",
+              "image_id": "${{ needs.create-image.outputs.image-id }}",
+              "state_url": "/",
+              "health_check_url": "/health-check"
+            }
+
   remove-snapshot:
     needs: create-image
     name: Remove snapshot if not deploying
