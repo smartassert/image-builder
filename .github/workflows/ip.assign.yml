@@ -2,6 +2,10 @@ name: Assign IP to Current Instance
 
 on:
   workflow_dispatch:
+    inputs:
+      service_id:
+        description: Service for which to create an instance
+        required: true
 
 jobs:
   assign:
@@ -25,23 +29,32 @@ jobs:
           args: --ignore-platform-reqs --quiet
           working_dir: app
 
+      - name: Read service configuration
+        id: build-config
+        env:
+          ENV_FILE_PATH: ./services/${{ github.event.inputs.service_id }}/configuration.env
+          SERVICE_ID: ${{ github.event.inputs.service_id }}
+        run: |
+          ./vendor/smartassert/bash-read-env-file/src/check-service-configuration-exists.sh
+          ./vendor/smartassert/bash-read-env-file/src/read-env-file-ga.sh
+
       - name: Get floating IP
         id: ip
         env:
-          INSTANCE_COLLECTION_TAG: worker-manager
+          INSTANCE_COLLECTION_TAG: ${{ steps.build-config.outputs.COLLECTION_TAG }}
         run: |
           echo "::set-output name=value::$(php app/bin/console app:ip:get)"
 
       - name: Re-assign IP if found
         if: ${{ steps.ip.outputs.value != '' }}
         env:
-          INSTANCE_COLLECTION_TAG: worker-manager
+          INSTANCE_COLLECTION_TAG: ${{ steps.build-config.outputs.COLLECTION_TAG }}
           COMMAND: "php app/bin/console app:ip:assign"
         run: ./ci/scripts/execute-command-output-json.sh
 
       - name: Create IP if none found
         if: ${{ steps.ip.outputs.value == '' }}
         env:
-          INSTANCE_COLLECTION_TAG: worker-manager
+          INSTANCE_COLLECTION_TAG: ${{ steps.build-config.outputs.COLLECTION_TAG }}
           COMMAND: "php app/bin/console app:ip:create"
         run: ./ci/scripts/execute-command-output-json.sh
