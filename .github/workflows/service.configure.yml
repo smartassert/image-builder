@@ -1,0 +1,36 @@
+name: service.configure
+
+on:
+  workflow_dispatch:
+    inputs:
+      service_id:
+        description: The service for which the configuration is being stored
+        required: true
+      image_id:
+        description: ID of the snapshot to store
+        required: true
+      state_url:
+        description: URL from which to get instance state
+        required: true
+      health_check_url:
+        description: URL from which to check that an instance is healthy
+        required: true
+
+jobs:
+  setup:
+    name: Setup
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Output event inputs
+        env:
+          INPUTS: ${{ toJson(github.event.inputs) }}
+        run: echo "$INPUTS"
+
+      - name: Validate event inputs
+        env:
+          SERVICE_ID: ${{ github.event.inputs.service_id }}
+          IMAGE_ID: ${{ github.event.inputs.service_id }}
+        run: |
+          [[ -n "$SERVICE_ID" ]] || echo "Event service_id not set" && exit 1
+          [[ -n "$IMAGE_ID" ]] || echo "Event image_id not set" && exit 1
