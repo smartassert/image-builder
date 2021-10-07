@@ -18,11 +18,21 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
-      - name: Verify service configuration exists
+      - name: Checkout bash-read-env-file
+        uses: actions/checkout@v2
+        with:
+          repository: smartassert/bash-read-env-file
+          path: ./vendor/smartassert/bash-read-env-file
+          ref: main
+
+      - name: Read service configuration
+        id: build-config
         env:
           ENV_FILE_PATH: ./services/${{ github.event.inputs.service_id }}/configuration.env
           SERVICE_ID: ${{ github.event.inputs.service_id }}
-        run: ./ci/scripts/check-service-configuration-exists.sh
+        run: |
+          ./ci/scripts/check-service-configuration-exists.sh
+          ./vendor/smartassert/bash-read-env-file/src/read-env-file-ga.sh
 
       - name: Setup php
         uses: shivammathur/setup-php@v2
@@ -46,6 +56,7 @@ jobs:
         if: ${{ steps.ip.outputs.value != '' }}
         env:
           INSTANCE_COLLECTION_TAG: ${{ github.event.inputs.service_id }}
+          INSTANCE_STATE_URL: ${{ steps.build-config.outputs.STATE_URL }}
           IP: ${{ steps.ip.outputs.value }}
           DEFAULT_INCLUDE_FILTER: ''
           DEFAULT_EXCLUDE_FILTER: '[{"ips":"{{ IP }}"}]'
