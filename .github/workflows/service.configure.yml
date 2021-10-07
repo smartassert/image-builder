@@ -22,13 +22,6 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout bash-ga-ci-tools
-        uses: actions/checkout@v2
-        with:
-          repository: smartassert/bash-ga-ci-tools
-          path: ./vendor/smartassert/bash-ga-ci-tools
-          ref: main
-
       - name: Output event inputs
         env:
           INPUTS: ${{ toJson(github.event.inputs) }}
