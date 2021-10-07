@@ -41,6 +41,9 @@ jobs:
     needs: setup
 
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
       - name: Define service configuration directory
         id: directory_path
         env:
