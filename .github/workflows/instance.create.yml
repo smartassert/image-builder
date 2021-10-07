@@ -55,7 +55,7 @@ jobs:
           ENV_FILE_PATH: ./services/${{ github.event.inputs.service_id }}/configuration.env
           SERVICE_ID: ${{ github.event.inputs.service_id }}
         run: |
-          ./vendor/smartassert/bash-read-env-file/src/check-service-configuration-exists.sh
+          ./ci/scripts/check-service-configuration-exists.sh
           ./vendor/smartassert/bash-read-env-file/src/read-env-file-ga.sh
 
       - name: Check snapshot exists
