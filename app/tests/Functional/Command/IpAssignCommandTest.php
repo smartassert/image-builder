@@ -16,6 +16,8 @@ use webignition\ObjectReflector\ObjectReflector;
 
 class IpAssignCommandTest extends KernelTestCase
 {
+    private const INSTANCE_COLLECTION_TAG = 'instance-collection-tag-value';
+
     private IpAssignCommand $command;
     private MockHandler $mockHandler;
     private HttpResponseFactory $httpResponseFactory;
@@ -149,7 +151,7 @@ class IpAssignCommandTest extends KernelTestCase
                                     'droplet' => [
                                         'id' => 123,
                                         'tags' => [
-                                            'worker-manager',
+                                            self::INSTANCE_COLLECTION_TAG,
                                         ],
                                     ],
                                 ],
@@ -194,7 +196,7 @@ class IpAssignCommandTest extends KernelTestCase
                                     'droplet' => [
                                         'id' => 123,
                                         'tags' => [
-                                            'worker-manager',
+                                            self::INSTANCE_COLLECTION_TAG,
                                         ],
                                     ],
                                 ],
@@ -278,7 +280,7 @@ class IpAssignCommandTest extends KernelTestCase
                                     'droplet' => [
                                         'id' => 123,
                                         'tags' => [
-                                            'worker-manager',
+                                            self::INSTANCE_COLLECTION_TAG,
                                         ],
                                     ],
                                 ],

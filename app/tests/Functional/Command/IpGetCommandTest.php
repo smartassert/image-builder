@@ -11,6 +11,8 @@ use Symfony\Component\Console\Output\BufferedOutput;
 
 class IpGetCommandTest extends KernelTestCase
 {
+    private const INSTANCE_COLLECTION_TAG = 'instance-collection-tag-value';
+
     private IpGetCommand $command;
     private MockHandler $mockHandler;
     private HttpResponseFactory $httpResponseFactory;
@@ -86,7 +88,7 @@ class IpGetCommandTest extends KernelTestCase
                         'droplet' => [
                             'id' => 123,
                             'tags' => [
-                                'worker-manager',
+                                self::INSTANCE_COLLECTION_TAG,
                             ],
                         ],
                     ],
