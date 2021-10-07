@@ -1,4 +1,4 @@
-name: service.configure
+name: service.configure ${{ github.event.inputs.service_id }}
 
 on:
   workflow_dispatch:
