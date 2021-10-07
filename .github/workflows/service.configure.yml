@@ -32,5 +32,5 @@ jobs:
           SERVICE_ID: ${{ github.event.inputs.service_id }}
           IMAGE_ID: ${{ github.event.inputs.service_id }}
         run: |
-          [[ -n "$SERVICE_ID" ]] || echo "Event service_id not set" && exit 1
-          [[ -n "$IMAGE_ID" ]] || echo "Event image_id not set" && exit 1
+          [[ -n "$SERVICE_ID" ]] || (echo "Event service_id not set" && exit 1)
+          [[ -n "$IMAGE_ID" ]] || (echo "Event image_id not set" && exit 1)
