@@ -2,10 +2,14 @@ name: Create instance
 
 on:
   workflow_dispatch:
+    inputs:
+      service_id:
+        description: Service for which to create an instance
+        required: true
 
 jobs:
   create:
-    name: Create instance
+    name: Create instance for ${{ github.event.inputs.service_id }}
     runs-on: ubuntu-latest
     env:
       DIGITALOCEAN_API_TOKEN: ${{ secrets.DIGITALOCEAN_API_TOKEN }}
@@ -45,36 +49,66 @@ jobs:
           ENV_FILE_PATH: ./worker-manager-image.env
         run: ./vendor/smartassert/bash-read-env-file/src/read-env-file-ga.sh
 
-      - name: Setup build config
-        id: build-config
-        env:
-          IMAGE_ID: ${{ steps.worker-manager-image.outputs.WORKER_MANAGER_IMAGE }}
-        run: echo "::set-output name=IMAGE_ID::$IMAGE_ID"
+#      - name: Define service configuration file path
+#        id: config-path
+#        env:
+#          SERVICE_ID: ${{ github.event.inputs.service_id }}
+#        run: |
+#          echo "::set-output name=value::./services/$SERVICE_ID/configuration.env"
 
-      - name: Check snapshot exists
+      - name: Read service-specific configuration
+        id: foo-config
         env:
-          IMAGE_ID: ${{ steps.build-config.outputs.IMAGE_ID }}
-          EXPECTED_EXISTS: "true"
-        run: ./vendor/smartassert/bash-ga-deploy-tools/src/digitalocean-snapshot/verify-existence.sh
-
-      - name: Create
-        id: instance
-        env:
-          IMAGE_ID: ${{ steps.build-config.outputs.IMAGE_ID }}
-          INSTANCE_COLLECTION_TAG: worker-manager
+          ENV_FILE_PATH: ./services/${{ github.event.inputs.service_id }}/configuration.env
+          SERVICE_ID: ${{ github.event.inputs.service_id }}
         run: |
-          CREATE_OUTPUT=$(php app/bin/console app:instance:create)
-          echo "::set-output name=id::$(echo "$CREATE_OUTPUT" | jq ".id")"
+          echo "$ENV_FILE_PATH"
+          ls -la "$ENV_FILE_PATH"
+          cat "$ENV_FILE_PATH"
 
-      - name: Health check
-        env:
-          INSTANCE_COLLECTION_TAG: worker-manager
-          COMMAND: "php app/bin/console app:instance:is-healthy --id=${{ steps.instance.outputs.id }}"
-        run: ./ci/scripts/execute-command-output-json.sh
+          if [ ! -f "$ENV_FILE_PATH" ]; then
+            echo "Configuration for service $SERVICE_ID not found: $ENV_FILE_PATH"
+            exit 1
+          fi
 
-      - name: Remove instance if health check failed
-        if:  ${{ failure() }}
+          ./vendor/smartassert/bash-read-env-file/src/read-env-file-ga.sh
+
+      - name: Output service-specific configuration
         env:
-          INSTANCE_ID: ${{ steps.instance.outputs.id }}
-          INSTANCE_COLLECTION_TAG: worker-manager
-        run: php app/bin/console app:instance:destroy --id="$INSTANCE_ID"
+          OUTPUTS: ${{ toJson(steps.foo-config.outputs) }}
+        run: |
+          echo "$OUTPUTS"
+
+#      - name: Setup build config
+#        id: build-config
+#        env:
+#          IMAGE_ID: ${{ steps.worker-manager-image.outputs.WORKER_MANAGER_IMAGE }}
+#        run: echo "::set-output name=IMAGE_ID::$IMAGE_ID"
+#
+#      - name: Check snapshot exists
+#        env:
+#          IMAGE_ID: ${{ steps.build-config.outputs.IMAGE_ID }}
+#          EXPECTED_EXISTS: "true"
+#        run: ./vendor/smartassert/bash-ga-deploy-tools/src/digitalocean-snapshot/verify-existence.sh
+#
+#      - name: Create
+#        id: instance
+#        env:
+#          IMAGE_ID: ${{ steps.build-config.outputs.IMAGE_ID }}
+#          INSTANCE_COLLECTION_TAG: worker-manager
+#        run: |
+#          CREATE_OUTPUT=$(php app/bin/console app:instance:create)
+#          echo "::set-output name=id::$(echo "$CREATE_OUTPUT" | jq ".id")"
+#
+#      - name: Health check
+#        env:
+#          INSTANCE_COLLECTION_TAG: worker-manager
+#          COMMAND: "php app/bin/console app:instance:is-healthy --id=${{ steps.instance.outputs.id }}"
+#        run: ./ci/scripts/execute-command-output-json.sh
+#
+#      - name: Remove instance if health check failed
+#        if:  ${{ failure() }}
+#        env:
+#          INSTANCE_ID: ${{ steps.instance.outputs.id }}
+#          INSTANCE_COLLECTION_TAG: worker-manager
+#        run: php app/bin/console app:instance:destroy --id="$INSTANCE_ID"
