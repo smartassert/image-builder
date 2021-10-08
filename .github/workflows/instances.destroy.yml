@@ -37,8 +37,14 @@ jobs:
         env:
           INSTANCE_COLLECTION_TAG: worker-manager
           IP: ${{ steps.ip.outputs.value }}
+          INCLUDE_FILTER: '[{"message-queue-size":0}]'
+          EXCLUDE_FILTER: '[{"ips":"{{ IP }}"}]'
         run: |
-          INSTANCES=$(php app/bin/console app:instance:list --include='[{"message-queue-size":0}]' --exclude='[{"ips":"127.0.0.1"}]')
+          INSTANCES=$(
+            INSTANCE_COLLECTION_TAG=$INSTANCE_COLLECTION_TAG php app/bin/console app:instance:list \
+            --include="${INCLUDE_FILTER//"{{ IP }}"/$IP}" \
+            --exclude="${EXCLUDE_FILTER//"{{ IP }}"/$IP}"
+          )
 
           echo "::set-output name=value::$INSTANCES"
 
