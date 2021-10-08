@@ -23,7 +23,6 @@ on:
       - Static Analysis
       - Store build config
       - Tests
-      - Update worker manager image
       - VirtualBox VM
 
 jobs:

@@ -161,15 +161,18 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
-      - name: Trigger update worker manager image workflow if a release
+      - name: Trigger service.configure workflow if a release
         uses: benc-uk/workflow-dispatch@v1
         with:
-          workflow: Update worker manager image
+          workflow: service.configure
           token: ${{ secrets.PAT_TOKEN_SELF }}
           inputs: |
             {
-              "image": "${{ needs.create-image.outputs.image-id }}",
-              "commit_message": "Automatic worker-manager-image.env for release ${{ needs.setup.outputs.version }} ${{ needs.create-image.outputs.image-id }}"
+              "service_id": "worker-manager",
+              "image_id": "${{ needs.create-image.outputs.image-id }}",
+              "state_url": "/",
+              "health_check_url": "/health-check",
+              "destroy_include_filter": "[{\"message-queue-size\":0}]"
             }
 
   remove-snapshot:

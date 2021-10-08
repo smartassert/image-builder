@@ -11,14 +11,17 @@ on:
         required: true
       state_url:
         description: URL from which to get instance state
-        required: true
+        required: false
       health_check_url:
         description: URL from which to check that an instance is healthy
-        required: true
+        required: false
+      destroy_include_filter:
+        description: Instance filter for instances to include when destroying
+        required: false
 
 jobs:
   setup:
-    name: Setup
+    name: Setup ${{ github.event.inputs.service_id }}
     runs-on: ubuntu-latest
 
     steps:
@@ -34,3 +37,28 @@ jobs:
         run: |
           [[ -n "$SERVICE_ID" ]] || (echo "Event service_id not set" && exit 1)
           [[ -n "$IMAGE_ID" ]] || (echo "Event image_id not set" && exit 1)
+
+  store:
+    name: Store ${{ github.event.inputs.service_id }}
+    runs-on: ubuntu-latest
+    needs: setup
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Store service configuration
+        env:
+          CONFIGURATION_PATH: ./services/${{ github.event.inputs.service_id }}/configuration.env
+          IMAGE_ID: ${{ github.event.inputs.image_id }}
+          STATE_URL: ${{ github.event.inputs.state_url }}
+          HEALTH_CHECK_URL: ${{ github.event.inputs.health_check_url }}
+          DESTROY_INCLUDE_FILTER: ${{ github.event.inputs.destroy_include_filter }}
+        run: |
+          mkdir -p "$(dirname "$CONFIGURATION_PATH")"
+          ./ci/scripts/create-service-configuration-content.sh > "$CONFIGURATION_PATH"
+
+      - name: Commit
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: "Automatic configuration update for ${{ github.event.inputs.service_id }}"
