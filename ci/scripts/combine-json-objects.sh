@@ -1,8 +1,5 @@
 #!/usr/bin/env bash
 
-#echo "$FOO"
-#echo "$BAR"
-
 COMBINED=$(echo "$1 $2" | jq -s add)
 JQ_EXIT_CODE="$?"
 if [ "0" != "$JQ_EXIT_CODE" ]; then
