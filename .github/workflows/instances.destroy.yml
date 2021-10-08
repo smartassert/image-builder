@@ -37,13 +37,31 @@ jobs:
         env:
           INSTANCE_COLLECTION_TAG: worker-manager
           IP: ${{ steps.ip.outputs.value }}
+          DEFAULT_INCLUDE_FILTER: ''
+          DEFAULT_EXCLUDE_FILTER: '[{"ips":"{{ IP }}"}]'
           INCLUDE_FILTER: '[{"message-queue-size":0}]'
-          EXCLUDE_FILTER: '[{"ips":"{{ IP }}"}]'
+          EXCLUDE_FILTER: ''
         run: |
+          COMBINED_INCLUDE_FILTER=$(./ci/scripts/combine-json-objects.sh "$DEFAULT_INCLUDE_FILTER" "$INCLUDE_FILTER")
+          INCLUDE_FILTER_EXIT_CODE="$?"
+            if [ "0" != "$INCLUDE_FILTER_EXIT_CODE" ]; then
+            echo "Invalid default include filter or include filter"
+            echo "$COMBINED_INCLUDE_FILTER"
+            exit 1
+          fi
+
+          COMBINED_EXCLUDE_FILTER=$(./ci/scripts/combine-json-objects.sh "$DEFAULT_EXCLUDE_FILTER" "$EXCLUDE_FILTER")
+          EXCLUDE_FILTER_EXIT_CODE="$?"
+            if [ "0" != "$EXCLUDE_FILTER_EXIT_CODE" ]; then
+            echo "Invalid default exclude filter or exclude filter"
+            echo "$COMBINED_EXCLUDE_FILTER"
+            exit 1
+          fi
+
           INSTANCES=$(
             INSTANCE_COLLECTION_TAG=$INSTANCE_COLLECTION_TAG php app/bin/console app:instance:list \
-            --include="${INCLUDE_FILTER//"{{ IP }}"/$IP}" \
-            --exclude="${EXCLUDE_FILTER//"{{ IP }}"/$IP}"
+            --include="${COMBINED_INCLUDE_FILTER//"{{ IP }}"/$IP}" \
+            --exclude="${COMBINED_EXCLUDE_FILTER//"{{ IP }}"/$IP}"
           )
 
           echo "::set-output name=value::$INSTANCES"
