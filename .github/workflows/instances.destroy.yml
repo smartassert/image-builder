@@ -60,7 +60,7 @@ jobs:
           IP: ${{ steps.ip.outputs.value }}
           DEFAULT_INCLUDE_FILTER: ''
           DEFAULT_EXCLUDE_FILTER: '[{"ips":"{{ IP }}"}]'
-          INCLUDE_FILTER: '[{"message-queue-size":0}]'
+          INCLUDE_FILTER: ${{ steps.build-config.outputs.DESTROY_INCLUDE_FILTER }}
           EXCLUDE_FILTER: ''
         run: |
           COMBINED_INCLUDE_FILTER=$(./ci/scripts/combine-json-objects.sh "$DEFAULT_INCLUDE_FILTER" "$INCLUDE_FILTER")
