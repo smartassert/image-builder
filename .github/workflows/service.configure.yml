@@ -47,7 +47,7 @@ jobs:
       - name: Store service configuration
         env:
           CONFIGURATION_PATH: ./services/${{ github.event.inputs.service_id }}/configuration.env
-          IMAGE_ID: ${{ github.event.inputs.service_id }}
+          IMAGE_ID: ${{ github.event.inputs.image_id }}
           STATE_URL: ${{ github.event.inputs.state_url }}
           HEALTH_CHECK_URL: ${{ github.event.inputs.health_check_url }}
         run: |
