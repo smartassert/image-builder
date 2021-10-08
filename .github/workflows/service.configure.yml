@@ -15,6 +15,9 @@ on:
       health_check_url:
         description: URL from which to check that an instance is healthy
         required: false
+      destroy_include_filter:
+        description: Instance filter for instances to include when destroying
+        required: false
 
 jobs:
   setup:
@@ -50,6 +53,7 @@ jobs:
           IMAGE_ID: ${{ github.event.inputs.image_id }}
           STATE_URL: ${{ github.event.inputs.state_url }}
           HEALTH_CHECK_URL: ${{ github.event.inputs.health_check_url }}
+          DESTROY_INCLUDE_FILTER: ${{ github.event.inputs.destroy_include_filter }}
         run: |
           mkdir -p "$(dirname "$CONFIGURATION_PATH")"
           ./ci/scripts/create-service-configuration-content.sh > "$CONFIGURATION_PATH"

@@ -171,7 +171,8 @@ jobs:
               "service_id": "worker-manager",
               "image_id": "${{ needs.create-image.outputs.image-id }}",
               "state_url": "/",
-              "health_check_url": "/health-check"
+              "health_check_url": "/health-check",
+              "destroy_include_filter": "[{\"message-queue-size\":0}]"
             }
 
   remove-snapshot:
