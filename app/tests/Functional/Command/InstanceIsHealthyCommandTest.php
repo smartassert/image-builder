@@ -3,7 +3,6 @@
 namespace App\Tests\Functional\Command;
 
 use App\Command\InstanceIsHealthyCommand;
-use App\Model\InstanceServiceAvailabilityInterface;
 use App\Tests\Services\HttpResponseFactory;
 use DigitalOceanV2\Exception\RuntimeException;
 use GuzzleHttp\Handler\MockHandler;
@@ -172,12 +171,8 @@ class InstanceIsHealthyCommandTest extends KernelTestCase
                         HttpResponseFactory::KEY_BODY => (string) json_encode([]),
                     ],
                 ],
-                'expectedReturnCode' => Command::FAILURE,
-                'expectedOutput' => (string) json_encode([
-                    'status' => 'success',
-                    'is-healthy' => false,
-                    'services' => [],
-                ]),
+                'expectedReturnCode' => Command::SUCCESS,
+                'expectedOutput' => (string) json_encode([]),
             ],
             'not healthy' => [
                 'input' => [
@@ -196,7 +191,7 @@ class InstanceIsHealthyCommandTest extends KernelTestCase
                         ]),
                     ],
                     [
-                        HttpResponseFactory::KEY_STATUS_CODE => 200,
+                        HttpResponseFactory::KEY_STATUS_CODE => 503,
                         HttpResponseFactory::KEY_HEADERS => [
                             'content-type' => 'application/json; charset=utf-8',
                         ],
@@ -209,13 +204,9 @@ class InstanceIsHealthyCommandTest extends KernelTestCase
                 ],
                 'expectedReturnCode' => Command::FAILURE,
                 'expectedOutput' => (string) json_encode([
-                    'status' => 'success',
-                    'is-healthy' => false,
-                    'services' => [
-                        'service1' => InstanceServiceAvailabilityInterface::AVAILABILITY_UNAVAILABLE,
-                        'service2' => InstanceServiceAvailabilityInterface::AVAILABILITY_AVAILABLE,
-                        'service3' => InstanceServiceAvailabilityInterface::AVAILABILITY_AVAILABLE,
-                    ],
+                    'service1' => 'unavailable',
+                    'service2' => 'available',
+                    'service3' => 'available',
                 ]),
             ],
             'healthy' => [
@@ -248,13 +239,9 @@ class InstanceIsHealthyCommandTest extends KernelTestCase
                 ],
                 'expectedReturnCode' => Command::SUCCESS,
                 'expectedOutput' => (string) json_encode([
-                    'status' => 'success',
-                    'is-healthy' => true,
-                    'services' => [
-                        'service1' => InstanceServiceAvailabilityInterface::AVAILABILITY_AVAILABLE,
-                        'service2' => InstanceServiceAvailabilityInterface::AVAILABILITY_AVAILABLE,
-                        'service3' => InstanceServiceAvailabilityInterface::AVAILABILITY_AVAILABLE,
-                    ],
+                    'service1' => 'available',
+                    'service2' => 'available',
+                    'service3' => 'available',
                 ]),
             ],
         ];

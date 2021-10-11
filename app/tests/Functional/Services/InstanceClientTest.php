@@ -2,9 +2,6 @@
 
 namespace App\Tests\Functional\Services;
 
-use App\Model\Instance;
-use App\Model\InstanceHealth;
-use App\Model\InstanceServiceAvailabilityInterface;
 use App\Services\InstanceClient;
 use App\Tests\Services\HttpResponseFactory;
 use App\Tests\Services\InstanceFactory;
@@ -34,47 +31,24 @@ class InstanceClientTest extends KernelTestCase
         $this->httpResponseFactory = $httpResponseFactory;
     }
 
-    /**
-     * @dataProvider getHealthDataProvider
-     */
-    public function testGetHealth(
-        string $httpResponseBody,
-        Instance $instance,
-        InstanceHealth $expectedInstanceHealth
-    ): void {
-        $this->mockHandler->append($this->httpResponseFactory->createFromArray([
-            HttpResponseFactory::KEY_STATUS_CODE => 200,
-            HttpResponseFactory::KEY_BODY => $httpResponseBody,
-        ]));
-
-        self::assertEquals($expectedInstanceHealth, $this->instanceClient->getHealth($instance));
-    }
-
-    /**
-     * @return array<mixed>
-     */
-    public function getHealthDataProvider(): array
+    public function testGetHealth(): void
     {
+        $response = $this->httpResponseFactory->createFromArray([
+            HttpResponseFactory::KEY_STATUS_CODE => 200,
+            HttpResponseFactory::KEY_HEADERS => [
+                'content-type' => 'application/json',
+            ],
+            HttpResponseFactory::KEY_BODY => (string) json_encode([]),
+        ]);
+
+        $this->mockHandler->append($response);
+
         $instance = InstanceFactory::create(['id' => 123]);
 
-        return [
-            'response data is not an array' => [
-                'responseBody' => json_encode(true),
-                'instance' => $instance,
-                'expectedInstanceStatus' => new InstanceHealth([]),
-            ],
-            'response data is valid' => [
-                'responseBody' => json_encode([
-                    'service1' => InstanceServiceAvailabilityInterface::AVAILABILITY_AVAILABLE,
-                    'service2' => InstanceServiceAvailabilityInterface::AVAILABILITY_AVAILABLE,
-                ]),
-                'instance' => $instance,
-                'expectedInstanceStatus' => new InstanceHealth([
-                    'service1' => InstanceServiceAvailabilityInterface::AVAILABILITY_AVAILABLE,
-                    'service2' => InstanceServiceAvailabilityInterface::AVAILABILITY_AVAILABLE,
-                ]),
-            ],
-        ];
+        self::assertSame(
+            $response,
+            $this->instanceClient->getHealth($instance)
+        );
     }
 
     /**
