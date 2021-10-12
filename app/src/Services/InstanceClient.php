@@ -3,10 +3,10 @@
 namespace App\Services;
 
 use App\Model\Instance;
-use App\Model\InstanceHealth;
 use Psr\Http\Client\ClientExceptionInterface;
 use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\RequestFactoryInterface;
+use Psr\Http\Message\ResponseInterface;
 
 class InstanceClient
 {
@@ -30,26 +30,23 @@ class InstanceClient
 
         $response = $this->httpClient->sendRequest($request);
 
-        if (false === str_starts_with($response->getHeaderLine('content-type'), 'application/json')) {
-            return [];
+        if (str_starts_with($response->getHeaderLine('content-type'), 'application/json')) {
+            $data = json_decode($response->getBody()->getContents(), true);
+        } else {
+            $data = [];
         }
 
-        $responseData = json_decode($response->getBody()->getContents(), true);
-
-        return is_array($responseData) ? $responseData : [];
+        return is_array($data) ? $data : [];
     }
 
     /**
      * @throws ClientExceptionInterface
      */
-    public function getHealth(Instance $instance): InstanceHealth
+    public function getHealth(Instance $instance): ResponseInterface
     {
         $url = $instance->getUrl() . $this->healthCheckUrl;
         $request = $this->requestFactory->createRequest('GET', $url);
 
-        $response = $this->httpClient->sendRequest($request);
-        $responseData = json_decode($response->getBody()->getContents(), true);
-
-        return new InstanceHealth(is_array($responseData) ? $responseData : []);
+        return $this->httpClient->sendRequest($request);
     }
 }

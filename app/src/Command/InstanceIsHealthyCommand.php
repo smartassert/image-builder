@@ -52,13 +52,11 @@ class InstanceIsHealthyCommand extends AbstractInstanceActionCommand
             return self::EXIT_CODE_NOT_FOUND;
         }
 
-        $health = $this->instanceClient->getHealth($instance);
+        $response = $this->instanceClient->getHealth($instance);
+        $isHealthy = 200 === $response->getStatusCode();
 
-        $output->write($this->outputFactory->createSuccessOutput([
-            'is-healthy' => $health->isAvailable(),
-            'services' => $health->jsonSerialize(),
-        ]));
+        $output->write($response->getBody()->getContents());
 
-        return $health->isAvailable() ? Command::SUCCESS : Command::FAILURE;
+        return $isHealthy ? Command::SUCCESS : Command::FAILURE;
     }
 }
