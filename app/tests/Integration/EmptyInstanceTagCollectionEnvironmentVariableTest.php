@@ -6,7 +6,6 @@ use App\Command\InstanceCreateCommand;
 use App\Command\InstanceDestroyCommand;
 use App\Command\InstanceIsHealthyCommand;
 use App\Command\InstanceListCommand;
-use App\Command\IpCreateCommand;
 use App\Command\IpGetCommand;
 use App\Exception\EmptyEnvironmentVariableException;
 use PHPUnit\Framework\TestCase;
@@ -70,9 +69,6 @@ class EmptyInstanceTagCollectionEnvironmentVariableTest extends TestCase
             ],
             InstanceListCommand::NAME => [
                 'command' => InstanceListCommand::NAME,
-            ],
-            IpCreateCommand::NAME => [
-                'command' => IpCreateCommand::NAME,
             ],
             IpGetCommand::NAME => [
                 'command' => IpGetCommand::NAME,
