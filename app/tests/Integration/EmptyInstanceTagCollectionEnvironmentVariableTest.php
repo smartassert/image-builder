@@ -6,7 +6,6 @@ use App\Command\InstanceCreateCommand;
 use App\Command\InstanceDestroyCommand;
 use App\Command\InstanceIsHealthyCommand;
 use App\Command\InstanceListCommand;
-use App\Command\IpAssignCommand;
 use App\Command\IpCreateCommand;
 use App\Command\IpGetCommand;
 use App\Exception\EmptyEnvironmentVariableException;
@@ -71,9 +70,6 @@ class EmptyInstanceTagCollectionEnvironmentVariableTest extends TestCase
             ],
             InstanceListCommand::NAME => [
                 'command' => InstanceListCommand::NAME,
-            ],
-            IpAssignCommand::NAME => [
-                'command' => IpAssignCommand::NAME,
             ],
             IpCreateCommand::NAME => [
                 'command' => IpCreateCommand::NAME,
