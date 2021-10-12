@@ -2,7 +2,6 @@
 
 namespace App\Tests\Integration;
 
-use App\Command\InstanceCreateCommand;
 use App\Command\InstanceDestroyCommand;
 use App\Command\InstanceIsHealthyCommand;
 use App\Command\InstanceListCommand;
@@ -57,9 +56,6 @@ class EmptyInstanceTagCollectionEnvironmentVariableTest extends TestCase
     public function commandDataProvider(): array
     {
         return [
-            InstanceCreateCommand::NAME => [
-                'command' => InstanceCreateCommand::NAME,
-            ],
             InstanceDestroyCommand::NAME => [
                 'command' => InstanceDestroyCommand::NAME,
             ],
