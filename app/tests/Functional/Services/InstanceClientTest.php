@@ -127,11 +127,21 @@ class InstanceClientTest extends KernelTestCase
                 ],
                 'expectedState' => [],
             ],
-            'response is json array' => [
+            'response is json array, content type is "application/json"' => [
                 'responseData' => [
                     HttpResponseFactory::KEY_STATUS_CODE => 200,
                     HttpResponseFactory::KEY_HEADERS => [
                         'content-type' => 'application/json',
+                    ],
+                    HttpResponseFactory::KEY_BODY => (string) json_encode($data),
+                ],
+                'expectedState' => $data,
+            ],
+            'response is json array, content type is "application/json; charset=UTF-8"' => [
+                'responseData' => [
+                    HttpResponseFactory::KEY_STATUS_CODE => 200,
+                    HttpResponseFactory::KEY_HEADERS => [
+                        'content-type' => 'application/json; charset=UTF-8',
                     ],
                     HttpResponseFactory::KEY_BODY => (string) json_encode($data),
                 ],

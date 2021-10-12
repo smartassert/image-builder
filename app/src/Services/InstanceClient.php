@@ -29,7 +29,8 @@ class InstanceClient
         $request = $this->requestFactory->createRequest('GET', $url);
 
         $response = $this->httpClient->sendRequest($request);
-        if ('application/json' !== $response->getHeaderLine('content-type')) {
+
+        if (false === str_starts_with($response->getHeaderLine('content-type'), 'application/json')) {
             return [];
         }
 
