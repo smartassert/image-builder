@@ -3,7 +3,6 @@
 namespace App\Tests\Integration;
 
 use App\Command\InstanceDestroyCommand;
-use App\Command\InstanceIsHealthyCommand;
 use App\Command\InstanceListCommand;
 use App\Exception\EmptyEnvironmentVariableException;
 use PHPUnit\Framework\TestCase;
@@ -58,9 +57,6 @@ class EmptyInstanceTagCollectionEnvironmentVariableTest extends TestCase
         return [
             InstanceDestroyCommand::NAME => [
                 'command' => InstanceDestroyCommand::NAME,
-            ],
-            InstanceIsHealthyCommand::NAME => [
-                'command' => InstanceIsHealthyCommand::NAME,
             ],
             InstanceListCommand::NAME => [
                 'command' => InstanceListCommand::NAME,
