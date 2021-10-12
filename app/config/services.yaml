@@ -39,11 +39,6 @@ services:
             $assigmentTimeoutInSeconds: '%ip_create_assignment_timeout_in_seconds%'
             $assignmentRetryInSeconds: '%ip_create_assignment_retry_in_seconds%'
 
-    App\Command\IpAssignCommand:
-        arguments:
-            $assigmentTimeoutInSeconds: '%ip_create_assignment_timeout_in_seconds%'
-            $assignmentRetryInSeconds: '%ip_create_assignment_retry_in_seconds%'
-
     App\Services\InstanceClient:
         arguments:
             $stateUrl: '%instance_state_url%'
