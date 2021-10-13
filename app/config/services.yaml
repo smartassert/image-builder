@@ -3,22 +3,11 @@
 
 # Put parameters here that don't need to change on each machine where the app is deployed
 # https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
-parameters:
-    instance_collection_tag: '%env(non-empty:INSTANCE_COLLECTION_TAG)%'
-    image_id: '%env(IMAGE_ID)%'
-    instance_tag: '%instance_collection_tag%-%image_id%'
-    instance_state_url: '%env(INSTANCE_STATE_URL)%'
-    instance_health_check_url: '%env(INSTANCE_HEALTH_CHECK_URL)%'
-
 services:
     # default configuration for services in *this* file
     _defaults:
         autowire: true      # Automatically injects dependencies in your services.
         autoconfigure: true # Automatically registers your services as commands, event subscribers, etc.
-
-        bind:
-            $instanceCollectionTag: '%instance_collection_tag%'
-            $instanceTag: '%instance_tag%'
 
     # makes classes in src/ available to be used as services
     # this creates a service per class whose id is the fully-qualified class name
@@ -32,11 +21,6 @@ services:
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
-    App\Services\InstanceClient:
-        arguments:
-            $stateUrl: '%instance_state_url%'
-            $healthCheckUrl: '%instance_health_check_url%'
-
     GuzzleHttp\HandlerStack:
         class: GuzzleHttp\HandlerStack
         factory: ['GuzzleHttp\HandlerStack', 'create']
@@ -72,13 +56,3 @@ services:
 
     DigitalOceanV2\Api\FloatingIp:
         class: DigitalOceanV2\Api\FloatingIp
-
-    SmartAssert\DigitalOceanDropletConfiguration\Factory:
-        arguments:
-            $defaults:
-                region: '%env(DIGITALOCEAN_DROPLET_REGION)%'
-                size: '%env(DIGITALOCEAN_DROPLET_SIZE)%'
-                image: '%image_id%'
-                tags:
-                    - '%instance_collection_tag%'
-                    - '%instance_tag%'
