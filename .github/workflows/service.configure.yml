@@ -1,0 +1,73 @@
+name: Store build config
+
+on:
+  repository_dispatch:
+    types: [service-configure]
+  workflow_dispatch:
+    inputs:
+      service_id:
+        description: The service for which the configuration is being stored
+        required: true
+      payload:
+        description: "JSON object of key:value pairs"
+        required: true
+
+jobs:
+  setup:
+    name: Setup ${{ github.event.inputs.service_id }}
+    runs-on: ubuntu-latest
+    outputs:
+      service_id: ${{ steps.service_id.outputs.value }}
+      payload: ${{ steps.payload.outputs.value }}
+
+    steps:
+      - name: Output repository_dispatch inputs
+        if: ${{ github.event_name == 'repository_dispatch' }}
+        env:
+          INPUTS: ${{ toJson(github.event.client_payload) }}
+        run: echo "$INPUTS"
+
+      - name: Output workflow_dispatch inputs
+        env:
+          INPUTS: ${{ toJson(github.event.inputs) }}
+        run: echo "$INPUTS"
+
+      - name: Checkout bash-ga-ci-tools
+        uses: actions/checkout@v2
+        with:
+          repository: smartassert/bash-ga-ci-tools
+          path: ./vendor/smartassert/bash-ga-ci-tools
+          ref: main
+
+      - name: Set service_id
+        id: service_id
+        env:
+          VALUE1: ${{ github.event.client_payload.service_id }}
+          VALUE2: ${{ github.event.inputs.service_id }}
+        run: echo "::set-output name=value::$(./vendor/smartassert/bash-ga-ci-tools/src/select-exclusive-value-from-two-values.sh)"
+
+      - name: Set payload
+        id: payload
+        env:
+          VALUE1: ${{ github.event.client_payload.payload }}
+          VALUE2: ${{ github.event.inputs.payload }}
+        run: echo "::set-output name=value::$(./vendor/smartassert/bash-ga-ci-tools/src/select-exclusive-value-from-two-values.sh)"
+
+  verify-setup:
+    name: Verify setup
+    runs-on: ubuntu-latest
+    needs: setup
+
+    steps:
+      - name: Output
+        env:
+          OUTPUTS: ${{ toJson(needs.setup.outputs) }}
+        run: echo "$OUTPUTS"
+
+      - name: Verify service_id and payload are set
+        env:
+          SERVICE_ID: ${{ needs.setup.outputs.service_id }}
+          PAYLOAD: ${{ needs.setup.outputs.payload }}
+        run: |
+          [[ -n "$SERVICE_ID" ]] || (echo "service_id not set" && exit 1)
+          [[ -n "$PAYLOAD" ]] || (echo "payload not set" && exit 1)
