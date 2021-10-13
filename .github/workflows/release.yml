@@ -161,12 +161,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
-      - name: Trigger service.configure workflow if a release
-        uses: benc-uk/workflow-dispatch@v1
+      - name: Dispatch service-configure event to smartassert/instance-manager
+        uses: peter-evans/repository-dispatch@v1
         with:
-          workflow: service.configure
-          token: ${{ secrets.PAT_TOKEN_SELF }}
-          inputs: |
+          token: ${{ secrets.INSTANCE_MANAGER_TOKEN }}
+          repository: smartassert/instance-manager
+          event-type: service-configure
+          client-payload: |
             {
               "service_id": "worker-manager",
               "image_id": "${{ needs.create-image.outputs.image-id }}",
