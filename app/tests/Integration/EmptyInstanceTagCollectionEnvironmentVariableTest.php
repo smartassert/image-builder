@@ -2,7 +2,6 @@
 
 namespace App\Tests\Integration;
 
-use App\Command\InstanceDestroyCommand;
 use App\Command\InstanceListCommand;
 use App\Exception\EmptyEnvironmentVariableException;
 use PHPUnit\Framework\TestCase;
@@ -55,9 +54,6 @@ class EmptyInstanceTagCollectionEnvironmentVariableTest extends TestCase
     public function commandDataProvider(): array
     {
         return [
-            InstanceDestroyCommand::NAME => [
-                'command' => InstanceDestroyCommand::NAME,
-            ],
             InstanceListCommand::NAME => [
                 'command' => InstanceListCommand::NAME,
             ],
