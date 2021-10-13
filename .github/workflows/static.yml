@@ -17,9 +17,7 @@ jobs:
 
       - name: Run
         run: |
-          docker run --rm -v "$PWD:/mnt" koalaman/shellcheck:stable ./ci/scripts/*.sh
           docker run --rm -v "$PWD:/mnt" koalaman/shellcheck:stable ./provision.sh
-          docker run --rm -v "$PWD:/mnt" koalaman/shellcheck:stable ./ci/tests/*.bats
 
   actionlint:
     name: Actionlint
