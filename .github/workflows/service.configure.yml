@@ -21,6 +21,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       service_id: ${{ steps.service_id.outputs.value }}
+      version: ${{ steps.version.outputs.value }}
       payload: ${{ steps.payload.outputs.value }}
 
     steps:
