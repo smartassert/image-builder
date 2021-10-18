@@ -11,9 +11,6 @@ jobs:
   setup:
     name: Setup ${{ github.event.inputs.service_id }}
     runs-on: ubuntu-latest
-    outputs:
-      service_id: ${{ steps.service_id.outputs.value }}
-      payload: ${{ steps.payload.outputs.value }}
 
     steps:
       - name: Output workflow_dispatch inputs
