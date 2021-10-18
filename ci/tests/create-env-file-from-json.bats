@@ -9,25 +9,25 @@ setup() {
 }
 
 main() {
-  bash "${BATS_TEST_DIRNAME}/../scripts/$script_name" "$ARG1" "$ARG2"
+  bash "${BATS_TEST_DIRNAME}/../scripts/$script_name" "$ARG1"
 }
 
 @test "$script_name: non-json payload errors" {
-  PAYLOAD='non-json value' \
+  ARG1='non-json value' \
   run main
 
   assert_failure
 }
 
 @test "$script_name: non-scalar value errors" {
-  PAYLOAD='{"key1":"value1", "key2":"{"key3":"value3"}"}' \
+  ARG1='{"key1":"value1", "key2":"{"key3":"value3"}"}' \
   run main
 
   assert_failure
 }
 
 @test "$script_name: empty payload" {
-  PAYLOAD='' \
+  ARG1='' \
   run main
 
   assert_success
@@ -35,7 +35,7 @@ main() {
 }
 
 @test "$script_name: single key:value payload" {
-  PAYLOAD='{"key1":"value1"}' \
+  ARG1='{"key1":"value1"}' \
   run main
 
   assert_success
@@ -43,7 +43,7 @@ main() {
 }
 
 @test "$script_name: multiple key:value payload" {
-  PAYLOAD='{"key1":"value1", "key2":"value2", "key3":"value3"}' \
+  ARG1='{"key1":"value1", "key2":"value2", "key3":"value3"}' \
   run main
 
   assert_success
