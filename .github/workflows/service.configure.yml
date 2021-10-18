@@ -8,6 +8,9 @@ on:
       service_id:
         description: The service for which the configuration is being stored
         required: true
+      version:
+        description: The service version
+        required: true
       payload:
         description: "JSON object of key:value pairs"
         required: true
@@ -18,6 +21,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       service_id: ${{ steps.service_id.outputs.value }}
+      version: ${{ steps.version.outputs.value }}
       payload: ${{ steps.payload.outputs.value }}
 
     steps:
@@ -46,6 +50,13 @@ jobs:
           VALUE2: ${{ github.event.inputs.service_id }}
         run: echo "::set-output name=value::$(./vendor/smartassert/bash-ga-ci-tools/src/select-exclusive-value-from-two-values.sh)"
 
+      - name: Set version
+        id: version
+        env:
+          VALUE1: ${{ github.event.client_payload.version }}
+          VALUE2: ${{ github.event.inputs.version }}
+        run: echo "::set-output name=value::$(./vendor/smartassert/bash-ga-ci-tools/src/select-exclusive-value-from-two-values.sh)"
+
       - name: Set payload
         id: payload
         env:
@@ -64,10 +75,12 @@ jobs:
           OUTPUTS: ${{ toJson(needs.setup.outputs) }}
         run: echo "$OUTPUTS"
 
-      - name: Verify service_id and payload are set
+      - name: Verify service_id, version payload are set
         env:
           SERVICE_ID: ${{ needs.setup.outputs.service_id }}
+          VERSION: ${{ needs.setup.outputs.version }}
           PAYLOAD: ${{ needs.setup.outputs.payload }}
         run: |
           [[ -n "$SERVICE_ID" ]] || (echo "service_id not set" && exit 1)
+          [[ -n "$VERSION" ]] || (echo "version not set" && exit 1)
           [[ -n "$PAYLOAD" ]] || (echo "payload not set" && exit 1)
