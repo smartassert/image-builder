@@ -65,7 +65,7 @@ jobs:
         run: echo "::set-output name=value::$(./vendor/smartassert/bash-ga-ci-tools/src/select-exclusive-value-from-two-values.sh)"
 
   verify-setup:
-    name: Verify setup
+    name: Verify setup ${{ needs.setup.outputs.service_id }}
     runs-on: ubuntu-latest
     needs: setup
 
@@ -84,3 +84,46 @@ jobs:
           [[ -n "$SERVICE_ID" ]] || (echo "service_id not set" && exit 1)
           [[ -n "$VERSION" ]] || (echo "version not set" && exit 1)
           [[ -n "$PAYLOAD" ]] || (echo "payload not set" && exit 1)
+
+  store:
+    name: Store ${{ needs.setup.outputs.service_id }}
+    runs-on: ubuntu-latest
+    needs: [setup, verify-setup]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set path for bash-ga-ci-tools
+        id: bash-ga-ci-tools
+        run: |
+          echo "::set-output name=path::./vendor/smartassert/bash-ga-ci-tools"
+
+      - name: Checkout bash-ga-ci-tools
+        uses: actions/checkout@v2
+        with:
+          repository: smartassert/bash-ga-ci-tools
+          path: ${{ steps.bash-ga-ci-tools.outputs.path }}
+          ref: main
+
+      - name: Store service configuration
+        env:
+          CONFIGURATION_PATH: ./services/${{ needs.setup.outputs.service_id }}/configuration.env
+          VERSION: ${{ needs.setup.outputs.version }}
+          PAYLOAD: ${{ needs.setup.outputs.payload }}
+        run: |
+          VERSION_JSON_TEMPLATE='{"version": "{{ version }}"}'
+          VERSION_JSON="${VERSION_JSON_TEMPLATE/"{{ version }}"/$VERSION}"
+
+          JSON=$(./vendor/smartassert/bash-ga-ci-tools/src/combine-json-scalar-objects.sh "$PAYLOAD" "$VERSION_JSON")
+
+          mkdir -p "$(dirname "$CONFIGURATION_PATH")"
+          ./ci/scripts/create-env-file-from-json.sh "$JSON" > "$CONFIGURATION_PATH"
+
+      - name: Remove bash-ga-ci-tools
+        run: rm -Rf ${{ steps.bash-ga-ci-tools.outputs.path }}
+
+      - name: Commit
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: "Automatic configuration update for ${{ needs.setup.outputs.service_id }} ${{ needs.setup.outputs.version }}"
