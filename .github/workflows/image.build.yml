@@ -16,7 +16,7 @@ on:
 
 jobs:
   identify:
-    if: ${{ '' != github.event.intputs.run_id }}
+    if: ${{ '' != github.event.inputs.run_id }}
     name: run-${{ github.event.inputs.run_id }}
     runs-on: ubuntu-latest
     steps:
