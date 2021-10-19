@@ -20,6 +20,7 @@ jobs:
       snapshot_name: ${{ steps.snapshot_name.outputs.value }}
       version: ${{ steps.service_configuration.outputs.version }}
       should_deploy: ${{ steps.should_deploy.outputs.value }}
+      image_definition_path: ${{ steps.image_definition_path.outputs.value }}
 
     steps:
       - name: Output workflow_dispatch inputs
@@ -71,6 +72,19 @@ jobs:
           "${{ github.event.inputs.service_id }}" \
           "${{ steps.configuration_path.outputs.value }}"
 
+      - name: Set path to image definition
+        id: image_definition_path
+        run: echo "::set-output name=value::${{ steps.configuration_directory.outputs.value }}/image.pkr.hcl"
+
+      - name: Verify image definition exists
+        env:
+          IMAGE_DEFINITION_PATH: ${{ steps.image_definition_path.outputs.value }}
+        run: |
+          if [ ! -f "$IMAGE_DEFINITION_PATH" ]; then
+            echo "Configuration for service ${{ github.event.inputs.service_id }} not found: $IMAGE_DEFINITION_PATH"
+            exit 1
+          fi
+
       - name: Checkout bash-read-env-file
         uses: actions/checkout@v2
         with:
@@ -105,10 +119,6 @@ jobs:
           path: ./vendor/smartassert/bash-ga-deploy-tools
           ref: main
 
-      - name: Set path to image definition
-        id: image_definition_path
-        run: echo "::set-output name=value::${{ needs.setup.outputs.configuration_directory }}/image.pkr.hcl"
-
       - name: Validate image configuration
         uses: hashicorp/packer-github-actions@master
         env:
@@ -132,7 +142,7 @@ jobs:
         with:
           command: build
           arguments: "-machine-readable"
-          target: ${{ steps.image_definition_path.outputs.value }}
+          target: ${{ needs.setup.outputs.image_definition_path }}
 
       - name: Extract image ID from packer log
         id: image
