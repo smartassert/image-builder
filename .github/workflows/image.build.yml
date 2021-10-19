@@ -116,7 +116,7 @@ jobs:
           DIGITALOCEAN_API_TOKEN: ${{ secrets.DIGITALOCEAN_API_TOKEN }}
         with:
           command: validate
-          target: ${{ steps.image_definition_path.outputs.value }}
+          target: ${{ needs.setup.outputs.image_definition_path }}
 
       - name: Set packer log path
         id: packer-log-path
@@ -128,7 +128,7 @@ jobs:
           PACKER_LOG_PATH: ${{ steps.packer-log-path.outputs.value }}
           PACKER_LOG: 1
           DIGITALOCEAN_API_TOKEN: ${{ secrets.DIGITALOCEAN_API_TOKEN }}
-          SNAPSHOT_NAME: ${{ needs.setup.outputs.snapshot-name }}
+          SNAPSHOT_NAME: ${{ needs.setup.outputs.snapshot_name }}
           VERSION: ${{ needs.setup.outputs.version }}
         with:
           command: build
