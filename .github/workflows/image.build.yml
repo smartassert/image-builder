@@ -50,15 +50,6 @@ jobs:
         id: configuration_directory
         run: echo "::set-output name=value::./services/${{ github.event.inputs.service_id  }}"
 
-      - name: Output service configuration directory
-        env:
-          CONFIGURATION_DIRECTORY: ${{ steps.configuration_directory.outputs.value }}
-        run: |
-          echo "via env var:"
-          echo "$CONFIGURATION_DIRECTORY"
-          echo "via gh syntax:"
-          echo "${{ steps.configuration_directory.outputs.value }}"
-
       - name: Set service configuration path
         id: configuration_path
         run: echo "::set-output name=value::${{ steps.configuration_directory.outputs.value }}/configuration.env"
