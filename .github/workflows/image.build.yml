@@ -10,6 +10,10 @@ on:
         description: Deploy image after building?
         required: true
         default: "false"
+      dry_run:
+        description: Run workflow without building anything
+        required: true
+        default: "false"
 
 jobs:
   setup:
@@ -94,6 +98,7 @@ jobs:
         run: echo "::set-output name=value::${{ github.event.inputs.service_id }}-${{ steps.service_configuration.outputs.version }}"
 
   create-image:
+    if: ${{ github.event.inputs.dry_run == 'false' }}
     needs: [setup]
     name: Create image
     runs-on: ubuntu-latest
@@ -152,7 +157,7 @@ jobs:
     needs: [setup, create-image]
     name: Update stored snapshot ID
     runs-on: ubuntu-latest
-    if: ${{ needs.setup.outputs.should_deploy == 'true' }}
+    if: ${{ github.event.inputs.dry_run == 'false' && needs.setup.outputs.should_deploy == 'true' }}
 
     steps:
       - name: Checkout
@@ -177,7 +182,7 @@ jobs:
     needs: create-image
     name: Remove snapshot if not deploying
     runs-on: ubuntu-latest
-    if: ${{ needs.setup.outputs.should_deploy == 'false' }}
+    if: ${{ github.event.inputs.dry_run == 'false' && needs.setup.outputs.should_deploy == 'false' }}
 
     steps:
       - name: Checkout
