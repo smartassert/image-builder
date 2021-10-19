@@ -16,8 +16,12 @@ on:
 
 jobs:
   identify:
+    if: ${{ '' != github.event.intputs.run_id }}
     name: run-${{ github.event.intputs.run_id }}
-    
+    runs-on: ubuntu-latest
+    steps:
+      - name: Output run_id
+        run: echo "${{ github.event.intputs.run_id }}"
 
   setup:
     name: Setup ${{ github.event.inputs.service_id }}
