@@ -72,7 +72,7 @@ jobs:
           IMAGE_DEFINITION_PATH: ${{ steps.image_definition_path.outputs.value }}
         run: |
           if [ ! -f "$IMAGE_DEFINITION_PATH" ]; then
-            echo "Configuration for service ${{ github.event.inputs.service_id }} not found: $IMAGE_DEFINITION_PATH"
+            echo "Image definition for service ${{ github.event.inputs.service_id }} not found: $IMAGE_DEFINITION_PATH"
             exit 1
           fi
 
