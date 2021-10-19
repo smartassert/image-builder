@@ -8,6 +8,9 @@ on:
       service_id:
         description: The service for which the configuration is being stored
         required: true
+      version:
+        description: The service version
+        required: true
       payload:
         description: "JSON object of key:value pairs"
         required: true
@@ -18,6 +21,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       service_id: ${{ steps.service_id.outputs.value }}
+      version: ${{ steps.version.outputs.value }}
       payload: ${{ steps.payload.outputs.value }}
 
     steps:
@@ -46,6 +50,13 @@ jobs:
           VALUE2: ${{ github.event.inputs.service_id }}
         run: echo "::set-output name=value::$(./vendor/smartassert/bash-ga-ci-tools/src/select-exclusive-value-from-two-values.sh)"
 
+      - name: Set version
+        id: version
+        env:
+          VALUE1: ${{ github.event.client_payload.version }}
+          VALUE2: ${{ github.event.inputs.version }}
+        run: echo "::set-output name=value::$(./vendor/smartassert/bash-ga-ci-tools/src/select-exclusive-value-from-two-values.sh)"
+
       - name: Set payload
         id: payload
         env:
@@ -54,7 +65,7 @@ jobs:
         run: echo "::set-output name=value::$(./vendor/smartassert/bash-ga-ci-tools/src/select-exclusive-value-from-two-values.sh)"
 
   verify-setup:
-    name: Verify setup
+    name: Verify setup ${{ needs.setup.outputs.service_id }}
     runs-on: ubuntu-latest
     needs: setup
 
@@ -64,10 +75,55 @@ jobs:
           OUTPUTS: ${{ toJson(needs.setup.outputs) }}
         run: echo "$OUTPUTS"
 
-      - name: Verify service_id and payload are set
+      - name: Verify service_id, version payload are set
         env:
           SERVICE_ID: ${{ needs.setup.outputs.service_id }}
+          VERSION: ${{ needs.setup.outputs.version }}
           PAYLOAD: ${{ needs.setup.outputs.payload }}
         run: |
           [[ -n "$SERVICE_ID" ]] || (echo "service_id not set" && exit 1)
+          [[ -n "$VERSION" ]] || (echo "version not set" && exit 1)
           [[ -n "$PAYLOAD" ]] || (echo "payload not set" && exit 1)
+
+  store:
+    name: Store ${{ needs.setup.outputs.service_id }}
+    runs-on: ubuntu-latest
+    needs: [setup, verify-setup]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set path for bash-ga-ci-tools
+        id: bash-ga-ci-tools
+        run: |
+          echo "::set-output name=path::./vendor/smartassert/bash-ga-ci-tools"
+
+      - name: Checkout bash-ga-ci-tools
+        uses: actions/checkout@v2
+        with:
+          repository: smartassert/bash-ga-ci-tools
+          path: ${{ steps.bash-ga-ci-tools.outputs.path }}
+          ref: main
+
+      - name: Store service configuration
+        env:
+          CONFIGURATION_PATH: ./services/${{ needs.setup.outputs.service_id }}/configuration.env
+          VERSION: ${{ needs.setup.outputs.version }}
+          PAYLOAD: ${{ needs.setup.outputs.payload }}
+        run: |
+          VERSION_JSON_TEMPLATE='{"version": "{{ version }}"}'
+          VERSION_JSON="${VERSION_JSON_TEMPLATE/"{{ version }}"/$VERSION}"
+
+          JSON=$(./vendor/smartassert/bash-ga-ci-tools/src/combine-json-scalar-objects.sh "$PAYLOAD" "$VERSION_JSON")
+
+          mkdir -p "$(dirname "$CONFIGURATION_PATH")"
+          ./ci/scripts/create-env-file-from-json.sh "$JSON" > "$CONFIGURATION_PATH"
+
+      - name: Remove bash-ga-ci-tools
+        run: rm -Rf ${{ steps.bash-ga-ci-tools.outputs.path }}
+
+      - name: Commit
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: "Automatic configuration update for ${{ needs.setup.outputs.service_id }} ${{ needs.setup.outputs.version }}"
