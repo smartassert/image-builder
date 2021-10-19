@@ -20,15 +20,6 @@ on:
         default: "false"
 
 jobs:
-  identify:
-    name: run-${{ github.event.inputs.run_id }}
-    runs-on: ubuntu-latest
-    steps:
-      - name: ${{ github.event.inputs.run_id }}
-        run: |
-          echo "run_id ${{ github.event.inputs.run_id }}"
-          echo "date: $(date)"
-
   setup:
     name: Setup ${{ github.event.inputs.service_id }}
     runs-on: ubuntu-latest
