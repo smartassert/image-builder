@@ -6,6 +6,10 @@ on:
       service_id:
         description: The service for which the configuration is being stored
         required: true
+      should_deploy:
+        description: Deploy image after building?
+        required: true
+        default: "false"
 
 jobs:
   setup:
@@ -15,6 +19,7 @@ jobs:
       configuration_directory: ${{ steps.configuration_directory.outputs.value }}
       snapshot_name: ${{ steps.snapshot_name.outputs.value }}
       version: ${{ steps.service_configuration.outputs.version }}
+      should_deploy: ${{ steps.should_deploy.outputs.value }}
 
     steps:
       - name: Output workflow_dispatch inputs
@@ -27,6 +32,18 @@ jobs:
           SERVICE_ID: ${{ github.event.inputs.service_id }}
         run: |
           [[ -n "$SERVICE_ID" ]] || (echo "service_id not set" && exit 1)
+
+      - name: Set should_deploy
+        id: should_deploy
+        env:
+          INPUT_SHOULD_DEPLOY: ${{ github.event.inputs.should_deploy }}
+        run: |
+          SHOULD_DEPLOY="false"
+          if [ "true" == $"INPUT_SHOULD_DEPLOY" ]; then
+            SHOULD_DEPLOY="true"
+          fi
+
+          echo "::set-output name=value::$SHOULD_DEPLOY"
 
       - name: Set service configuration directory
         id: configuration_directory
@@ -159,7 +176,7 @@ jobs:
     needs: create-image
     name: Remove snapshot if not deploying
     runs-on: ubuntu-latest
-    if: ${{ needs.setup.outputs.should-deploy == 'false' }}
+    if: ${{ needs.setup.outputs.should_deploy == 'false' }}
 
     steps:
       - name: Checkout
