@@ -10,9 +10,9 @@ variable "snapshot_name" {
   default = env("SNAPSHOT_NAME")
 }
 
-variable "worker_manager_version" {
+variable "version" {
   type = string
-  default = env("WORKER_MANAGER_VERSION")
+  default = env("VERSION")
 }
 
 source "digitalocean" "worker_base" {
@@ -30,17 +30,17 @@ build {
   # Copy system files and provision for use
   provisioner "file" {
     destination = "~/.env"
-    source      = ".env"
+    source      = "${path.root}/.env"
   }
 
   provisioner "file" {
     destination = "~/app.env"
-    source      = "app.env"
+    source      = "${path.root}/app.env"
   }
 
   provisioner "file" {
     destination = "~/docker-compose.yml"
-    source      = "docker-compose.yml"
+    source      = "${path.root}/docker-compose.yml"
   }
 
   provisioner "shell" {
@@ -49,19 +49,19 @@ build {
 
   provisioner "file" {
     destination = "~/nginx/Dockerfile"
-    source      = "nginx/Dockerfile"
+    source      = "${path.root}/nginx/Dockerfile"
   }
 
   provisioner "file" {
     destination = "~/nginx/site.conf"
-    source      = "nginx/site.conf"
+    source      = "${path.root}/nginx/site.conf"
   }
 
   provisioner "shell" {
     environment_vars = [
       "DIGITALOCEAN_API_TOKEN=${var.digitalocean_api_token}",
-      "WORKER_MANAGER_VERSION=${var.worker_manager_version}",
+      "VERSION=${var.version}",
     ]
-    scripts = ["./provision.sh"]
+    scripts = ["${path.root}/provision.sh"]
   }
 }
