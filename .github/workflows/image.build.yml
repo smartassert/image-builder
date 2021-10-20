@@ -35,9 +35,14 @@ jobs:
       - name: Set service ids
         id: service_ids
         run: |
-          SERVICE_IDS=$(ls services)
+          if [ "pull_request" = "${{ github.event_name }}" ]; then
+            SERVICE_IDS=$(ls services)
+            [[ -z "$SERVICE_IDS" ]] && echo "No services discovered at /services" && exit 1
+          fi
+
           if [ "workflow_dispatch" = "${{ github.event_name }}" ]; then
             SERVICE_IDS="${{ github.event.inputs.service_id }}"
+            [[ -z "$SERVICE_IDS" ]] && echo "Event service_id empty" && exit 1
           fi
 
           SERVICE_IDS_AS_JSON_ARRAY=$(jq -ncR '[inputs]' <<< "$SERVICE_IDS")
@@ -108,13 +113,6 @@ jobs:
           repository: smartassert/bash-read-env-file
           path: ./vendor/smartassert/bash-read-env-file
           ref: main
-
-#
-#      - name: Verify service_id is set
-#        env:
-#          SERVICE_ID: ${{ github.event.inputs.service_id }}
-#        run: |
-#          [[ -n "$SERVICE_ID" ]] || (echo "service_id not set" && exit 1)
 #
 #      - name: Set service configuration directory
 #        id: configuration_directory
