@@ -3,10 +3,6 @@ name: image.build
 on:
   workflow_dispatch:
     inputs:
-      run_id:
-        description: Unique identifier for a run on this workflow
-        required: false
-        default: "default"
       service_id:
         description: The service for which the configuration is being stored
         required: true
@@ -20,15 +16,6 @@ on:
         default: "false"
 
 jobs:
-  identify:
-    name: run-${{ github.event.inputs.run_id }}
-    runs-on: ubuntu-latest
-    steps:
-      - name: ${{ github.event.inputs.run_id }}
-        run: |
-          echo "run_id ${{ github.event.inputs.run_id }}"
-          echo "date: $(date)"
-
   setup:
     name: Setup ${{ github.event.inputs.service_id }}
     runs-on: ubuntu-latest
