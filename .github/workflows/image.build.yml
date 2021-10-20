@@ -1,6 +1,9 @@
 name: image.build
 
 on:
+  pull_request:
+    branches:
+      - main
   workflow_dispatch:
     inputs:
       service_id:
@@ -16,9 +19,70 @@ on:
         default: "false"
 
 jobs:
-  build:
-    name: Build ${{ github.event.inputs.service_id }}
+  setup:
+    name: Setup
     runs-on: ubuntu-latest
+    outputs:
+      service_ids: ${{ steps.service_ids.outputs.value }}
+      should_deploy: ${{ steps.should_deploy.outputs.value }}
+      dry_run: ${{ steps.dry_run.outputs.value }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Set service ids
+        id: service_ids
+        run: |
+          if [ "pull_request" = "${{ github.event_name }}" ]; then
+            SERVICE_IDS=$(ls services)
+            [[ -z "$SERVICE_IDS" ]] && echo "No services discovered at /services" && exit 1
+          fi
+
+          if [ "workflow_dispatch" = "${{ github.event_name }}" ]; then
+            SERVICE_IDS="${{ github.event.inputs.service_id }}"
+            [[ -z "$SERVICE_IDS" ]] && echo "Event service_id empty" && exit 1
+          fi
+
+          SERVICE_IDS_AS_JSON_ARRAY=$(jq -ncR '[inputs]' <<< "$SERVICE_IDS")
+
+          echo "::set-output name=value::$SERVICE_IDS_AS_JSON_ARRAY"
+
+      - name: Set 'should_deploy'
+        id: should_deploy
+        run: |
+          SHOULD_DEPLOY="false"
+          if [ "workflow_dispatch" = "${{ github.event_name }}" ]; then
+            SHOULD_DEPLOY="${{ github.event.inputs.should_deploy }}"
+          fi
+
+          if [ "$SHOULD_DEPLOY" != "true" ]; then
+            SHOULD_DEPLOY="false"
+          fi
+
+          echo "::set-output name=value::$SHOULD_DEPLOY"
+
+      - name: Set 'dry_run'
+        id: dry_run
+        run: |
+          DRY_RUN="false"
+          if [ "workflow_dispatch" = "${{ github.event_name }}" ]; then
+            DRY_RUN="${{ github.event.inputs.should_deploy }}"
+          fi
+
+          if [ "$DRY_RUN" != "true" ]; then
+            DRY_RUN="false"
+          fi
+
+          echo "::set-output name=value::$DRY_RUN"
+
+  build:
+    needs: setup
+    name: Build
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        service_id: ${{ fromJson(needs.setup.outputs.service_ids) }}
 
     steps:
       - name: Checkout
@@ -38,27 +102,16 @@ jobs:
           path: ./vendor/smartassert/bash-read-env-file
           ref: main
 
-      - name: Output workflow_dispatch inputs
-        env:
-          INPUTS: ${{ toJson(github.event.inputs) }}
-        run: echo "$INPUTS"
-
-      - name: Verify service_id is set
-        env:
-          SERVICE_ID: ${{ github.event.inputs.service_id }}
-        run: |
-          [[ -n "$SERVICE_ID" ]] || (echo "service_id not set" && exit 1)
-
       - name: Set service configuration directory
         id: configuration_directory
-        run: echo "::set-output name=value::./services/${{ github.event.inputs.service_id  }}"
+        run: echo "::set-output name=value::./services/${{ matrix.service_id }}"
 
       - name: Set service configuration path
         id: configuration_path
         run: |
           FILE_PATH="${{ steps.configuration_directory.outputs.value }}/configuration.env"
           if [ ! -f "$FILE_PATH" ]; then
-            echo "Configuration for service ${{ github.event.inputs.service_id }} not found: $FILE_PATH"
+            echo "Configuration for service ${{ matrix.service_id }} not found: $FILE_PATH"
             exit 1
           fi
 
@@ -75,7 +128,7 @@ jobs:
         run: |
           FILE_PATH="${{ steps.configuration_directory.outputs.value }}/image.pkr.hcl"
           if [ ! -f "$FILE_PATH" ]; then
-            echo "Image definition for service ${{ github.event.inputs.service_id }} not found: $FILE_PATH"
+            echo "Image definition for service ${{ matrix.service_id }} not found: $FILE_PATH"
             exit 1
           fi
 
@@ -91,17 +144,17 @@ jobs:
 
       - name: Set snapshot name
         id: snapshot_name
-        run: echo "::set-output name=value::${{ github.event.inputs.service_id }}-${{ steps.service_configuration.outputs.version }}"
+        run: echo "::set-output name=value::${{ matrix.service_id }}-${{ steps.service_configuration.outputs.version }}"
 
       - name: Set packer log path
-        id: packer-log-path
+        id: packer_log_path
         run: echo "::set-output name=value::./packer.log"
 
       - name: Create image
-        if: ${{ github.event.inputs.dry_run == 'false' }}
+        if: ${{ needs.setup.outputs.dry_run == 'false' }}
         uses: hashicorp/packer-github-actions@master
         env:
-          PACKER_LOG_PATH: ${{ steps.packer-log-path.outputs.value }}
+          PACKER_LOG_PATH: ${{ steps.packer_log_path.outputs.value }}
           PACKER_LOG: 1
           DIGITALOCEAN_API_TOKEN: ${{ secrets.DIGITALOCEAN_API_TOKEN }}
           SNAPSHOT_NAME: ${{ steps.snapshot_name.outputs.value }}
@@ -112,14 +165,14 @@ jobs:
           target: ${{ steps.image_definition_path.outputs.value }}
 
       - name: Extract image ID from packer log
-        if: ${{ github.event.inputs.dry_run == 'false' }}
+        if: ${{ needs.setup.outputs.dry_run == 'false' }}
         id: image
         env:
-          PACKER_LOG_PATH: ${{ steps.packer-log-path.outputs.value }}
+          PACKER_LOG_PATH: ${{ steps.packer_log_path.outputs.value }}
         run: echo "::set-output name=id::$(./vendor/smartassert/bash-ga-deploy-tools/src/digitalocean-snapshot/extract-id-from-packer-log.sh)"
 
       - name: Verify image exists
-        if: ${{ github.event.inputs.dry_run == 'false' }}
+        if: ${{ needs.setup.outputs.dry_run == 'false' }}
         env:
           DIGITALOCEAN_API_TOKEN: ${{ secrets.DIGITALOCEAN_API_TOKEN }}
           IMAGE_ID: ${{ steps.image.outputs.id }}
@@ -127,7 +180,7 @@ jobs:
         run: ./vendor/smartassert/bash-ga-deploy-tools/src/digitalocean-snapshot/verify-existence.sh
 
       - name: Dispatch service-configure event to smartassert/instance-manager
-        if: ${{ github.event.inputs.dry_run == 'false' && github.event.inputs.should_deploy == 'true' }}
+        if: ${{ needs.setup.outputs.dry_run == 'false' && needs.setup.outputs.should_deploy == 'true' }}
         uses: peter-evans/repository-dispatch@v1
         with:
           token: ${{ secrets.INSTANCE_MANAGER_TOKEN }}
@@ -135,7 +188,7 @@ jobs:
           event-type: service-configure
           client-payload: |
             {
-              "service_id": "${{ github.event.inputs.service_id }}",
+              "service_id": "${{ matrix.service_id }}",
               "image_id": "${{ steps.image.outputs.id }}",
               "state_url": "/",
               "health_check_url": "/health-check",
@@ -143,7 +196,7 @@ jobs:
             }
 
       - name: Remove snapshot
-        if: ${{ github.event.inputs.dry_run == 'false' && github.event.inputs.should_deploy == 'false' }}
+        if: ${{ needs.setup.outputs.dry_run == 'false' && needs.setup.outputs.should_deploy == 'false' }}
         env:
           DIGITALOCEAN_API_TOKEN: ${{ secrets.DIGITALOCEAN_API_TOKEN }}
           IMAGE_ID: ${{ steps.image.outputs.id }}
