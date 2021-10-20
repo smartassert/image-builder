@@ -20,138 +20,172 @@ on:
         default: "false"
 
 jobs:
-  build:
-    name: Build ${{ github.event.inputs.service_id }}
+  find_service_ids:
+    name: Find service ids
     runs-on: ubuntu-latest
+    outputs:
+      service_ids: ${{ steps.service_ids.outputs.value }}
 
     steps:
       - name: Checkout
         uses: actions/checkout@v2
 
-      - name: Checkout bash-ga-deploy-tools
-        uses: actions/checkout@v2
-        with:
-          repository: smartassert/bash-ga-deploy-tools
-          path: ./vendor/smartassert/bash-ga-deploy-tools
-          ref: main
-
-      - name: Checkout bash-read-env-file
-        uses: actions/checkout@v2
-        with:
-          repository: smartassert/bash-read-env-file
-          path: ./vendor/smartassert/bash-read-env-file
-          ref: main
-
-      - name: Output workflow_dispatch inputs
-        env:
-          INPUTS: ${{ toJson(github.event.inputs) }}
-        run: echo "$INPUTS"
-
-      - name: Verify service_id is set
-        env:
-          SERVICE_ID: ${{ github.event.inputs.service_id }}
+      - name: Find service ids
+        id: service_ids
         run: |
-          [[ -n "$SERVICE_ID" ]] || (echo "service_id not set" && exit 1)
-
-      - name: Set service configuration directory
-        id: configuration_directory
-        run: echo "::set-output name=value::./services/${{ github.event.inputs.service_id  }}"
-
-      - name: Set service configuration path
-        id: configuration_path
-        run: |
-          FILE_PATH="${{ steps.configuration_directory.outputs.value }}/configuration.env"
-          if [ ! -f "$FILE_PATH" ]; then
-            echo "Configuration for service ${{ github.event.inputs.service_id }} not found: $FILE_PATH"
-            exit 1
+          SERVICE_IDS=$(ls services)
+          if [ "workflow_dispatch" = "${{ github.event_name }}" ]; then
+            SERVICE_IDS="${{ github.event.inputs.service_id }}"
           fi
 
-          echo "::set-output name=value::$FILE_PATH"
+          SERVICE_IDS_AS_JSON_ARRAY=$(jq -ncR '[inputs]' <<< "$SERVICE_IDS")
 
-      - name: Read service configuration
-        id: service_configuration
-        env:
-          ENV_FILE_PATH: ${{ steps.configuration_path.outputs.value }}
-        run: ./vendor/smartassert/bash-read-env-file/src/read-env-file-ga.sh
+          echo "::set-output name=value::$SERVICE_IDS_AS_JSON_ARRAY"
 
-      - name: Set path to image definition
-        id: image_definition_path
-        run: |
-          FILE_PATH="${{ steps.configuration_directory.outputs.value }}/image.pkr.hcl"
-          if [ ! -f "$FILE_PATH" ]; then
-            echo "Image definition for service ${{ github.event.inputs.service_id }} not found: $FILE_PATH"
-            exit 1
-          fi
+  foo:
+    needs: find_service_ids
+    name: Foo
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        service: ${{ fromJson(needs.find_service_ids.outputs.service_ids) }}
 
-          echo "::set-output name=value::$FILE_PATH"
+    steps:
+      - name: Foo Step ${{ matrix.service }}
+        run: echo ${{ github.event_name }}
 
-      - name: Validate image configuration
-        uses: hashicorp/packer-github-actions@master
-        env:
-          DIGITALOCEAN_API_TOKEN: ${{ secrets.DIGITALOCEAN_API_TOKEN }}
-        with:
-          command: validate
-          target: ${{ steps.image_definition_path.outputs.value }}
-
-      - name: Set snapshot name
-        id: snapshot_name
-        run: echo "::set-output name=value::${{ github.event.inputs.service_id }}-${{ steps.service_configuration.outputs.version }}"
-
-      - name: Set packer log path
-        id: packer-log-path
-        run: echo "::set-output name=value::./packer.log"
-
-      - name: Create image
-        if: ${{ github.event.inputs.dry_run == 'false' }}
-        uses: hashicorp/packer-github-actions@master
-        env:
-          PACKER_LOG_PATH: ${{ steps.packer-log-path.outputs.value }}
-          PACKER_LOG: 1
-          DIGITALOCEAN_API_TOKEN: ${{ secrets.DIGITALOCEAN_API_TOKEN }}
-          SNAPSHOT_NAME: ${{ steps.snapshot_name.outputs.value }}
-          VERSION: ${{ steps.service_configuration.outputs.version }}
-        with:
-          command: build
-          arguments: "-machine-readable"
-          target: ${{ steps.image_definition_path.outputs.value }}
-
-      - name: Extract image ID from packer log
-        if: ${{ github.event.inputs.dry_run == 'false' }}
-        id: image
-        env:
-          PACKER_LOG_PATH: ${{ steps.packer-log-path.outputs.value }}
-        run: echo "::set-output name=id::$(./vendor/smartassert/bash-ga-deploy-tools/src/digitalocean-snapshot/extract-id-from-packer-log.sh)"
-
-      - name: Verify image exists
-        if: ${{ github.event.inputs.dry_run == 'false' }}
-        env:
-          DIGITALOCEAN_API_TOKEN: ${{ secrets.DIGITALOCEAN_API_TOKEN }}
-          IMAGE_ID: ${{ steps.image.outputs.id }}
-          EXPECTED_EXISTS: "true"
-        run: ./vendor/smartassert/bash-ga-deploy-tools/src/digitalocean-snapshot/verify-existence.sh
-
-      - name: Dispatch service-configure event to smartassert/instance-manager
-        if: ${{ github.event.inputs.dry_run == 'false' && github.event.inputs.should_deploy == 'true' }}
-        uses: peter-evans/repository-dispatch@v1
-        with:
-          token: ${{ secrets.INSTANCE_MANAGER_TOKEN }}
-          repository: smartassert/instance-manager
-          event-type: service-configure
-          client-payload: |
-            {
-              "service_id": "${{ github.event.inputs.service_id }}",
-              "image_id": "${{ steps.image.outputs.id }}",
-              "state_url": "/",
-              "health_check_url": "/health-check",
-              "destroy_include_filter": "[{\"message-queue-size\":0}]"
-            }
-
-      - name: Remove snapshot
-        if: ${{ github.event.inputs.dry_run == 'false' && github.event.inputs.should_deploy == 'false' }}
-        env:
-          DIGITALOCEAN_API_TOKEN: ${{ secrets.DIGITALOCEAN_API_TOKEN }}
-          IMAGE_ID: ${{ steps.image.outputs.id }}
-          EXPECTED_EXISTS: "false"
-        run: |
-          ./vendor/smartassert/bash-ga-deploy-tools/src/digitalocean-snapshot/delete.sh
-          ./vendor/smartassert/bash-ga-deploy-tools/src/digitalocean-snapshot/verify-existence.sh
+#  build:
+#    name: Build ${{ github.event.inputs.service_id }}
+#    runs-on: ubuntu-latest
+#
+#    steps:
+#      - name: Checkout
+#        uses: actions/checkout@v2
+#
+#      - name: Checkout bash-ga-deploy-tools
+#        uses: actions/checkout@v2
+#        with:
+#          repository: smartassert/bash-ga-deploy-tools
+#          path: ./vendor/smartassert/bash-ga-deploy-tools
+#          ref: main
+#
+#      - name: Checkout bash-read-env-file
+#        uses: actions/checkout@v2
+#        with:
+#          repository: smartassert/bash-read-env-file
+#          path: ./vendor/smartassert/bash-read-env-file
+#          ref: main
+#
+#      - name: Output workflow_dispatch inputs
+#        env:
+#          INPUTS: ${{ toJson(github.event.inputs) }}
+#        run: echo "$INPUTS"
+#
+#      - name: Verify service_id is set
+#        env:
+#          SERVICE_ID: ${{ github.event.inputs.service_id }}
+#        run: |
+#          [[ -n "$SERVICE_ID" ]] || (echo "service_id not set" && exit 1)
+#
+#      - name: Set service configuration directory
+#        id: configuration_directory
+#        run: echo "::set-output name=value::./services/${{ github.event.inputs.service_id  }}"
+#
+#      - name: Set service configuration path
+#        id: configuration_path
+#        run: |
+#          FILE_PATH="${{ steps.configuration_directory.outputs.value }}/configuration.env"
+#          if [ ! -f "$FILE_PATH" ]; then
+#            echo "Configuration for service ${{ github.event.inputs.service_id }} not found: $FILE_PATH"
+#            exit 1
+#          fi
+#
+#          echo "::set-output name=value::$FILE_PATH"
+#
+#      - name: Read service configuration
+#        id: service_configuration
+#        env:
+#          ENV_FILE_PATH: ${{ steps.configuration_path.outputs.value }}
+#        run: ./vendor/smartassert/bash-read-env-file/src/read-env-file-ga.sh
+#
+#      - name: Set path to image definition
+#        id: image_definition_path
+#        run: |
+#          FILE_PATH="${{ steps.configuration_directory.outputs.value }}/image.pkr.hcl"
+#          if [ ! -f "$FILE_PATH" ]; then
+#            echo "Image definition for service ${{ github.event.inputs.service_id }} not found: $FILE_PATH"
+#            exit 1
+#          fi
+#
+#          echo "::set-output name=value::$FILE_PATH"
+#
+#      - name: Validate image configuration
+#        uses: hashicorp/packer-github-actions@master
+#        env:
+#          DIGITALOCEAN_API_TOKEN: ${{ secrets.DIGITALOCEAN_API_TOKEN }}
+#        with:
+#          command: validate
+#          target: ${{ steps.image_definition_path.outputs.value }}
+#
+#      - name: Set snapshot name
+#        id: snapshot_name
+#        run: echo "::set-output name=value::${{ github.event.inputs.service_id }}-${{ steps.service_configuration.outputs.version }}"
+#
+#      - name: Set packer log path
+#        id: packer-log-path
+#        run: echo "::set-output name=value::./packer.log"
+#
+#      - name: Create image
+#        if: ${{ github.event.inputs.dry_run == 'false' }}
+#        uses: hashicorp/packer-github-actions@master
+#        env:
+#          PACKER_LOG_PATH: ${{ steps.packer-log-path.outputs.value }}
+#          PACKER_LOG: 1
+#          DIGITALOCEAN_API_TOKEN: ${{ secrets.DIGITALOCEAN_API_TOKEN }}
+#          SNAPSHOT_NAME: ${{ steps.snapshot_name.outputs.value }}
+#          VERSION: ${{ steps.service_configuration.outputs.version }}
+#        with:
+#          command: build
+#          arguments: "-machine-readable"
+#          target: ${{ steps.image_definition_path.outputs.value }}
+#
+#      - name: Extract image ID from packer log
+#        if: ${{ github.event.inputs.dry_run == 'false' }}
+#        id: image
+#        env:
+#          PACKER_LOG_PATH: ${{ steps.packer-log-path.outputs.value }}
+#        run: echo "::set-output name=id::$(./vendor/smartassert/bash-ga-deploy-tools/src/digitalocean-snapshot/extract-id-from-packer-log.sh)"
+#
+#      - name: Verify image exists
+#        if: ${{ github.event.inputs.dry_run == 'false' }}
+#        env:
+#          DIGITALOCEAN_API_TOKEN: ${{ secrets.DIGITALOCEAN_API_TOKEN }}
+#          IMAGE_ID: ${{ steps.image.outputs.id }}
+#          EXPECTED_EXISTS: "true"
+#        run: ./vendor/smartassert/bash-ga-deploy-tools/src/digitalocean-snapshot/verify-existence.sh
+#
+#      - name: Dispatch service-configure event to smartassert/instance-manager
+#        if: ${{ github.event.inputs.dry_run == 'false' && github.event.inputs.should_deploy == 'true' }}
+#        uses: peter-evans/repository-dispatch@v1
+#        with:
+#          token: ${{ secrets.INSTANCE_MANAGER_TOKEN }}
+#          repository: smartassert/instance-manager
+#          event-type: service-configure
+#          client-payload: |
+#            {
+#              "service_id": "${{ github.event.inputs.service_id }}",
+#              "image_id": "${{ steps.image.outputs.id }}",
+#              "state_url": "/",
+#              "health_check_url": "/health-check",
+#              "destroy_include_filter": "[{\"message-queue-size\":0}]"
+#            }
+#
+#      - name: Remove snapshot
+#        if: ${{ github.event.inputs.dry_run == 'false' && github.event.inputs.should_deploy == 'false' }}
+#        env:
+#          DIGITALOCEAN_API_TOKEN: ${{ secrets.DIGITALOCEAN_API_TOKEN }}
+#          IMAGE_ID: ${{ steps.image.outputs.id }}
+#          EXPECTED_EXISTS: "false"
+#        run: |
+#          ./vendor/smartassert/bash-ga-deploy-tools/src/digitalocean-snapshot/delete.sh
+#          ./vendor/smartassert/bash-ga-deploy-tools/src/digitalocean-snapshot/verify-existence.sh
