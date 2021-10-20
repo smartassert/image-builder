@@ -69,7 +69,7 @@ jobs:
         run: echo "$OUTPUTS"
 
   build:
-    needs: setup
+    needs: [setup, verify-setup]
     name: Build
     runs-on: ubuntu-latest
     strategy:
