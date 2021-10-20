@@ -182,37 +182,37 @@ jobs:
         env:
           PACKER_LOG_PATH: ${{ steps.packer_log_path.outputs.value }}
         run: echo "::set-output name=id::$(./vendor/smartassert/bash-ga-deploy-tools/src/digitalocean-snapshot/extract-id-from-packer-log.sh)"
-#
-#      - name: Verify image exists
-#        if: ${{ github.event.inputs.dry_run == 'false' }}
-#        env:
-#          DIGITALOCEAN_API_TOKEN: ${{ secrets.DIGITALOCEAN_API_TOKEN }}
-#          IMAGE_ID: ${{ steps.image.outputs.id }}
-#          EXPECTED_EXISTS: "true"
-#        run: ./vendor/smartassert/bash-ga-deploy-tools/src/digitalocean-snapshot/verify-existence.sh
-#
-#      - name: Dispatch service-configure event to smartassert/instance-manager
-#        if: ${{ github.event.inputs.dry_run == 'false' && github.event.inputs.should_deploy == 'true' }}
-#        uses: peter-evans/repository-dispatch@v1
-#        with:
-#          token: ${{ secrets.INSTANCE_MANAGER_TOKEN }}
-#          repository: smartassert/instance-manager
-#          event-type: service-configure
-#          client-payload: |
-#            {
-#              "service_id": "${{ github.event.inputs.service_id }}",
-#              "image_id": "${{ steps.image.outputs.id }}",
-#              "state_url": "/",
-#              "health_check_url": "/health-check",
-#              "destroy_include_filter": "[{\"message-queue-size\":0}]"
-#            }
-#
-#      - name: Remove snapshot
-#        if: ${{ github.event.inputs.dry_run == 'false' && github.event.inputs.should_deploy == 'false' }}
-#        env:
-#          DIGITALOCEAN_API_TOKEN: ${{ secrets.DIGITALOCEAN_API_TOKEN }}
-#          IMAGE_ID: ${{ steps.image.outputs.id }}
-#          EXPECTED_EXISTS: "false"
-#        run: |
-#          ./vendor/smartassert/bash-ga-deploy-tools/src/digitalocean-snapshot/delete.sh
-#          ./vendor/smartassert/bash-ga-deploy-tools/src/digitalocean-snapshot/verify-existence.sh
+
+      - name: Verify image exists
+        if: ${{ needs.setup.outputs.dry_run == 'false' }}
+        env:
+          DIGITALOCEAN_API_TOKEN: ${{ secrets.DIGITALOCEAN_API_TOKEN }}
+          IMAGE_ID: ${{ steps.image.outputs.id }}
+          EXPECTED_EXISTS: "true"
+        run: ./vendor/smartassert/bash-ga-deploy-tools/src/digitalocean-snapshot/verify-existence.sh
+
+      - name: Dispatch service-configure event to smartassert/instance-manager
+        if: ${{ needs.setup.outputs.dry_run == 'false' && needs.setup.outputs.should_deploy == 'true' }}
+        uses: peter-evans/repository-dispatch@v1
+        with:
+          token: ${{ secrets.INSTANCE_MANAGER_TOKEN }}
+          repository: smartassert/instance-manager
+          event-type: service-configure
+          client-payload: |
+            {
+              "service_id": "${{ matrix.service_id }}",
+              "image_id": "${{ steps.image.outputs.id }}",
+              "state_url": "/",
+              "health_check_url": "/health-check",
+              "destroy_include_filter": "[{\"message-queue-size\":0}]"
+            }
+
+      - name: Remove snapshot
+        if: ${{ needs.setup.outputs.dry_run == 'false' && needs.setup.outputs.should_deploy == 'false' }}
+        env:
+          DIGITALOCEAN_API_TOKEN: ${{ secrets.DIGITALOCEAN_API_TOKEN }}
+          IMAGE_ID: ${{ steps.image.outputs.id }}
+          EXPECTED_EXISTS: "false"
+        run: |
+          ./vendor/smartassert/bash-ga-deploy-tools/src/digitalocean-snapshot/delete.sh
+          ./vendor/smartassert/bash-ga-deploy-tools/src/digitalocean-snapshot/verify-existence.sh
