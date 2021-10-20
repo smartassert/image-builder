@@ -163,7 +163,7 @@ jobs:
         run: echo "::set-output name=value::./packer.log"
 
       - name: Create image
-        if: ${{ github.event.inputs.dry_run == 'false' }}
+        if: ${{ needs.setup.outputs.dry_run == 'false' }}
         uses: hashicorp/packer-github-actions@master
         env:
           PACKER_LOG_PATH: ${{ steps.packer_log_path.outputs.value }}
@@ -177,7 +177,7 @@ jobs:
           target: ${{ steps.image_definition_path.outputs.value }}
 
       - name: Extract image ID from packer log
-        if: ${{ github.event.inputs.dry_run == 'false' }}
+        if: ${{ needs.setup.outputs.dry_run == 'false' }}
         id: image
         env:
           PACKER_LOG_PATH: ${{ steps.packer_log_path.outputs.value }}
