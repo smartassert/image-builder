@@ -26,6 +26,7 @@ jobs:
     outputs:
       service_ids: ${{ steps.service_ids.outputs.value }}
       should_deploy: ${{ steps.should_deploy.outputs.value }}
+      dry_run: ${{ steps.dry_run.outputs.value }}
 
     steps:
       - name: Checkout
@@ -56,6 +57,20 @@ jobs:
           fi
 
           echo "::set-output name=value::$SHOULD_DEPLOY"
+
+      - name: Set 'dry_run'
+        id: dry_run
+        run: |
+          DRY_RUN="false"
+          if [ "workflow_dispatch" = "${{ github.event_name }}" ]; then
+            DRY_RUN="${{ github.event.inputs.should_deploy }}"
+          fi
+
+          if [ "$DRY_RUN" != "true" ]; then
+            DRY_RUN="false"
+          fi
+
+          echo "::set-output name=value::$DRY_RUN"
 
   verify-setup:
     needs: setup
