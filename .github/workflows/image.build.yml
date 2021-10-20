@@ -108,11 +108,7 @@ jobs:
           repository: smartassert/bash-read-env-file
           path: ./vendor/smartassert/bash-read-env-file
           ref: main
-#
-#      - name: Output workflow_dispatch inputs
-#        env:
-#          INPUTS: ${{ toJson(github.event.inputs) }}
-#        run: echo "$INPUTS"
+
 #
 #      - name: Verify service_id is set
 #        env:
