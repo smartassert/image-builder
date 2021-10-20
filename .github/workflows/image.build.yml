@@ -77,19 +77,8 @@ jobs:
 
           echo "::set-output name=value::$DRY_RUN"
 
-  verify-setup:
-    needs: setup
-    name: Verify setup
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Print setup outputs
-        env:
-          OUTPUTS: ${{ toJson(needs.setup.outputs) }}
-        run: echo "$OUTPUTS"
-
   build:
-    needs: [setup, verify-setup]
+    needs: setup
     name: Build
     runs-on: ubuntu-latest
     strategy:
