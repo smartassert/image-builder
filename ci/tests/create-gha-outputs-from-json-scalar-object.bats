@@ -9,7 +9,7 @@ setup() {
 }
 
 main() {
-  bash "${BATS_TEST_DIRNAME}/../scripts/$script_name" "$ARG1"
+  bash "${BATS_TEST_DIRNAME}/../scripts/$script_name" <<< "$ARG1"
 }
 
 @test "$script_name: non-json fails" {
