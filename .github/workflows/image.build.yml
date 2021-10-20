@@ -94,7 +94,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        service: ${{ fromJson(needs.setup.outputs.service_ids) }}
+        service_id: ${{ fromJson(needs.setup.outputs.service_ids) }}
 
     steps:
       - name: Checkout
@@ -113,46 +113,46 @@ jobs:
           repository: smartassert/bash-read-env-file
           path: ./vendor/smartassert/bash-read-env-file
           ref: main
-#
-#      - name: Set service configuration directory
-#        id: configuration_directory
-#        run: echo "::set-output name=value::./services/${{ github.event.inputs.service_id  }}"
-#
-#      - name: Set service configuration path
-#        id: configuration_path
-#        run: |
-#          FILE_PATH="${{ steps.configuration_directory.outputs.value }}/configuration.env"
-#          if [ ! -f "$FILE_PATH" ]; then
-#            echo "Configuration for service ${{ github.event.inputs.service_id }} not found: $FILE_PATH"
-#            exit 1
-#          fi
-#
-#          echo "::set-output name=value::$FILE_PATH"
-#
-#      - name: Read service configuration
-#        id: service_configuration
-#        env:
-#          ENV_FILE_PATH: ${{ steps.configuration_path.outputs.value }}
-#        run: ./vendor/smartassert/bash-read-env-file/src/read-env-file-ga.sh
-#
-#      - name: Set path to image definition
-#        id: image_definition_path
-#        run: |
-#          FILE_PATH="${{ steps.configuration_directory.outputs.value }}/image.pkr.hcl"
-#          if [ ! -f "$FILE_PATH" ]; then
-#            echo "Image definition for service ${{ github.event.inputs.service_id }} not found: $FILE_PATH"
-#            exit 1
-#          fi
-#
-#          echo "::set-output name=value::$FILE_PATH"
-#
-#      - name: Validate image configuration
-#        uses: hashicorp/packer-github-actions@master
-#        env:
-#          DIGITALOCEAN_API_TOKEN: ${{ secrets.DIGITALOCEAN_API_TOKEN }}
-#        with:
-#          command: validate
-#          target: ${{ steps.image_definition_path.outputs.value }}
+
+      - name: Set service configuration directory
+        id: configuration_directory
+        run: echo "::set-output name=value::./services/${{ matrix.service_id }}"
+
+      - name: Set service configuration path
+        id: configuration_path
+        run: |
+          FILE_PATH="${{ steps.configuration_directory.outputs.value }}/configuration.env"
+          if [ ! -f "$FILE_PATH" ]; then
+            echo "Configuration for service ${{ matrix.service_id }} not found: $FILE_PATH"
+            exit 1
+          fi
+
+          echo "::set-output name=value::$FILE_PATH"
+
+      - name: Read service configuration
+        id: service_configuration
+        env:
+          ENV_FILE_PATH: ${{ steps.configuration_path.outputs.value }}
+        run: ./vendor/smartassert/bash-read-env-file/src/read-env-file-ga.sh
+
+      - name: Set path to image definition
+        id: image_definition_path
+        run: |
+          FILE_PATH="${{ steps.configuration_directory.outputs.value }}/image.pkr.hcl"
+          if [ ! -f "$FILE_PATH" ]; then
+            echo "Image definition for service ${{ matrix.service_id }} not found: $FILE_PATH"
+            exit 1
+          fi
+
+          echo "::set-output name=value::$FILE_PATH"
+
+      - name: Validate image configuration
+        uses: hashicorp/packer-github-actions@master
+        env:
+          DIGITALOCEAN_API_TOKEN: ${{ secrets.DIGITALOCEAN_API_TOKEN }}
+        with:
+          command: validate
+          target: ${{ steps.image_definition_path.outputs.value }}
 #
 #      - name: Set snapshot name
 #        id: snapshot_name
