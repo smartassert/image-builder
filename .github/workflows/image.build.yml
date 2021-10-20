@@ -53,20 +53,20 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-#
-#      - name: Checkout bash-ga-deploy-tools
-#        uses: actions/checkout@v2
-#        with:
-#          repository: smartassert/bash-ga-deploy-tools
-#          path: ./vendor/smartassert/bash-ga-deploy-tools
-#          ref: main
-#
-#      - name: Checkout bash-read-env-file
-#        uses: actions/checkout@v2
-#        with:
-#          repository: smartassert/bash-read-env-file
-#          path: ./vendor/smartassert/bash-read-env-file
-#          ref: main
+
+      - name: Checkout bash-ga-deploy-tools
+        uses: actions/checkout@v2
+        with:
+          repository: smartassert/bash-ga-deploy-tools
+          path: ./vendor/smartassert/bash-ga-deploy-tools
+          ref: main
+
+      - name: Checkout bash-read-env-file
+        uses: actions/checkout@v2
+        with:
+          repository: smartassert/bash-read-env-file
+          path: ./vendor/smartassert/bash-read-env-file
+          ref: main
 #
 #      - name: Output workflow_dispatch inputs
 #        env:
