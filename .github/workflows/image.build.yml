@@ -3,7 +3,6 @@ name: image.build
 on:
   pull_request:
     branches:
-      - github-475
       - main
   workflow_dispatch:
     inputs:
