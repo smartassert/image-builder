@@ -25,6 +25,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       service_ids: ${{ steps.service_ids.outputs.value }}
+      should_deploy: ${{ steps.should_deploy.outputs.value }}
 
     steps:
       - name: Checkout
@@ -41,6 +42,31 @@ jobs:
           SERVICE_IDS_AS_JSON_ARRAY=$(jq -ncR '[inputs]' <<< "$SERVICE_IDS")
 
           echo "::set-output name=value::$SERVICE_IDS_AS_JSON_ARRAY"
+
+      - name: Set 'should_deploy'
+        id: should_deploy
+        run: |
+          SHOULD_DEPLOY="false"
+          if [ "workflow_dispatch" = "${{ github.event_name }}" ]; then
+            SHOULD_DEPLOY="${{ github.event.inputs.should_deploy }}"
+          fi
+
+          if [ "$SHOULD_DEPLOY" != "true" ]; then
+            SHOULD_DEPLOY="false"
+          fi
+
+          echo "::set-output name=value::$SHOULD_DEPLOY"
+
+  verify-setup:
+    needs: setup
+    name: Verify setup
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Print setup outputs
+        env:
+          OUTPUTS: ${{ toJson(needs.setup.outputs) }}
+        run: echo "$OUTPUTS"
 
   build:
     needs: setup
