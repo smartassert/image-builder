@@ -153,35 +153,35 @@ jobs:
         with:
           command: validate
           target: ${{ steps.image_definition_path.outputs.value }}
-#
-#      - name: Set snapshot name
-#        id: snapshot_name
-#        run: echo "::set-output name=value::${{ github.event.inputs.service_id }}-${{ steps.service_configuration.outputs.version }}"
-#
-#      - name: Set packer log path
-#        id: packer-log-path
-#        run: echo "::set-output name=value::./packer.log"
-#
-#      - name: Create image
-#        if: ${{ github.event.inputs.dry_run == 'false' }}
-#        uses: hashicorp/packer-github-actions@master
-#        env:
-#          PACKER_LOG_PATH: ${{ steps.packer-log-path.outputs.value }}
-#          PACKER_LOG: 1
-#          DIGITALOCEAN_API_TOKEN: ${{ secrets.DIGITALOCEAN_API_TOKEN }}
-#          SNAPSHOT_NAME: ${{ steps.snapshot_name.outputs.value }}
-#          VERSION: ${{ steps.service_configuration.outputs.version }}
-#        with:
-#          command: build
-#          arguments: "-machine-readable"
-#          target: ${{ steps.image_definition_path.outputs.value }}
-#
-#      - name: Extract image ID from packer log
-#        if: ${{ github.event.inputs.dry_run == 'false' }}
-#        id: image
-#        env:
-#          PACKER_LOG_PATH: ${{ steps.packer-log-path.outputs.value }}
-#        run: echo "::set-output name=id::$(./vendor/smartassert/bash-ga-deploy-tools/src/digitalocean-snapshot/extract-id-from-packer-log.sh)"
+
+      - name: Set snapshot name
+        id: snapshot_name
+        run: echo "::set-output name=value::${{ matrix.service_id }}-${{ steps.service_configuration.outputs.version }}"
+
+      - name: Set packer log path
+        id: packer_log_path
+        run: echo "::set-output name=value::./packer.log"
+
+      - name: Create image
+        if: ${{ github.event.inputs.dry_run == 'false' }}
+        uses: hashicorp/packer-github-actions@master
+        env:
+          PACKER_LOG_PATH: ${{ steps.packer_log_path.outputs.value }}
+          PACKER_LOG: 1
+          DIGITALOCEAN_API_TOKEN: ${{ secrets.DIGITALOCEAN_API_TOKEN }}
+          SNAPSHOT_NAME: ${{ steps.snapshot_name.outputs.value }}
+          VERSION: ${{ steps.service_configuration.outputs.version }}
+        with:
+          command: build
+          arguments: "-machine-readable"
+          target: ${{ steps.image_definition_path.outputs.value }}
+
+      - name: Extract image ID from packer log
+        if: ${{ github.event.inputs.dry_run == 'false' }}
+        id: image
+        env:
+          PACKER_LOG_PATH: ${{ steps.packer_log_path.outputs.value }}
+        run: echo "::set-output name=id::$(./vendor/smartassert/bash-ga-deploy-tools/src/digitalocean-snapshot/extract-id-from-packer-log.sh)"
 #
 #      - name: Verify image exists
 #        if: ${{ github.event.inputs.dry_run == 'false' }}
