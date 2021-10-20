@@ -63,7 +63,7 @@ jobs:
 
       - name: Verify service configuration exists
         env:
-          FILE_PATH: ${{ steps.image_definition_path.outputs.value }}
+          FILE_PATH: ${{ steps.configuration_path.outputs.value }}
         run: |
           if [ ! -f "$FILE_PATH" ]; then
             echo "Configuration for service ${{ github.event.inputs.service_id }} not found: $FILE_PATH"
