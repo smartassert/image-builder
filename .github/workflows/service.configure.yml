@@ -13,12 +13,9 @@ on:
         required: true
 
 jobs:
-  setup:
-    name: Setup ${{ github.event.inputs.service_id }}
+  configure_service:
+    name: Configure ${{ github.event.inputs.service_id }}
     runs-on: ubuntu-latest
-    outputs:
-      service_id: ${{ steps.service_id.outputs.value }}
-      version: ${{ steps.version.outputs.value }}
 
     steps:
       - name: Output repository_dispatch inputs
@@ -37,53 +34,40 @@ jobs:
         env:
           REPOSITORY_DISPATCH_VALUE: ${{ github.event.client_payload.service_id }}
           WORKFLOW_DISPATCH_VALUE: ${{ github.event.inputs.service_id }}
-        run: |
-          VALUE="${REPOSITORY_DISPATCH_VALUE:-$WORKFLOW_DISPATCH_VALUE}"
-          if [ "" = "$VALUE" ]; then
-            echo "service_id not set"
-            exit 1
-          fi
-
-          echo "::set-output name=value::$VALUE"
+        run: echo "::set-output name=value::${REPOSITORY_DISPATCH_VALUE:-$WORKFLOW_DISPATCH_VALUE}"
 
       - name: Set version
         id: version
         env:
           REPOSITORY_DISPATCH_VALUE: ${{ github.event.client_payload.version }}
           WORKFLOW_DISPATCH_VALUE: ${{ github.event.inputs.version }}
+        run: echo "::set-output name=value::${REPOSITORY_DISPATCH_VALUE:-$WORKFLOW_DISPATCH_VALUE}"
+
+      - name: Verify setup
+        env:
+          SERVICE_ID: ${{ steps.service_id.outputs.value }}
+          VERSION: ${{ steps.version.outputs.value }}
         run: |
-          VALUE="${REPOSITORY_DISPATCH_VALUE:-$WORKFLOW_DISPATCH_VALUE}"
-          if [ "" = "$VALUE" ]; then
+          if [ "" = "$SERVICE_ID" ]; then
             echo "service_id not set"
             exit 1
           fi
 
-          echo "::set-output name=value::$VALUE"
+          if [ "" = "$VERSION" ]; then
+            echo "version not set"
+            exit 1
+          fi
 
-  verify-setup:
-    name: Verify setup ${{ needs.setup.outputs.service_id }}
-    runs-on: ubuntu-latest
-    needs: setup
+          echo "service_id: $SERVICE_ID"
+          echo "version: $VERSION"
 
-    steps:
-      - name: Output
-        env:
-          OUTPUTS: ${{ toJson(needs.setup.outputs) }}
-        run: echo "$OUTPUTS"
-
-  store:
-    name: Store ${{ needs.setup.outputs.service_id }}
-    runs-on: ubuntu-latest
-    needs: [setup, verify-setup]
-
-    steps:
       - name: Checkout code
         uses: actions/checkout@v2
 
       - name: Store service version
         env:
-          CONFIGURATION_PATH: ./services/${{ needs.setup.outputs.service_id }}/version
-          VERSION: ${{ needs.setup.outputs.version }}
+          CONFIGURATION_PATH: ./services/${{ steps.service_id.outputs.value }}/version
+          VERSION: ${{ steps.version.outputs.value }}
         run: |
           mkdir -p "$(dirname "$CONFIGURATION_PATH")"
           echo "version=$VERSION" > "$CONFIGURATION_PATH"
@@ -91,4 +75,4 @@ jobs:
       - name: Commit
         uses: stefanzweifel/git-auto-commit-action@v4
         with:
-          commit_message: "Automatic version update for ${{ needs.setup.outputs.service_id }} ${{ needs.setup.outputs.version }}"
+          commit_message: "Automatic version update for ${{ steps.service_id.outputs.value }} ${{ steps.version.outputs.value }}"
