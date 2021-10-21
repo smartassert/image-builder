@@ -80,9 +80,9 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Store service configuration
+      - name: Store service version
         env:
-          CONFIGURATION_PATH: ./services/${{ needs.setup.outputs.service_id }}/configuration.env
+          CONFIGURATION_PATH: ./services/${{ needs.setup.outputs.service_id }}/version
           VERSION: ${{ needs.setup.outputs.version }}
         run: |
           mkdir -p "$(dirname "$CONFIGURATION_PATH")"
@@ -91,4 +91,4 @@ jobs:
       - name: Commit
         uses: stefanzweifel/git-auto-commit-action@v4
         with:
-          commit_message: "Automatic configuration update for ${{ needs.setup.outputs.service_id }} ${{ needs.setup.outputs.version }}"
+          commit_message: "Automatic version update for ${{ needs.setup.outputs.service_id }} ${{ needs.setup.outputs.version }}"
