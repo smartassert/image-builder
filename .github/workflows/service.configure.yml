@@ -73,6 +73,15 @@ jobs:
           echo "version=$VERSION" > "$CONFIGURATION_PATH"
 
       - name: Commit
+        id: commit
         uses: stefanzweifel/git-auto-commit-action@v4
         with:
           commit_message: "Automatic version update for ${{ steps.service_id.outputs.value }} ${{ steps.version.outputs.value }}"
+
+      - name: Trigger image.build
+        if: ${{ steps.commit.outputs.changes_detected == 'true' }}
+        env:
+          GH_TOKEN: ${{ secrets.PAT_TOKEN_SELF }}
+          SERVICE_ID: ${{ steps.service_id.outputs.value }}
+        run: |
+          gh workflow run image.build.yml -f service_id="$SERVICE_ID" -f should_deploy="true"
