@@ -19,16 +19,15 @@ on:
         default: "false"
 
 jobs:
-  examine:
-    name: Examine event data
+  printJob:
+    name: Print event
     runs-on: ubuntu-latest
-
     steps:
-      - name: Dump
+      - name: Dump GitHub context
         env:
-          DATA: ${{ fromJson(github) }}
+          GITHUB_CONTEXT: ${{ toJson(github) }}
         run: |
-          echo "$DATA"
+          echo "$GITHUB_CONTEXT"
 
 #  setup:
 #    name: Setup
