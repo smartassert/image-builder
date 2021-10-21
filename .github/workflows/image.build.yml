@@ -20,6 +20,7 @@ on:
 
 jobs:
   setup:
+    if: ${{ (github.event_name == 'workflow_dispatch') || (github.event_name == 'pull_request' && github.event.pull_request.draft == false) }}
     name: Setup
     runs-on: ubuntu-latest
     outputs:
