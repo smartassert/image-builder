@@ -7,17 +7,6 @@ on:
   pull_request:
 
 jobs:
-  shellcheck:
-    name: ShellCheck
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-
-      - name: Run
-        run: docker run --rm -v "$PWD:/mnt" koalaman/shellcheck:stable ./ci/**/*.{sh,bats}
-
   actionlint:
     name: Actionlint
     runs-on: ubuntu-latest
