@@ -96,13 +96,6 @@ jobs:
           path: ./vendor/smartassert/bash-ga-deploy-tools
           ref: main
 
-      - name: Checkout bash-read-env-file
-        uses: actions/checkout@v2
-        with:
-          repository: smartassert/bash-read-env-file
-          path: ./vendor/smartassert/bash-read-env-file
-          ref: main
-
       - name: Set service configuration directory
         id: configuration_directory
         run: echo "::set-output name=value::./services/${{ matrix.service_id }}"
@@ -118,11 +111,10 @@ jobs:
 
           echo "::set-output name=value::$FILE_PATH"
 
-      - name: Read service configuration
-        id: service_configuration
-        env:
-          ENV_FILE_PATH: ${{ steps.configuration_path.outputs.value }}
-        run: ./vendor/smartassert/bash-read-env-file/src/read-env-file-ga.sh
+      - name: Read service version
+        id: version
+        run: |
+          (echo "::set-output name=value::$(cat)") < ${{ steps.configuration_path.outputs.value }}
 
       - name: Set path to image definition
         id: image_definition_path
@@ -145,7 +137,7 @@ jobs:
 
       - name: Set snapshot name
         id: snapshot_name
-        run: echo "::set-output name=value::${{ matrix.service_id }}-${{ steps.service_configuration.outputs.version }}"
+        run: echo "::set-output name=value::${{ matrix.service_id }}-${{ steps.version.outputs.value }}"
 
       - name: Set packer log path
         id: packer_log_path
@@ -159,7 +151,7 @@ jobs:
           PACKER_LOG: 1
           DIGITALOCEAN_API_TOKEN: ${{ secrets.DIGITALOCEAN_API_TOKEN }}
           SNAPSHOT_NAME: ${{ steps.snapshot_name.outputs.value }}
-          VERSION: ${{ steps.service_configuration.outputs.version }}
+          VERSION: ${{ steps.version.outputs.value }}
         with:
           command: build
           arguments: "-machine-readable"
