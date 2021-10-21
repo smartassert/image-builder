@@ -108,7 +108,7 @@ jobs:
 
       - name: Store service configuration
         env:
-          CONFIGURATION_PATH: ./services/${{ needs.setup.outputs.service_id }}/configuration.env
+          CONFIGURATION_PATH: ./services/${{ needs.setup.outputs.service_id }}/configuration.json
           VERSION: ${{ needs.setup.outputs.version }}
           PAYLOAD: ${{ needs.setup.outputs.payload }}
         run: |
@@ -118,7 +118,8 @@ jobs:
           JSON=$(./vendor/smartassert/bash-ga-ci-tools/src/combine-json-scalar-objects.sh "$PAYLOAD" "$VERSION_JSON")
 
           mkdir -p "$(dirname "$CONFIGURATION_PATH")"
-          ./ci/scripts/create-env-file-from-json.sh "$JSON" > "$CONFIGURATION_PATH"
+
+          jq "." <<< "$JSON" > "$CONFIGURATION_PATH"
 
       - name: Remove bash-ga-ci-tools
         run: rm -Rf ${{ steps.bash-ga-ci-tools.outputs.path }}
