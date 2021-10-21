@@ -109,7 +109,7 @@ jobs:
             exit 1
           fi
 
-          (echo "::set-output name=value::$(cat)") < ${{ steps.configuration_path.outputs.value }}
+          (echo "::set-output name=value::$(cat)") < "$FILE_PATH"
 
       - name: Set path to image definition
         id: image_definition_path
