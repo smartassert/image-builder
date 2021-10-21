@@ -186,14 +186,11 @@ jobs:
         with:
           token: ${{ secrets.INSTANCE_MANAGER_TOKEN }}
           repository: smartassert/instance-manager
-          event-type: service-configure
+          event-type: service-set-image
           client-payload: |
             {
               "service_id": "${{ matrix.service_id }}",
-              "image_id": "${{ steps.image.outputs.id }}",
-              "state_url": "/",
-              "health_check_url": "/health-check",
-              "destroy_include_filter": "[{\"message-queue-size\":0}]"
+              "image_id": "${{ steps.image.outputs.id }}"
             }
 
       - name: Remove snapshot
