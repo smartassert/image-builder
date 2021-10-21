@@ -65,6 +65,8 @@ jobs:
       - name: Set 'dry_run'
         id: dry_run
         run: |
+          echo "${{ github.event_name }}"
+
           DRY_RUN="false"
           if [ "workflow_dispatch" = "${{ github.event_name }}" ]; then
             DRY_RUN="${{ github.event.inputs.should_deploy }}"
