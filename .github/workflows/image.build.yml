@@ -110,7 +110,7 @@ jobs:
       - name: Set service configuration path
         id: configuration_path
         run: |
-          FILE_PATH="${{ steps.configuration_directory.outputs.value }}/configuration.env"
+          FILE_PATH="${{ steps.configuration_directory.outputs.value }}/configuration.json"
           if [ ! -f "$FILE_PATH" ]; then
             echo "Configuration for service ${{ matrix.service_id }} not found: $FILE_PATH"
             exit 1
@@ -120,9 +120,8 @@ jobs:
 
       - name: Read service configuration
         id: service_configuration
-        env:
-          ENV_FILE_PATH: ${{ steps.configuration_path.outputs.value }}
-        run: ./vendor/smartassert/bash-read-env-file/src/read-env-file-ga.sh
+        run: |
+          ./ci/scripts/create-gha-outputs-from-json-scalar-object.sh < ${{ steps.configuration_path.outputs.value }}
 
       - name: Set path to image definition
         id: image_definition_path
