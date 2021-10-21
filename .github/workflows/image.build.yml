@@ -35,6 +35,30 @@ jobs:
         run: |
           echo "$IS_DRAFT"
 
+  conditional_job_check:
+    name: Conditional job check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Test
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          IS_DRAFT: ${{ github.event.pull_request.draft }}
+        run: |
+          echo "event name:"
+          echo  "$EVENT_NAME"
+          echo "is draft?:"
+          echo "$IS_DRAFT"
+
+  conditional_job:
+    name: Conditional job
+    runs-on: ubuntu-latest
+    if: ${{ (github.event_name == 'workflow_dispatch') || (github.event_name == 'pull_request' && github.event.pull_request.draft == false) }}
+    steps:
+      - name: Test
+        run: |
+          echo "Is run for non-draft PRs and workflow_dispatch events"
+          echo "${{ github.event.pull_request.draft }}"
+
 #  setup:
 #    name: Setup
 #    runs-on: ubuntu-latest
