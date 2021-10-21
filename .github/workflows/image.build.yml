@@ -29,6 +29,12 @@ jobs:
         run: |
           echo "$GITHUB_CONTEXT"
 
+      - name: Is draft pull request?
+        env:
+          IS_DRAFT: ${{ github.event.pull_request.draft }}
+        run: |
+          echo "$IS_DRAFT"
+
 #  setup:
 #    name: Setup
 #    runs-on: ubuntu-latest
