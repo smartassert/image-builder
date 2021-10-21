@@ -67,7 +67,7 @@ jobs:
         run: |
           DRY_RUN="false"
           if [ "workflow_dispatch" = "${{ github.event_name }}" ]; then
-            DRY_RUN="${{ github.event.inputs.should_deploy }}"
+            DRY_RUN="${{ github.event.inputs.dry_run }}"
           fi
 
           if [ "$DRY_RUN" != "true" ]; then
