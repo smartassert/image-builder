@@ -8,8 +8,8 @@ on:
       service_id:
         description: The service for which the configuration is being stored
         required: true
-      version:
-        description: The service version
+      build_configuration:
+        description: "JSON scalar object of key:value pairs"
         required: true
 
 jobs:
@@ -36,41 +36,42 @@ jobs:
           WORKFLOW_DISPATCH_VALUE: ${{ github.event.inputs.service_id }}
         run: echo "::set-output name=value::${REPOSITORY_DISPATCH_VALUE:-$WORKFLOW_DISPATCH_VALUE}"
 
-      - name: Set version
-        id: version
+      - name: Set build configuration
+        id: build_configuration
         env:
-          REPOSITORY_DISPATCH_VALUE: ${{ github.event.client_payload.version }}
-          WORKFLOW_DISPATCH_VALUE: ${{ github.event.inputs.version }}
-        run: echo "::set-output name=value::${REPOSITORY_DISPATCH_VALUE:-$WORKFLOW_DISPATCH_VALUE}"
+          REPOSITORY_DISPATCH_VALUE: ${{ github.event.client_payload.build_configuration }}
+          WORKFLOW_DISPATCH_VALUE: ${{ github.event.inputs.build_configuration }}
+        run: |
+          echo "::set-output name=value::${REPOSITORY_DISPATCH_VALUE:-$WORKFLOW_DISPATCH_VALUE}"
 
       - name: Verify setup
         env:
           SERVICE_ID: ${{ steps.service_id.outputs.value }}
-          VERSION: ${{ steps.version.outputs.value }}
+          BUILD_CONFIGURATION: ${{ steps.build_configuration.outputs.value }}
         run: |
           if [ "" = "$SERVICE_ID" ]; then
             echo "service_id not set"
             exit 1
           fi
 
-          if [ "" = "$VERSION" ]; then
-            echo "version not set"
+          if [ "" = "$BUILD_CONFIGURATION" ]; then
+            echo "configuration not set"
             exit 1
           fi
 
           echo "service_id: $SERVICE_ID"
-          echo "version: $VERSION"
+          echo "build_configuration: $BUILD_CONFIGURATION"
 
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Store service version
+      - name: Store service build configuration
         env:
-          CONFIGURATION_PATH: ./services/${{ steps.service_id.outputs.value }}/version
-          VERSION: ${{ steps.version.outputs.value }}
+          CONFIGURATION_PATH: ./services/${{ steps.service_id.outputs.value }}/build_configuration.json
+          BUILD_CONFIGURATION: ${{ steps.build_configuration.outputs.value }}
         run: |
           mkdir -p "$(dirname "$CONFIGURATION_PATH")"
-          echo "version=$VERSION" > "$CONFIGURATION_PATH"
+          jq '.' <<< "$BUILD_CONFIGURATION" > "$CONFIGURATION_PATH"
 
       - name: Commit
         id: commit
