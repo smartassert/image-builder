@@ -75,7 +75,7 @@ jobs:
 
       - name: Set commit message
         id: commit_message
-        run: echo "::set-output name=value::Automatic version update for ${{ steps.service_id.outputs.value }} $(date '+%Y-%m-%d %H:%M:%S')"
+        run: echo "::set-output name=value::Automatic build configuration update for ${{ steps.service_id.outputs.value }} $(date '+%Y-%m-%d %H:%M:%S')"
 
       - name: Commit
         id: commit
