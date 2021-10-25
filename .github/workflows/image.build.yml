@@ -96,7 +96,7 @@ jobs:
           path: ./vendor/smartassert/bash-ga-deploy-tools
           ref: main
 
-      - name: Checkout bash-ga-deploy-tools
+      - name: Checkout bash-ga-ci-tools
         uses: actions/checkout@v2
         with:
           repository: smartassert/bash-ga-ci-tools
@@ -118,7 +118,7 @@ jobs:
 #
 #          (echo "::set-output name=value::$(cat)") < "$FILE_PATH"
 
-      - name: Read build configuration
+      - name: Read build configuration into packer -var arguments
         id: build_configuration
         run: |
           FILE_PATH="${{ steps.configuration_directory.outputs.value }}/build_configuration.json"
@@ -127,25 +127,24 @@ jobs:
             exit 1
           fi
 
-          ./vendor/smartassert/bash-ga-ci-tools/src/create-ga-outputs-from-json-scalar-object.sh < "$FILE_PATH"
+          FOO=$(./vendor/smartassert/bash-ga-ci-tools/src/output-json-scalar-object.sh "-var {{ key }}={{ value }}" < "$FILE_PATH")
+          echo "::set-output name=value::$FOO"
 
       - name: Examine build configuration
-        env:
-          BUILD_CONFIGURATION_OUTPUTS: ${{ toJson(steps.build_configuration.outputs) }}
         run: |
           echo "config file:"
           cat "${{ steps.configuration_directory.outputs.value }}/build_configuration.json"
           echo "build_configuration outputs"
-          echo "$BUILD_CONFIGURATION_OUTPUTS"
+          echo "${{ steps.build_configuration.outputs.value }}"
 
-      - name: Set packer var arguments
-        id: packer_var_arguments
-        run: |
-          echo "::set-output name=value::-var \'version=${{ steps.build_configuration.outputs.version }}\'"
-
-      - name: Examine packer var arguments
-        run:
-          echo ${{ steps.packer_var_arguments.outputs.value }}
+#      - name: Set packer var arguments
+#        id: packer_var_arguments
+#        run: |
+#          echo "::set-output name=value::-var version=${{ steps.build_configuration.outputs.version }}"
+#
+#      - name: Examine packer var arguments
+#        run:
+#          echo ${{ steps.build_configuration.outputs.value }}
 
       - name: Set path to image definition
         id: image_definition_path
@@ -164,7 +163,7 @@ jobs:
           DIGITALOCEAN_API_TOKEN: ${{ secrets.DIGITALOCEAN_API_TOKEN }}
         with:
           command: validate
-          arguments: "-var version=0.10"
+          arguments: ${{ steps.build_configuration.outputs.value }}
           target: ${{ steps.image_definition_path.outputs.value }}
 
       - name: Set snapshot name
