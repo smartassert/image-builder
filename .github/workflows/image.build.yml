@@ -96,6 +96,13 @@ jobs:
           path: ./vendor/smartassert/bash-ga-deploy-tools
           ref: main
 
+      - name: Checkout bash-ga-deploy-tools
+        uses: actions/checkout@v2
+        with:
+          repository: smartassert/bash-ga-ci-tools
+          path: ./vendor/smartassert/bash-ga-ci-tools
+          ref: main
+
       - name: Set service configuration directory
         id: configuration_directory
         run: echo "::set-output name=value::./services/${{ matrix.service_id }}"
@@ -110,6 +117,22 @@ jobs:
 #          fi
 #
 #          (echo "::set-output name=value::$(cat)") < "$FILE_PATH"
+
+      - name: Read build configuration
+        id: build_configuration
+        run: |
+          FILE_PATH="${{ steps.configuration_directory.outputs.value }}/build_configuration.json"
+          if [ ! -f "$FILE_PATH" ]; then
+            echo "Version for service ${{ matrix.service_id }} not found: $FILE_PATH"
+            exit 1
+          fi
+
+          ./vendor/smartassert/bash-ga-ci-tools/src/create-ga-outputs-from-json-scalar-object.sh
+
+      - name: Set packer var arguments
+        id: packer_var_arguments
+        run: |
+          echo "::set-output name=value::-var 'version=${{ steps.build_configuration.outputs.version }}'"
 
       - name: Set path to image definition
         id: image_definition_path
@@ -128,6 +151,7 @@ jobs:
           DIGITALOCEAN_API_TOKEN: ${{ secrets.DIGITALOCEAN_API_TOKEN }}
         with:
           command: validate
+          arguments: ${{ steps.packer_var_arguments.outputs.value }}
           target: ${{ steps.image_definition_path.outputs.value }}
 
       - name: Set snapshot name
