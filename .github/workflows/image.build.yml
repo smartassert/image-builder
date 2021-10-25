@@ -127,7 +127,7 @@ jobs:
             exit 1
           fi
 
-          ./vendor/smartassert/bash-ga-ci-tools/src/create-ga-outputs-from-json-scalar-object.sh
+          ./vendor/smartassert/bash-ga-ci-tools/src/create-ga-outputs-from-json-scalar-object.sh > "$FILE_PATH"
 
       - name: Examine build configuration
         env:
