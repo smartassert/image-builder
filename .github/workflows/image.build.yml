@@ -158,10 +158,9 @@ jobs:
           PACKER_LOG: 1
           DIGITALOCEAN_API_TOKEN: ${{ secrets.DIGITALOCEAN_API_TOKEN }}
           SNAPSHOT_NAME: ${{ steps.snapshot_name.outputs.value }}
-          VERSION: ${{ steps.version.outputs.value }}
         with:
           command: build
-          arguments: "-machine-readable"
+          arguments: "-machine-readable ${{ steps.build_configuration.outputs.value }}"
           target: ${{ steps.image_definition_path.outputs.value }}
 
       - name: Extract image ID from packer log
