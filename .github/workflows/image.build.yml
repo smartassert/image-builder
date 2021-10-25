@@ -107,44 +107,20 @@ jobs:
         id: configuration_directory
         run: echo "::set-output name=value::./services/${{ matrix.service_id }}"
 
-#      - name: Read service version
-#        id: version
-#        run: |
-#          FILE_PATH="${{ steps.configuration_directory.outputs.value }}/version"
-#          if [ ! -f "$FILE_PATH" ]; then
-#            echo "Version for service ${{ matrix.service_id }} not found: $FILE_PATH"
-#            exit 1
-#          fi
-#
-#          (echo "::set-output name=value::$(cat)") < "$FILE_PATH"
-
       - name: Read build configuration into packer -var arguments
         id: build_configuration
         run: |
           FILE_PATH="${{ steps.configuration_directory.outputs.value }}/build_configuration.json"
           if [ ! -f "$FILE_PATH" ]; then
-            echo "Version for service ${{ matrix.service_id }} not found: $FILE_PATH"
+            echo "Build configuration for service ${{ matrix.service_id }} not found: $FILE_PATH"
             exit 1
           fi
 
-          FOO=$(./vendor/smartassert/bash-ga-ci-tools/src/output-json-scalar-object.sh "-var {{ key }}={{ value }}" < "$FILE_PATH")
-          echo "::set-output name=value::$FOO"
+          OUTPUT=$(./vendor/smartassert/bash-ga-ci-tools/src/output-json-scalar-object.sh "-var {{ key }}={{ value }}" < "$FILE_PATH")
+          echo "::set-output name=value::$OUTPUT"
 
       - name: Examine build configuration
-        run: |
-          echo "config file:"
-          cat "${{ steps.configuration_directory.outputs.value }}/build_configuration.json"
-          echo "build_configuration outputs"
-          echo "${{ steps.build_configuration.outputs.value }}"
-
-#      - name: Set packer var arguments
-#        id: packer_var_arguments
-#        run: |
-#          echo "::set-output name=value::-var version=${{ steps.build_configuration.outputs.version }}"
-#
-#      - name: Examine packer var arguments
-#        run:
-#          echo ${{ steps.build_configuration.outputs.value }}
+        run: echo "${{ steps.build_configuration.outputs.value }}"
 
       - name: Set path to image definition
         id: image_definition_path
