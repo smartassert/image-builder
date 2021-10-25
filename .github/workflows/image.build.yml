@@ -141,7 +141,7 @@ jobs:
       - name: Set packer var arguments
         id: packer_var_arguments
         run: |
-          echo "::set-output name=value::-var 'version=${{ steps.build_configuration.outputs.version }}'"
+          echo "::set-output name=value::-var \'version=${{ steps.build_configuration.outputs.version }}\'"
 
       - name: Examine packer var arguments
         run:
