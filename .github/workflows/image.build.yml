@@ -131,7 +131,7 @@ jobs:
 
       - name: Examine build configuration
         env:
-          BUILD_CONFIGURATION_OUTPUTS: ${{ fromJson(steps.build_configuration.outputs) }}
+          BUILD_CONFIGURATION_OUTPUTS: ${{ toJson(steps.build_configuration.outputs) }}
         run: |
           echo "config file:"
           cat "${{ steps.configuration_directory.outputs.value }}/build_configuration.json"
