@@ -100,16 +100,16 @@ jobs:
         id: configuration_directory
         run: echo "::set-output name=value::./services/${{ matrix.service_id }}"
 
-      - name: Read service version
-        id: version
-        run: |
-          FILE_PATH="${{ steps.configuration_directory.outputs.value }}/version"
-          if [ ! -f "$FILE_PATH" ]; then
-            echo "Version for service ${{ matrix.service_id }} not found: $FILE_PATH"
-            exit 1
-          fi
-
-          (echo "::set-output name=value::$(cat)") < "$FILE_PATH"
+#      - name: Read service version
+#        id: version
+#        run: |
+#          FILE_PATH="${{ steps.configuration_directory.outputs.value }}/version"
+#          if [ ! -f "$FILE_PATH" ]; then
+#            echo "Version for service ${{ matrix.service_id }} not found: $FILE_PATH"
+#            exit 1
+#          fi
+#
+#          (echo "::set-output name=value::$(cat)") < "$FILE_PATH"
 
       - name: Set path to image definition
         id: image_definition_path
