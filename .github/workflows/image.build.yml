@@ -144,7 +144,8 @@ jobs:
 
       - name: Set snapshot name
         id: snapshot_name
-        run: echo "::set-output name=value::${{ matrix.service_id }}-${{ steps.version.outputs.value }}"
+        run: |
+          echo "::set-output name=value::${{ matrix.service_id }}-$(date '+%Y%m%dT%H%M%S')"
 
       - name: Set packer log path
         id: packer_log_path
