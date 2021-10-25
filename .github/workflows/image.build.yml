@@ -143,6 +143,10 @@ jobs:
         run: |
           echo "::set-output name=value::-var 'version=${{ steps.build_configuration.outputs.version }}'"
 
+      - name: Examine packer var arguments
+        run:
+          echo ${{ steps.packer_var_arguments.outputs.value }}
+
       - name: Set path to image definition
         id: image_definition_path
         run: |
