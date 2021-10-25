@@ -129,6 +129,15 @@ jobs:
 
           ./vendor/smartassert/bash-ga-ci-tools/src/create-ga-outputs-from-json-scalar-object.sh
 
+      - name: Examine build configuration
+        env:
+          BUILD_CONFIGURATION_OUTPUTS: ${{ fromJson(steps.build_configuration.outputs) }}
+        run: |
+          echo "config file:"
+          cat "${{ steps.configuration_directory.outputs.value }}/build_configuration.json"
+          echo "build_configuration outputs"
+          echo "$BUILD_CONFIGURATION_OUTPUTS"
+
       - name: Set packer var arguments
         id: packer_var_arguments
         run: |
