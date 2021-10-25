@@ -77,7 +77,7 @@ jobs:
         id: commit
         uses: stefanzweifel/git-auto-commit-action@v4
         with:
-          commit_message: "Automatic version update for ${{ steps.service_id.outputs.value }} ${{ steps.version.outputs.value }}"
+          commit_message: "Automatic version update for ${{ steps.service_id.outputs.value }}"
 
       - name: Trigger image.build
         if: ${{ steps.commit.outputs.changes_detected == 'true' }}
