@@ -164,7 +164,7 @@ jobs:
           DIGITALOCEAN_API_TOKEN: ${{ secrets.DIGITALOCEAN_API_TOKEN }}
         with:
           command: validate
-          arguments: ${{ steps.packer_var_arguments.outputs.value }}
+          arguments: "-var 'version=0.10'"
           target: ${{ steps.image_definition_path.outputs.value }}
 
       - name: Set snapshot name
