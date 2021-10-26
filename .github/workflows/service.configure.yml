@@ -71,7 +71,7 @@ jobs:
           BUILD_CONFIGURATION: ${{ steps.build_configuration.outputs.value }}
         run: |
           mkdir -p "$(dirname "$CONFIGURATION_PATH")"
-          jq '.' <<< "$BUILD_CONFIGURATION" > "$CONFIGURATION_PATH"
+          jq -S '.' <<< "$BUILD_CONFIGURATION" > "$CONFIGURATION_PATH"
 
       - name: Set commit message
         id: commit_message
