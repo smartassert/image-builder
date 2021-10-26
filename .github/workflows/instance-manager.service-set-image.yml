@@ -21,6 +21,9 @@ jobs:
           INPUTS: ${{ toJson(github.event.inputs) }}
         run: echo "$INPUTS"
 
+      - name: Checkout
+        uses: actions/checkout@v2
+
       - name: Verify service_id
         run: |
           SERVICE_DIRECTORY="./services/${{ github.event.inputs.service_id }}"
