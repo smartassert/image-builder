@@ -19,7 +19,7 @@ source "digitalocean" "worker_base" {
   image         = "ubuntu-20-04-x64"
   region        = "lon1"
   size          = "s-1vcpu-1gb"
-  snapshot_name = "worker-manager-${var.snapshot_name}"
+  snapshot_name = "${var.snapshot_name}"
   ssh_username  = "root"
 }
 
