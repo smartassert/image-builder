@@ -1,0 +1,59 @@
+name: instance-manager.service-set-image
+
+on:
+  workflow_dispatch:
+    inputs:
+      service_id:
+        description: The service for which the configuration is being stored
+        required: true
+      image_id:
+        description: ID of image
+        required: true
+
+jobs:
+  dispatch-instance-manager-service-set-image-event:
+    name: Dispatch instance-manager service-set-image event
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Output inputs
+        env:
+          INPUTS: ${{ toJson(github.event.inputs) }}
+        run: echo "$INPUTS"
+
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Verify service_id
+        run: |
+          SERVICE_DIRECTORY="./services/${{ github.event.inputs.service_id }}"
+          if [ ! -d "$SERVICE_DIRECTORY" ]; then
+            echo "Directory for service ${{ github.event.inputs.service_id }} not found: $SERVICE_DIRECTORY"
+            exit 1
+          fi
+
+      - name: Checkout bash-ga-deploy-tools
+        uses: actions/checkout@v2
+        with:
+          repository: smartassert/bash-ga-deploy-tools
+          path: ./vendor/smartassert/bash-ga-deploy-tools
+          ref: main
+
+      - name: Verify image_id
+        env:
+          DIGITALOCEAN_API_TOKEN: ${{ secrets.DIGITALOCEAN_API_TOKEN }}
+          IMAGE_ID: ${{ github.event.inputs.image_id }}
+          EXPECTED_EXISTS: "true"
+        run: ./vendor/smartassert/bash-ga-deploy-tools/src/digitalocean-snapshot/verify-existence.sh
+
+      - name: Dispatch service-configure event to smartassert/instance-manager
+        uses: peter-evans/repository-dispatch@v1
+        with:
+          token: ${{ secrets.INSTANCE_MANAGER_TOKEN }}
+          repository: smartassert/instance-manager
+          event-type: service-set-image
+          client-payload: |
+            {
+              "service_id": "${{ github.event.inputs.service_id }}",
+              "image_id": "${{ github.event.inputs.image_id }}"
+            }
