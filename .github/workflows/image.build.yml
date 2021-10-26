@@ -179,18 +179,14 @@ jobs:
           EXPECTED_EXISTS: "true"
         run: ./vendor/smartassert/bash-ga-deploy-tools/src/digitalocean-snapshot/verify-existence.sh
 
-      - name: Dispatch service-configure event to smartassert/instance-manager
+      - name: Trigger dispatch of service-configure event to smartassert/instance-manager
         if: ${{ needs.setup.outputs.dry_run == 'false' && needs.setup.outputs.should_deploy == 'true' }}
-        uses: peter-evans/repository-dispatch@v1
-        with:
-          token: ${{ secrets.INSTANCE_MANAGER_TOKEN }}
-          repository: smartassert/instance-manager
-          event-type: service-set-image
-          client-payload: |
-            {
-              "service_id": "${{ matrix.service_id }}",
-              "image_id": "${{ steps.image.outputs.id }}"
-            }
+        env:
+          GH_TOKEN: ${{ secrets.PAT_TOKEN_SELF }}
+          SERVICE_ID: ${{ matrix.service_id }}
+          IMAGE_ID: ${{ steps.image.outputs.id }}
+        run: |
+          gh workflow run instance-manager.service-set-image.yml -f service_id="$SERVICE_ID" -f image_id="$IMAGE_ID"
 
       - name: Remove snapshot
         if: ${{ needs.setup.outputs.dry_run == 'false' && needs.setup.outputs.should_deploy == 'false' }}
