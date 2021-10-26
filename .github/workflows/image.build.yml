@@ -96,20 +96,31 @@ jobs:
           path: ./vendor/smartassert/bash-ga-deploy-tools
           ref: main
 
+      - name: Checkout bash-ga-ci-tools
+        uses: actions/checkout@v2
+        with:
+          repository: smartassert/bash-ga-ci-tools
+          path: ./vendor/smartassert/bash-ga-ci-tools
+          ref: main
+
       - name: Set service configuration directory
         id: configuration_directory
         run: echo "::set-output name=value::./services/${{ matrix.service_id }}"
 
-      - name: Read service version
-        id: version
+      - name: Read build configuration into packer -var arguments
+        id: build_configuration
         run: |
-          FILE_PATH="${{ steps.configuration_directory.outputs.value }}/version"
+          FILE_PATH="${{ steps.configuration_directory.outputs.value }}/build_configuration.json"
           if [ ! -f "$FILE_PATH" ]; then
-            echo "Version for service ${{ matrix.service_id }} not found: $FILE_PATH"
+            echo "Build configuration for service ${{ matrix.service_id }} not found: $FILE_PATH"
             exit 1
           fi
 
-          (echo "::set-output name=value::$(cat)") < "$FILE_PATH"
+          OUTPUT=$(./vendor/smartassert/bash-ga-ci-tools/src/output-json-scalar-object.sh "-var {{ key }}={{ value }}" < "$FILE_PATH")
+          echo "::set-output name=value::$OUTPUT"
+
+      - name: Examine build configuration
+        run: echo "${{ steps.build_configuration.outputs.value }}"
 
       - name: Set path to image definition
         id: image_definition_path
@@ -128,11 +139,13 @@ jobs:
           DIGITALOCEAN_API_TOKEN: ${{ secrets.DIGITALOCEAN_API_TOKEN }}
         with:
           command: validate
+          arguments: ${{ steps.build_configuration.outputs.value }}
           target: ${{ steps.image_definition_path.outputs.value }}
 
       - name: Set snapshot name
         id: snapshot_name
-        run: echo "::set-output name=value::${{ matrix.service_id }}-${{ steps.version.outputs.value }}"
+        run: |
+          echo "::set-output name=value::${{ matrix.service_id }}-$(date '+%Y%m%dT%H%M%S')"
 
       - name: Set packer log path
         id: packer_log_path
@@ -146,10 +159,9 @@ jobs:
           PACKER_LOG: 1
           DIGITALOCEAN_API_TOKEN: ${{ secrets.DIGITALOCEAN_API_TOKEN }}
           SNAPSHOT_NAME: ${{ steps.snapshot_name.outputs.value }}
-          VERSION: ${{ steps.version.outputs.value }}
         with:
           command: build
-          arguments: "-machine-readable"
+          arguments: "-machine-readable ${{ steps.build_configuration.outputs.value }}"
           target: ${{ steps.image_definition_path.outputs.value }}
 
       - name: Extract image ID from packer log

@@ -12,7 +12,6 @@ variable "snapshot_name" {
 
 variable "version" {
   type = string
-  default = env("VERSION")
 }
 
 source "digitalocean" "worker_base" {
