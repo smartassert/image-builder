@@ -1,9 +1,6 @@
 name: instance-manager.service-set-image
 
 on:
-  pull_request:
-    branches:
-      - main
   workflow_dispatch:
     inputs:
       service_id:
