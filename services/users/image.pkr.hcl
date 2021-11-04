@@ -53,7 +53,7 @@ build {
 
   provisioner "file" {
     destination = "~/post-create.sh"
-    source      = "${path.root}/post-create.sh"
+    source      = "${path.root}/first-boot.sh"
   }
 
   provisioner "shell" {
