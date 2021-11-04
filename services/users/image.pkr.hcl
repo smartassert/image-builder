@@ -14,7 +14,7 @@ variable "version" {
   type = string
 }
 
-source "digitalocean" "worker_base" {
+source "digitalocean" "users_base" {
   api_token     = "${var.digitalocean_api_token}"
   image         = "ubuntu-20-04-x64"
   region        = "lon1"
@@ -24,17 +24,12 @@ source "digitalocean" "worker_base" {
 }
 
 build {
-  sources = ["source.digitalocean.worker_base"]
+  sources = ["source.digitalocean.users_base"]
 
   # Copy system files and provision for use
   provisioner "file" {
     destination = "~/.env"
     source      = "${path.root}/.env"
-  }
-
-  provisioner "file" {
-    destination = "~/app.env"
-    source      = "${path.root}/app.env"
   }
 
   provisioner "file" {
@@ -56,6 +51,11 @@ build {
     source      = "${path.root}/nginx/site.conf"
   }
 
+  provisioner "file" {
+    destination = "~/post-create.sh"
+    source      = "${path.root}/first-boot.sh"
+  }
+
   provisioner "shell" {
     environment_vars = [
       "VERSION=${var.version}",
@@ -65,7 +65,6 @@ build {
 
   provisioner "shell" {
     environment_vars = [
-      "DIGITALOCEAN_API_TOKEN=${var.digitalocean_api_token}",
       "VERSION=${var.version}",
     ]
     scripts = ["${path.root}/provision.sh"]
