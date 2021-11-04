@@ -51,6 +51,11 @@ build {
     source      = "${path.root}/nginx/site.conf"
   }
 
+  provisioner "file" {
+    destination = "~/post-create.sh"
+    source      = "${path.root}/post-create.sh"
+  }
+
   provisioner "shell" {
     environment_vars = [
       "VERSION=${var.version}",
