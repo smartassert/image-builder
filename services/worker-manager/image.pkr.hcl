@@ -58,6 +58,13 @@ build {
 
   provisioner "shell" {
     environment_vars = [
+      "VERSION=${var.version}",
+    ]
+    scripts = ["${path.root}/../../provisioner/install_docker_compose.sh"]
+  }
+
+  provisioner "shell" {
+    environment_vars = [
       "DIGITALOCEAN_API_TOKEN=${var.digitalocean_api_token}",
       "VERSION=${var.version}",
     ]
