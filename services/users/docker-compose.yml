@@ -1,0 +1,22 @@
+version: "3"
+
+services:
+  nginx:
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    container_name: nginx
+    restart: always
+    ports:
+      - ${NGINX_EXPOSED_PORT}:80
+    links:
+      - app:app
+    volumes:
+      - /var/log/nginx:/var/log/nginx
+
+  app:
+    image: ghcr.io/smartassert/users:${VERSION}
+    container_name: users
+    restart: always
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
