@@ -52,6 +52,16 @@ build {
   }
 
   provisioner "file" {
+    destination = "~/caddy/Caddyfile"
+    source      = "${path.root}/caddy/Caddyfile"
+  }
+
+  provisioner "file" {
+    destination = "~/caddy/index.php"
+    source      = "${path.root}/caddy/index.php"
+  }
+
+  provisioner "file" {
     destination = "~/post-create.sh"
     source      = "${path.root}/first-boot.sh"
   }
