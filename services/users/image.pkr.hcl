@@ -38,7 +38,7 @@ build {
   }
 
   provisioner "shell" {
-    inline = ["mkdir -p ~/nginx"]
+    inline = ["mkdir -p ~/caddy"]
   }
 
   provisioner "file" {
