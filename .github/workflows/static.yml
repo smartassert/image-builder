@@ -15,15 +15,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
-      - name: Check format of users Caddyfile
+      - name: Check format of common Caddyfile
         env:
           SERVICE_ID: users
         run: ./ci/verify-caddyfile-is-correctly-formatted.sh
 
-      - name: Check format of worker-manager Caddyfile
-        env:
-          SERVICE_ID: worker-manager
-        run: ./ci/verify-caddyfile-is-correctly-formatted.sh
   caddy_validate:
     name: Caddy validate
     runs-on: ubuntu-latest
@@ -32,14 +28,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
-      - name: Validate users Caddyfile
+      - name: Validate common Caddyfile
         env:
-          SERVICE_ID: users
-        run: ./ci/validate-caddyfile.sh
-
-      - name: Validate worker-manager Caddyfile
-        env:
-          SERVICE_ID: worker-manager
+          CADDYFILE_PATH: $PWD/caddy-common/Caddyfile:/etc/caddy/Caddyfile
         run: ./ci/validate-caddyfile.sh
 
   actionlint:

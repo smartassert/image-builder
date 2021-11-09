@@ -2,5 +2,5 @@
 
 docker run \
   -e DOMAIN="example.com" \
-  -v "$PWD/services/$SERVICE_ID/caddy/Caddyfile:/etc/caddy/Caddyfile" \
+  -v "$CADDYFILE_PATH" \
   caddy caddy validate --config /etc/caddy/Caddyfile
