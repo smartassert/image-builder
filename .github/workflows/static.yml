@@ -17,8 +17,10 @@ jobs:
 
       - name: Check format of common Caddyfile
         env:
-          SERVICE_ID: users
-        run: ./ci/verify-caddyfile-is-correctly-formatted.sh
+          CADDYFILE_PATH: caddy-common/Caddyfile
+        run: CADDYFILE_PATH="$PWD/$CADDYFILE_PATH" ./ci/verify-caddyfile-is-correctly-formatted.sh
+
+
 
   caddy_validate:
     name: Caddy validate
@@ -30,7 +32,7 @@ jobs:
 
       - name: Validate common Caddyfile
         env:
-          CADDYFILE_PATH: caddy-common/Caddyfile:/etc/caddy/Caddyfile
+          CADDYFILE_PATH: caddy-common/Caddyfile
         run: CADDYFILE_PATH="$PWD/$CADDYFILE_PATH" ./ci/validate-caddyfile.sh
 
   actionlint:
