@@ -28,11 +28,6 @@ build {
 
   # Copy system files and provision for use
   provisioner "file" {
-    destination = "~/.env"
-    source      = "${path.root}/.env"
-  }
-
-  provisioner "file" {
     destination = "~/docker-compose.yml"
     source      = "${path.root}/docker-compose.yml"
   }
