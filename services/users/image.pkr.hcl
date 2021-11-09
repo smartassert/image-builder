@@ -42,13 +42,13 @@ build {
   }
 
   provisioner "file" {
-    destination = "~/nginx/Dockerfile"
-    source      = "${path.root}/nginx/Dockerfile"
+    destination = "~/caddy/Caddyfile"
+    source      = "${path.root}/caddy/Caddyfile"
   }
 
   provisioner "file" {
-    destination = "~/nginx/site.conf"
-    source      = "${path.root}/nginx/site.conf"
+    destination = "~/caddy/index.php"
+    source      = "${path.root}/caddy/index.php"
   }
 
   provisioner "file" {
