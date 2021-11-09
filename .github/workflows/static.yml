@@ -20,8 +20,6 @@ jobs:
           CADDYFILE_PATH: caddy-common/Caddyfile
         run: CADDYFILE_PATH="$PWD/$CADDYFILE_PATH" ./ci/verify-caddyfile-is-correctly-formatted.sh
 
-
-
   caddy_validate:
     name: Caddy validate
     runs-on: ubuntu-latest
