@@ -17,3 +17,15 @@ jobs:
 
       - name: Run actionlint
         run: docker run --rm -v "$PWD:/repo" --workdir /repo rhysd/actionlint:latest -color
+
+  shellcheck:
+    name: ShellCheck
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Run
+        run: |
+          docker run --rm -v "$PWD:/mnt" koalaman/shellcheck:stable ./services/**/*.sh
