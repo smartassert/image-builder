@@ -66,6 +66,8 @@ build {
   provisioner "shell" {
     environment_vars = [
       "VERSION=${var.version}",
+      "CADDY_DOMAIN=users.smartassert.com",
+      "CADDY_TLS_INTERNAL="
     ]
     scripts = ["${path.root}/provision.sh"]
   }
