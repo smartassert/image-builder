@@ -15,10 +15,17 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
-      - name: Validate users Caddyfile
+      - name: Check format of users Caddyfile
         run: |
           ORIGINAL=$(< ./services/users/caddy/Caddyfile)
           FORMATTED=$(docker run -v "$PWD/services/users/caddy/Caddyfile:/etc/caddy/Caddyfile" caddy caddy fmt /etc/caddy/Caddyfile)
+
+          [[ "$ORIGINAL" = "$FORMATTED" ]]
+
+      - name: Check format of worker-manager Caddyfile
+        run: |
+          ORIGINAL=$(< ./services/worker-manager/caddy/Caddyfile)
+          FORMATTED=$(docker run -v "$PWD/services/worker-manager/caddy/Caddyfile:/etc/caddy/Caddyfile" caddy caddy fmt /etc/caddy/Caddyfile)
 
           [[ "$ORIGINAL" = "$FORMATTED" ]]
 
