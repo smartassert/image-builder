@@ -7,6 +7,21 @@ on:
   pull_request:
 
 jobs:
+  caddy_fmt:
+    name: Caddy fmt
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Validate users Caddyfile
+        run: |
+          ORIGINAL=$(< ./services/users/caddy/Caddyfile)
+          FORMATTED=$(docker run -v "$PWD/services/users/caddy/Caddyfile:/etc/caddy/Caddyfile" caddy caddy fmt /etc/caddy/Caddyfile)
+
+          [[ "$ORIGINAL" = "$FORMATTED" ]]
+
   caddy_validate:
     name: Caddy validate
     runs-on: ubuntu-latest
