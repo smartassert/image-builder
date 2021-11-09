@@ -71,7 +71,7 @@ build {
     ]
     scripts = [
       "${path.root}/provision.sh",
-      "${path.root}/health-check.sh"
+      "${path.root}/../../provisioner/list-non-running-docker-compose-services.sh"
     ]
   }
 }
