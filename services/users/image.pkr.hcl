@@ -38,12 +38,12 @@ build {
 
   provisioner "file" {
     destination = "~/caddy/Caddyfile"
-    source      = "${path.root}/caddy/Caddyfile"
+    source      = "${path.root}/../../caddy-common/Caddyfile"
   }
 
   provisioner "file" {
     destination = "~/caddy/index.php"
-    source      = "${path.root}/caddy/index.php"
+    source      = "${path.root}/../../caddy-common/index.php"
   }
 
   provisioner "file" {
