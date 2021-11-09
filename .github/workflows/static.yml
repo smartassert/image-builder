@@ -37,6 +37,13 @@ jobs:
             -v "$PWD/services/users/caddy/Caddyfile:/etc/caddy/Caddyfile" \
             caddy caddy validate --config /etc/caddy/Caddyfile
 
+      - name: Validate worker-manager Caddyfile
+        run: |
+          docker run \
+            -e DOMAIN="example.com" \
+            -v "$PWD/services/worker-manager/caddy/Caddyfile:/etc/caddy/Caddyfile" \
+            caddy caddy validate --config /etc/caddy/Caddyfile
+
   actionlint:
     name: Actionlint
     runs-on: ubuntu-latest
