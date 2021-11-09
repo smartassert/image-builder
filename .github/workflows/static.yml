@@ -30,8 +30,8 @@ jobs:
 
       - name: Validate common Caddyfile
         env:
-          CADDYFILE_PATH: $PWD/caddy-common/Caddyfile:/etc/caddy/Caddyfile
-        run: ./ci/validate-caddyfile.sh
+          CADDYFILE_PATH: caddy-common/Caddyfile:/etc/caddy/Caddyfile
+        run: CADDYFILE_PATH="$PWD/$CADDYFILE_PATH" ./ci/validate-caddyfile.sh
 
   actionlint:
     name: Actionlint
