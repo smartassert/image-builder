@@ -7,6 +7,21 @@ on:
   pull_request:
 
 jobs:
+  caddy_validate:
+    name: Caddy validate
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Validate users Caddyfile
+        run: |
+          docker run \
+            -e DOMAIN="example.com" \
+            -v "$PWD/services/users/caddy/Caddyfile:/etc/caddy/Caddyfile" \
+            caddy caddy validate --config /etc/caddy/Caddyfile
+
   actionlint:
     name: Actionlint
     runs-on: ubuntu-latest
