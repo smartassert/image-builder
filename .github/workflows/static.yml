@@ -22,7 +22,6 @@ jobs:
             -v "$PWD/services/users/caddy/Caddyfile:/etc/caddy/Caddyfile" \
             caddy caddy validate --config /etc/caddy/Caddyfile
 
-
   actionlint:
     name: Actionlint
     runs-on: ubuntu-latest
