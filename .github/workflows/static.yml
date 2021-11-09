@@ -18,8 +18,8 @@ jobs:
       - name: Validate users Caddyfile
         run: |
           docker run \
-            -e DOMAIN=example.com \
-            -v $PWD/services/users/caddy/Caddyfile:/etc/caddy/Caddyfile \
+            -e DOMAIN="example.com" \
+            -v "$PWD/services/users/caddy/Caddyfile:/etc/caddy/Caddyfile" \
             caddy caddy validate --config /etc/caddy/Caddyfile
 
 
