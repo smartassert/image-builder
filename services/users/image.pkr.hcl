@@ -69,6 +69,9 @@ build {
       "CADDY_DOMAIN=users.smartassert.com",
       "CADDY_TLS_INTERNAL="
     ]
-    scripts = ["${path.root}/provision.sh"]
+    scripts = [
+      "${path.root}/provision.sh",
+      "${path.root}/../../provisioner/list-non-running-docker-compose-services.sh"
+    ]
   }
 }
