@@ -32,13 +32,22 @@ build {
     source      = "${path.root}/app.env"
   }
 
-  provisioner "file" {
-    destination = "~/docker-compose.yml"
-    source      = "${path.root}/docker-compose.yml"
+  provisioner "shell" {
+    inline = ["mkdir -p ~/docker-compose-config-source"]
   }
 
   provisioner "file" {
-    destination = "~/docker-compose-caddy.yml"
+    destination = "~/docker-compose-config-source/app.yml"
+    source      = "${path.root}/app.yml"
+  }
+
+  provisioner "file" {
+    destination = "~/docker-compose-config-source/postgres.yml"
+    source      = "${path.root}/postgres.yml"
+  }
+
+  provisioner "file" {
+    destination = "~/docker-compose-config-source/caddy.yml"
     source      = "${path.root}/../../docker-compose-common/caddy.yml"
   }
 
@@ -58,7 +67,6 @@ build {
 
   provisioner "shell" {
     environment_vars = [
-      "COMPOSE_FILES=docker-compose.yml caddy.yml",
       "DIGITALOCEAN_API_TOKEN=${var.digitalocean_api_token}",
       "VERSION=${var.version}",
       "CADDY_DOMAIN=localhost",
@@ -66,6 +74,7 @@ build {
     ]
     scripts = [
       "${path.root}/../../provisioner/install_docker_compose.sh",
+      "${path.root}/../../provisioner/create-docker-compose-config.sh",
       "${path.root}/../../provisioner/validate-docker-compose-config.sh",
       "${path.root}/provision.sh",
       "${path.root}/../../provisioner/list-non-running-docker-compose-services.sh"

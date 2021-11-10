@@ -6,4 +6,4 @@ chown -R www-data:www-data /var/log
 sudo \
   VERSION="$VERSION" \
   DIGITALOCEAN_ACCESS_TOKEN="$DIGITALOCEAN_ACCESS_TOKEN" \
-  docker-compose -f docker-compose.yml -f docker-compose-caddy.yml up -d
+  docker-compose up -d
