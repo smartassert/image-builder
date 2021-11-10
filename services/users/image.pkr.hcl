@@ -28,27 +28,22 @@ build {
 
   # Copy system files and provision for use
   provisioner "file" {
-    destination = "~/.env"
-    source      = "${path.root}/.env"
-  }
-
-  provisioner "file" {
     destination = "~/docker-compose.yml"
     source      = "${path.root}/docker-compose.yml"
   }
 
   provisioner "shell" {
-    inline = ["mkdir -p ~/nginx"]
+    inline = ["mkdir -p ~/caddy"]
   }
 
   provisioner "file" {
-    destination = "~/nginx/Dockerfile"
-    source      = "${path.root}/nginx/Dockerfile"
+    destination = "~/caddy/Caddyfile"
+    source      = "${path.root}/../../caddy-common/Caddyfile"
   }
 
   provisioner "file" {
-    destination = "~/nginx/site.conf"
-    source      = "${path.root}/nginx/site.conf"
+    destination = "~/caddy/index.php"
+    source      = "${path.root}/../../caddy-common/index.php"
   }
 
   provisioner "file" {
@@ -66,7 +61,11 @@ build {
   provisioner "shell" {
     environment_vars = [
       "VERSION=${var.version}",
+      "CADDY_DOMAIN=users.smartassert.com"
     ]
-    scripts = ["${path.root}/provision.sh"]
+    scripts = [
+      "${path.root}/provision.sh",
+      "${path.root}/../../provisioner/list-non-running-docker-compose-services.sh"
+    ]
   }
 }

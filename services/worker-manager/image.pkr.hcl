@@ -43,17 +43,17 @@ build {
   }
 
   provisioner "shell" {
-    inline = ["mkdir -p ~/nginx"]
+    inline = ["mkdir -p ~/caddy"]
   }
 
   provisioner "file" {
-    destination = "~/nginx/Dockerfile"
-    source      = "${path.root}/nginx/Dockerfile"
+    destination = "~/caddy/Caddyfile"
+    source      = "${path.root}/../../caddy-common/Caddyfile"
   }
 
   provisioner "file" {
-    destination = "~/nginx/site.conf"
-    source      = "${path.root}/nginx/site.conf"
+    destination = "~/caddy/index.php"
+    source      = "${path.root}/../../caddy-common/index.php"
   }
 
   provisioner "shell" {
@@ -67,7 +67,11 @@ build {
     environment_vars = [
       "DIGITALOCEAN_API_TOKEN=${var.digitalocean_api_token}",
       "VERSION=${var.version}",
+      "CADDY_DOMAIN=users.smartassert.com"
     ]
-    scripts = ["${path.root}/provision.sh"]
+    scripts = [
+      "${path.root}/provision.sh",
+      "${path.root}/../../provisioner/list-non-running-docker-compose-services.sh"
+    ]
   }
 }
