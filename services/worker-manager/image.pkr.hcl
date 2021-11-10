@@ -67,8 +67,7 @@ build {
     environment_vars = [
       "DIGITALOCEAN_API_TOKEN=${var.digitalocean_api_token}",
       "VERSION=${var.version}",
-      "CADDY_DOMAIN=users.smartassert.com",
-      "CADDY_TLS_INTERNAL="
+      "CADDY_DOMAIN=users.smartassert.com"
     ]
     scripts = [
       "${path.root}/provision.sh",
