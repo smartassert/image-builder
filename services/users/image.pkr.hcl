@@ -59,16 +59,13 @@ build {
   provisioner "shell" {
     environment_vars = [
       "VERSION=${var.version}",
-    ]
-    scripts = ["${path.root}/../../provisioner/install_docker_compose.sh"]
-  }
-
-  provisioner "shell" {
-    environment_vars = [
-      "VERSION=${var.version}",
-      "CADDY_DOMAIN=users.smartassert.com"
+      "CADDY_DOMAIN=localhost",
+      "DATABASE_URL=postgresql://postgres:db_password@0.0.0.0:5432/users-db?serverVersion=12&charset=utf8",
+      "COMPOSE_FILES=docker-compose.yml caddy.yml"
     ]
     scripts = [
+      "${path.root}/../../provisioner/install_docker_compose.sh",
+      "${path.root}/../../provisioner/validate-docker-compose-config.sh",
       "${path.root}/provision.sh",
       "${path.root}/../../provisioner/list-non-running-docker-compose-services.sh"
     ]
