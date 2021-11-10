@@ -3,4 +3,4 @@
 mkdir -p /var/log
 chown -R www-data:www-data /var/log
 
-sudo VERSION="$VERSION" docker-compose up -d
+sudo VERSION="$VERSION" docker-compose -f docker-compose.yml -f docker-compose-caddy.yml up -d
