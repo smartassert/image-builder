@@ -27,13 +27,13 @@ build {
   sources = ["source.digitalocean.worker_base"]
 
   # Copy system files and provision for use
-  provisioner "file" {
-    destination = "~/app.env"
-    source      = "${path.root}/app.env"
-  }
-
   provisioner "shell" {
     inline = ["mkdir -p ~/docker-compose-config-source"]
+  }
+
+  provisioner "file" {
+    destination = "~/docker-compose-config-source/app.env"
+    source      = "${path.root}/app.env"
   }
 
   provisioner "file" {
