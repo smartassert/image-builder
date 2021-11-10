@@ -32,6 +32,11 @@ build {
     source      = "${path.root}/docker-compose.yml"
   }
 
+  provisioner "file" {
+    destination = "~/docker-compose-caddy.yml"
+    source      = "${path.root}/../../docker-compose-common/caddy.yml"
+  }
+
   provisioner "shell" {
     inline = ["mkdir -p ~/caddy"]
   }
