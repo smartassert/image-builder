@@ -63,18 +63,14 @@ build {
 
   provisioner "shell" {
     environment_vars = [
-      "VERSION=${var.version}",
-    ]
-    scripts = ["${path.root}/../../provisioner/install_docker_compose.sh"]
-  }
-
-  provisioner "shell" {
-    environment_vars = [
+      "COMPOSE_FILES=docker-compose.yml caddy.yml",
       "DIGITALOCEAN_API_TOKEN=${var.digitalocean_api_token}",
       "VERSION=${var.version}",
-      "CADDY_DOMAIN=users.smartassert.com"
+      "CADDY_DOMAIN=localhost"
     ]
     scripts = [
+      "${path.root}/../../provisioner/install_docker_compose.sh",
+      "${path.root}/../../provisioner/validate-docker-compose-config.sh",
       "${path.root}/provision.sh",
       "${path.root}/../../provisioner/list-non-running-docker-compose-services.sh"
     ]
