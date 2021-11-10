@@ -1,0 +1,46 @@
+services:
+  app:
+    container_name: worker-manager
+    depends_on:
+      postgres:
+        condition: service_started
+    environment:
+      CREATE_RETRY_LIMIT: '3'
+      DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD}@postgres:5432/worker-db?serverVersion=12&charset=utf8
+      DELETE_RETRY_LIMIT: '10'
+      DIGITALOCEAN_REGION: lon1
+      DIGITALOCEAN_SIZE: s-1vcpu-1gb
+      DIGITALOCEAN_TAG: worker
+      FIND_RETRY_LIMIT: '3'
+      GET_RETRY_LIMIT: '10'
+      MACHINE_IS_ACTIVE_DISPATCH_DELAY: '10000'
+      MACHINE_NAME_PREFIX: prod
+      MESSENGER_TRANSPORT_DSN: doctrine://default
+    image: ghcr.io/smartassert/worker-manager:${VERSION}
+    restart: always
+  caddy:
+    container_name: caddy
+    environment:
+      DOMAIN: ${CADDY_DOMAIN:-localhost}
+      TLS_INTERNAL: ${CADDY_TLS_INTERNAL:-}
+    image: caddy:2.4.5
+    links:
+    - app
+    ports:
+    - published: 443
+      target: 443
+    restart: unless-stopped
+    volumes:
+    - /caddy/index.php:/app/public/index.php:rw
+    - /caddy/Caddyfile:/etc/caddy/Caddyfile:rw
+  postgres:
+    container_name: postgres
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    image: postgres:13
+    ports:
+    - published: 5432
+      target: 5432
+    restart: always
+version: '3'
+
