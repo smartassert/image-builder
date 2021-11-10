@@ -61,7 +61,8 @@ build {
       "COMPOSE_FILES=docker-compose.yml caddy.yml",
       "DIGITALOCEAN_API_TOKEN=${var.digitalocean_api_token}",
       "VERSION=${var.version}",
-      "CADDY_DOMAIN=localhost"
+      "CADDY_DOMAIN=localhost",
+      "POSTGRES_PASSWORD=db_password"
     ]
     scripts = [
       "${path.root}/../../provisioner/install_docker_compose.sh",
