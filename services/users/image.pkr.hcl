@@ -69,7 +69,8 @@ build {
       "${path.root}/../../provisioner/create-docker-compose-config.sh",
       "${path.root}/../../provisioner/validate-docker-compose-config.sh",
       "${path.root}/provision.sh",
-      "${path.root}/../../provisioner/list-non-running-docker-compose-services.sh"
+      "${path.root}/../../provisioner/list-non-running-docker-compose-services.sh",
+      "${path.root}/../../provisioner/verify-docker-compose-service-count.sh"
     ]
   }
 }
