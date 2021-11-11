@@ -13,5 +13,5 @@ services:
     links:
       - app:app
     volumes:
-      - ./caddy/index.php:/app/public/index.php
-      - ./caddy/Caddyfile:/etc/caddy/Caddyfile
+      - ~/caddy/index.php:/app/public/index.php
+      - ~/caddy/Caddyfile:/etc/caddy/Caddyfile

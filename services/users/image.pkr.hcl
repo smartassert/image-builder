@@ -27,14 +27,16 @@ build {
   sources = ["source.digitalocean.users_base"]
 
   # Copy system files and provision for use
-  provisioner "file" {
-    destination = "~/docker-compose.yml"
-    source      = "${path.root}/docker-compose.yml"
+  provisioner "shell" {
+    inline = ["mkdir -p ~/docker-compose-config-source"]
   }
 
   provisioner "file" {
-    destination = "~/docker-compose-caddy.yml"
-    source      = "${path.root}/../../docker-compose-common/caddy.yml"
+    destination = "~/docker-compose-config-source/"
+    sources = [
+      "${path.root}/docker-compose/app.yml",
+      "${path.root}/../../docker-compose-common/caddy.yml"
+    ]
   }
 
   provisioner "shell" {
@@ -60,11 +62,11 @@ build {
     environment_vars = [
       "VERSION=${var.version}",
       "CADDY_DOMAIN=localhost",
-      "DATABASE_URL=postgresql://postgres:db_password@0.0.0.0:5432/users-db?serverVersion=12&charset=utf8",
-      "COMPOSE_FILES=docker-compose.yml caddy.yml"
+      "DATABASE_URL=postgresql://postgres:db_password@0.0.0.0:5432/users-db?serverVersion=12&charset=utf8"
     ]
     scripts = [
       "${path.root}/../../provisioner/install_docker_compose.sh",
+      "${path.root}/../../provisioner/create-docker-compose-config.sh",
       "${path.root}/../../provisioner/validate-docker-compose-config.sh",
       "${path.root}/provision.sh",
       "${path.root}/../../provisioner/list-non-running-docker-compose-services.sh"
