@@ -32,13 +32,11 @@ build {
   }
 
   provisioner "file" {
-    destination = "~/docker-compose-config-source/app.yml"
-    source      = "${path.root}/app.yml"
-  }
-
-  provisioner "file" {
-    destination = "~/docker-compose-config-source/caddy.yml"
-    source      = "${path.root}/../../docker-compose-common/caddy.yml"
+    destination = "~/docker-compose-config-source/"
+    sources = [
+      "${path.root}/docker-compose/app.yml",
+      "${path.root}/../../docker-compose-common/caddy.yml"
+    ]
   }
 
   provisioner "shell" {

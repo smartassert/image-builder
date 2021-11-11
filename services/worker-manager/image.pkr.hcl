@@ -32,23 +32,13 @@ build {
   }
 
   provisioner "file" {
-    destination = "~/docker-compose-config-source/app.env"
-    source      = "${path.root}/app.env"
-  }
-
-  provisioner "file" {
-    destination = "~/docker-compose-config-source/app.yml"
-    source      = "${path.root}/app.yml"
-  }
-
-  provisioner "file" {
-    destination = "~/docker-compose-config-source/postgres.yml"
-    source      = "${path.root}/postgres.yml"
-  }
-
-  provisioner "file" {
-    destination = "~/docker-compose-config-source/caddy.yml"
-    source      = "${path.root}/../../docker-compose-common/caddy.yml"
+    destination = "~/docker-compose-config-source/"
+    sources = [
+      "${path.root}/docker-compose/app.env",
+      "${path.root}/docker-compose/app.yml",
+      "${path.root}/docker-compose/postgres.yml",
+      "${path.root}/../../docker-compose-common/caddy.yml"
+    ]
   }
 
   provisioner "shell" {
