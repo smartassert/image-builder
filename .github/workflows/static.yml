@@ -15,10 +15,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
-      - name: Check format of common Caddyfile
-        env:
-          CADDYFILE_PATH: caddy-common/Caddyfile
-        run: CADDYFILE_PATH="$PWD/$CADDYFILE_PATH" ./ci/verify-caddyfile-is-correctly-formatted.sh
+      - name: Check format of service Caddyfiles
+        run: |
+          CADDYFILE_PATH=users/caddy/Caddyfile ./ci/verify-caddyfile-is-correctly-formatted.sh
+          CADDYFILE_PATH=worker_manager/caddy/Caddyfile ./ci/verify-caddyfile-is-correctly-formatted.sh
 
   caddy_validate:
     name: Caddy validate
@@ -28,10 +28,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
-      - name: Validate common Caddyfile
-        env:
-          CADDYFILE_PATH: caddy-common/Caddyfile
-        run: CADDYFILE_PATH="$PWD/$CADDYFILE_PATH" ./ci/validate-caddyfile.sh
+      - name: Validate service Caddyfiles
+        run: |
+          CADDYFILE_PATH=users/caddy/Caddyfile ./ci/validate-caddyfile.sh
+          CADDYFILE_PATH=worker_manager/caddy/Caddyfile ./ci/validate-caddyfile.sh
 
   actionlint:
     name: Actionlint
