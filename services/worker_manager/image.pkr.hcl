@@ -56,7 +56,7 @@ build {
   provisioner "file" {
     destination = "~/"
     sources = [
-      "${path.root}/docker-compose/docker-compose.yml",
+      "${path.root}/docker-compose.yml",
       "${path.root}/first-boot.sh"
     ]
   }
