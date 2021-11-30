@@ -46,8 +46,8 @@ build {
   provisioner "file" {
     destination = "~/caddy/"
     sources = [
-      "${path.root}/../../caddy-common/Caddyfile",
-      "${path.root}/../../caddy-common/index.php"
+      "${path.root}/caddy/Caddyfile",
+      "${path.root}/caddy/index.php"
     ]
   }
 
