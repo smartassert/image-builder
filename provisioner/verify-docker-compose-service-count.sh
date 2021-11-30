@@ -1,12 +1,17 @@
 #!/usr/bin/env bash
 
-COMPOSE_FILES=$(ls ./docker-compose-config-source/*.yml)
+EXPECTED_SERVICES=$(docker-compose config --services --no-interpolate)
+EXPECTED_SERVICES_EXIT_CODE="$?"
 
-EXPECTED_SERVICES="${COMPOSE_FILES//".yml"/""}"
-EXPECTED_SERVICES="${EXPECTED_SERVICES//"./docker-compose-config-source/"/""}"
+if [ "0" != "$EXPECTED_SERVICES_EXIT_CODE" ]; then
+  echo "Unable to build list of expected docker-compose services"
+  exit 1
+fi
+
 EXPECTED_SERVICES="$(sort <<< "$EXPECTED_SERVICES")"
+EXPECTED_SERVICE_COUNT=$(wc -l <<< "$EXPECTED_SERVICES")
 
-SERVICES="$(sort <<< "$(docker-compose ps --services 2>/dev/null)")"
+SERVICES="$(sort <<< "$(docker-compose ps | tail -n +"$((EXPECTED_SERVICE_COUNT+1))" | cut -d' ' -f1)")"
 
 if [ "$EXPECTED_SERVICES" != "$SERVICES" ]; then
   EXPECTED_SERVICE_COUNT=$(wc -l <<< "$EXPECTED_SERVICES")
@@ -21,5 +26,5 @@ if [ "$EXPECTED_SERVICES" != "$SERVICES" ]; then
   echo "Actual services ($ACTUAL_SERVICE_COUNT):"
   echo "$SERVICES"
 
-  exit 1
+  exit 2
 fi
