@@ -55,7 +55,10 @@ build {
 
   provisioner "file" {
     destination = "~/"
-    source      = "${path.root}/first-boot.sh"
+    sources = [
+      "${path.root}/docker-compose/docker-compose.yml",
+      "${path.root}/first-boot.sh"
+    ]
   }
 
   provisioner "shell" {
@@ -67,7 +70,6 @@ build {
     ]
     scripts = [
       "${path.root}/../../provisioner/install_docker_compose.sh",
-      "${path.root}/../../provisioner/create-docker-compose-config.sh",
       "${path.root}/../../provisioner/validate-docker-compose-config.sh",
       "${path.root}/provision.sh",
       "${path.root}/../../provisioner/list-non-running-docker-compose-services.sh",
