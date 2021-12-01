@@ -13,6 +13,17 @@ EXPECTED_SERVICE_COUNT=$(wc -l <<< "$EXPECTED_SERVICES")
 
 SERVICES="$(sort <<< "$(docker ps --format '{{.Names}}' --filter status=running)")"
 
+echo "expected services (raw):"
+docker-compose config --services --no-interpolate
+
+echo "actual services (raw):"
+docker ps --format '{{.Names}}' --filter status=running
+
+echo "expected services:"
+echo "$EXPECTED_SERVICES"
+echo "actual services:"
+echo "$SERVICES"
+
 if [ "$EXPECTED_SERVICES" != "$SERVICES" ]; then
   EXPECTED_SERVICE_COUNT=$(wc -l <<< "$EXPECTED_SERVICES")
   echo "Expected services ($EXPECTED_SERVICE_COUNT):"
