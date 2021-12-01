@@ -1,23 +1,9 @@
 #!/usr/bin/env bash
 
-EXPECTED_SERVICES=$(docker-compose config --services --no-interpolate)
-EXPECTED_SERVICES_EXIT_CODE="$?"
-
-if [ "0" != "$EXPECTED_SERVICES_EXIT_CODE" ]; then
-  echo "Unable to build list of expected docker-compose services"
-  exit 1
-fi
-
-EXPECTED_SERVICES="$(sort <<< "$EXPECTED_SERVICES")"
+EXPECTED_SERVICES="$(sort <<< "$(docker-compose ps --services)")"
 EXPECTED_SERVICE_COUNT=$(wc -l <<< "$EXPECTED_SERVICES")
 
-SERVICES="$(sort <<< "$(docker ps --format '{{.Names}}' --filter status=running)")"
-
-echo "expected services (raw):"
-docker-compose config --services --no-interpolate
-
-echo "actual services (raw):"
-docker ps --format '{{.Names}}' --filter status=running
+SERVICES="$(sort <<< "$(docker-compose ps --services --filter status=running)")"
 
 echo "expected services:"
 echo "$EXPECTED_SERVICES"
