@@ -13,6 +13,25 @@ http://localhost:8080 {
 	}
 }
 
+http://{$IP} {
+	@not_match {
+		not path / /health-check
+	}
+
+	respond @not_match 410
+
+	@match {
+		path / /health-check
+	}
+
+	root @match /app/public
+	php_fastcgi * app:9000
+
+	log {
+		output file /dev/stdout
+	}
+}
+
 https://{$DOMAIN} {
 	root * /app/public
 	php_fastcgi * app:9000
