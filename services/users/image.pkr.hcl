@@ -28,10 +28,6 @@ build {
 
   # Copy system files and provision for use
   provisioner "shell" {
-    inline = ["mkdir -p ~/docker-compose-config-source"]
-  }
-
-  provisioner "shell" {
     inline = ["mkdir -p ~/caddy"]
   }
 
