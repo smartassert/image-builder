@@ -11,7 +11,7 @@ fi
 EXPECTED_SERVICES="$(sort <<< "$EXPECTED_SERVICES")"
 EXPECTED_SERVICE_COUNT=$(wc -l <<< "$EXPECTED_SERVICES")
 
-SERVICES="$(sort <<< "$(docker-compose ps | tail -n +"$((EXPECTED_SERVICE_COUNT+1))" | cut -d' ' -f1)")"
+SERVICES="$(sort <<< "$(docker ps --format '{{.Names}}' --filter status=running)")"
 
 if [ "$EXPECTED_SERVICES" != "$SERVICES" ]; then
   EXPECTED_SERVICE_COUNT=$(wc -l <<< "$EXPECTED_SERVICES")
