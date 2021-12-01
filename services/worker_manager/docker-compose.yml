@@ -27,7 +27,7 @@ services:
 
   app:
     image: ghcr.io/smartassert/worker-manager:${VERSION}
-    container_name: worker-manager
+    container_name: app
     restart: always
     env_file: app.env
     environment:
