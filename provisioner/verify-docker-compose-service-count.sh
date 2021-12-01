@@ -1,12 +1,14 @@
 #!/usr/bin/env bash
 
-COMPOSE_FILES=$(ls ./docker-compose-config-source/*.yml)
+EXPECTED_SERVICES="$(sort <<< "$(docker-compose ps --services)")"
+EXPECTED_SERVICE_COUNT=$(wc -l <<< "$EXPECTED_SERVICES")
 
-EXPECTED_SERVICES="${COMPOSE_FILES//".yml"/""}"
-EXPECTED_SERVICES="${EXPECTED_SERVICES//"./docker-compose-config-source/"/""}"
-EXPECTED_SERVICES="$(sort <<< "$EXPECTED_SERVICES")"
+SERVICES="$(sort <<< "$(docker-compose ps --services --filter status=running)")"
 
-SERVICES="$(sort <<< "$(docker-compose ps --services 2>/dev/null)")"
+echo "expected services:"
+echo "$EXPECTED_SERVICES"
+echo "actual services:"
+echo "$SERVICES"
 
 if [ "$EXPECTED_SERVICES" != "$SERVICES" ]; then
   EXPECTED_SERVICE_COUNT=$(wc -l <<< "$EXPECTED_SERVICES")
@@ -21,5 +23,5 @@ if [ "$EXPECTED_SERVICES" != "$SERVICES" ]; then
   echo "Actual services ($ACTUAL_SERVICE_COUNT):"
   echo "$SERVICES"
 
-  exit 1
+  exit 2
 fi

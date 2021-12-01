@@ -28,20 +28,6 @@ build {
 
   # Copy system files and provision for use
   provisioner "shell" {
-    inline = ["mkdir -p ~/docker-compose-config-source"]
-  }
-
-  provisioner "file" {
-    destination = "~/docker-compose-config-source/"
-    sources = [
-      "${path.root}/docker-compose/app.env",
-      "${path.root}/docker-compose/app.yml",
-      "${path.root}/docker-compose/postgres.yml",
-      "${path.root}/../../docker-compose-common/caddy.yml"
-    ]
-  }
-
-  provisioner "shell" {
     inline = ["mkdir -p ~/caddy"]
   }
 
@@ -55,7 +41,11 @@ build {
 
   provisioner "file" {
     destination = "~/"
-    source      = "${path.root}/first-boot.sh"
+    sources = [
+      "${path.root}/docker-compose.yml",
+      "${path.root}/app.env",
+      "${path.root}/first-boot.sh"
+    ]
   }
 
   provisioner "shell" {
@@ -67,7 +57,6 @@ build {
     ]
     scripts = [
       "${path.root}/../../provisioner/install_docker_compose.sh",
-      "${path.root}/../../provisioner/create-docker-compose-config.sh",
       "${path.root}/../../provisioner/validate-docker-compose-config.sh",
       "${path.root}/provision.sh",
       "${path.root}/../../provisioner/list-non-running-docker-compose-services.sh",
