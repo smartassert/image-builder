@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+base64 -d <<< "$JWT_SECRET_KEY_BASE64" > /root/jwt/private.pem
+base64 -d <<< "$JWT_PUBLIC_KEY_BASE64" > /root/jwt/public.pem
+
 PUBLIC_IP=$(dig @resolver4.opendns.com myip.opendns.com +short)
 sudo VERSION="$VERSION" CADDY_IP="$PUBLIC_IP" docker-compose up -d
 
