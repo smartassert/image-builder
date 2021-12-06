@@ -39,6 +39,18 @@ build {
     ]
   }
 
+  provisioner "shell" {
+    inline = ["mkdir -p ~/jwt"]
+  }
+
+  provisioner "file" {
+    destination = "~/jwt/"
+    sources = [
+      "${path.root}/jwt/private.pem",
+      "${path.root}/jwt/public.pem"
+    ]
+  }
+
   provisioner "file" {
     destination = "~/"
     sources = [
