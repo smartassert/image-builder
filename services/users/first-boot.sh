@@ -8,8 +8,8 @@
   echo "IS_READY=$IS_READY"
 } >> /etc/environment
 
-base64 -d <<< "$JWT_SECRET_KEY_BASE64_PART1$JWT_SECRET_KEY_BASE64_PART2$JWT_SECRET_KEY_BASE64_PART3" > /root/jwt/private.pem
-base64 -d <<< "$JWT_PUBLIC_KEY_BASE64" > /root/jwt/public.pem
+base64 -d <<< "$JWT_SECRET_KEY_BASE64_PART1$JWT_SECRET_KEY_BASE64_PART2$JWT_SECRET_KEY_BASE64_PART3" > jwt/private.pem
+base64 -d <<< "$JWT_PUBLIC_KEY_BASE64" > jwt/public.pem
 
 PUBLIC_IP=$(dig @resolver4.opendns.com myip.opendns.com +short)
 VERSION="$VERSION" \
