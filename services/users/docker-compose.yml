@@ -23,5 +23,6 @@ services:
     environment:
       DATABASE_URL: ${DATABASE_URL}
       JWT_PASSPHRASE: ${JWT_PASSPHRASE:-}
+      IS_READY: ${IS_READY:-0}
     volumes:
       - ~/jwt:/app/config/jwt
