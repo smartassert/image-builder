@@ -1,10 +1,12 @@
 #!/usr/bin/env bash
 
-echo "DATABASE_URL=$DATABASE_URL" >> /etc/environment
-echo "JWT_PASSPHRASE=$JWT_PASSPHRASE" >> /etc/environment
-echo "PRIMARY_ADMIN_TOKEN=$PRIMARY_ADMIN_TOKEN" >> /etc/environment
-echo "SECONDARY_ADMIN_TOKEN=$SECONDARY_ADMIN_TOKEN" >> /etc/environment
-echo "IS_READY=$IS_READY" >> /etc/environment
+{
+  echo "DATABASE_URL=$DATABASE_URL"
+  echo "JWT_PASSPHRASE=$JWT_PASSPHRASE"
+  echo "PRIMARY_ADMIN_TOKEN=$PRIMARY_ADMIN_TOKEN"
+  echo "SECONDARY_ADMIN_TOKEN=$SECONDARY_ADMIN_TOKEN"
+  echo "IS_READY=$IS_READY"
+} >> /etc/environment
 
 base64 -d <<< "$JWT_SECRET_KEY_BASE64_PART1$JWT_SECRET_KEY_BASE64_PART2$JWT_SECRET_KEY_BASE64_PART3" > /root/jwt/private.pem
 base64 -d <<< "$JWT_PUBLIC_KEY_BASE64" > /root/jwt/public.pem
