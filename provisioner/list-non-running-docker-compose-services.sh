@@ -27,7 +27,7 @@ if [ "" != "$RESTARTING_SERVICES" ]; then
   NON_RUNNING_SERVICES="$NON_RUNNING_SERVICES$RESTARTING_SERVICES"
 fi
 
-ALL_SERVICES="$(docker-compose ps --services)"
+ALL_SERVICES=$(sort <<< "$(docker-compose ps --services)")
 RUNNING_SERVICES=$(comm -13 <(sort <<<"$NON_RUNNING_SERVICES") <(sort <<<"$ALL_SERVICES"))
 
 echo "All services:"
