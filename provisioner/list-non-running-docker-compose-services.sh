@@ -1,8 +1,36 @@
 #!/usr/bin/env bash
 
-RUNNING_SERVICES="$(docker-compose ps --services --filter "status=running")"
+STOPPED_SERVICES="$(docker-compose ps --services --filter "status=stopped")"
+PAUSED_SERVICES="$(docker-compose ps --services --filter "status=paused")"
+RESTARTING_SERVICES="$(docker-compose ps --services --filter "status=restarting")"
+
+NON_RUNNING_SERVICES=""
+if [ "" != "$STOPPED_SERVICES" ]; then
+  NON_RUNNING_SERVICES="$STOPPED_SERVICES"
+fi
+
+if [ "" != "$PAUSED_SERVICES" ]; then
+  if [ "" != "$NON_RUNNING_SERVICES" ]; then
+    NON_RUNNING_SERVICES="$NON_RUNNING_SERVICES
+"
+  fi
+
+  NON_RUNNING_SERVICES="$NON_RUNNING_SERVICES$PAUSED_SERVICES"
+fi
+
+if [ "" != "$RESTARTING_SERVICES" ]; then
+  if [ "" != "$NON_RUNNING_SERVICES" ]; then
+    NON_RUNNING_SERVICES="$NON_RUNNING_SERVICES
+"
+  fi
+
+  NON_RUNNING_SERVICES="$NON_RUNNING_SERVICES$RESTARTING_SERVICES"
+fi
+
 ALL_SERVICES="$(docker-compose ps --services)"
+RUNNING_SERVICES=$(comm -13 <(sort <<<"$NON_RUNNING_SERVICES") <(sort <<<"$ALL_SERVICES"))
+
 if [ "$RUNNING_SERVICES" != "$ALL_SERVICES" ]; then
-    comm -13 <(sort <<<"$RUNNING_SERVICES") <(sort <<<"$ALL_SERVICES")
+    printf "Non-running services:\n$NON_RUNNING_SERVICES\n"
     exit 1
 fi
