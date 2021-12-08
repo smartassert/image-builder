@@ -9,12 +9,20 @@ function run_command_until_successful () {
 }
 
 run_command_until_successful sudo apt-get update
+
+# Install packages required by docker-compose
 run_command_until_successful sudo apt-get install -y \
   apt-transport-https \
   ca-certificates \
   curl \
   gnupg-agent \
   software-properties-common
+
+# Install haveged https://github.com/jirka-h/haveged
+# This increases the entropy of an otherwise-quiet headless VM where entropy generation is slow
+# docker-compose operations often require entropy and a lack thereof will cause docker-compose to hang until there is sufficient entropy
+run_command_until_successful sudo apt-get install -y \
+  haveged
 
 curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
 
