@@ -30,9 +30,23 @@ fi
 ALL_SERVICES="$(docker-compose ps --services)"
 RUNNING_SERVICES=$(comm -13 <(sort <<<"$NON_RUNNING_SERVICES") <(sort <<<"$ALL_SERVICES"))
 
+echo "All services:"
+echo "$ALL_SERVICES"
+echo "Running services:"
+echo "$RUNNING_SERVICES"
+echo "Non-running services:"
+echo "$NON_RUNNING_SERVICES"
+
 if [ "$RUNNING_SERVICES" != "$ALL_SERVICES" ]; then
     docker-compose ps
 
-    printf "Non-running services:\n$NON_RUNNING_SERVICES\n"
+    echo "All services:"
+    echo "$ALL_SERVICES"
+    echo "Running services:"
+    echo "$RUNNING_SERVICES"
+    echo "Non-running services:"
+    echo "$NON_RUNNING_SERVICES"
+
+
     exit 1
 fi
