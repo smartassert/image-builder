@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 
-echo "VERSION=$VERSION" >> /etc/environment
+echo "VERSION=$VERSION" > ./env
 
 mkdir -p /var/log
 chown -R www-data:www-data /var/log
 
-sudo VERSION="$VERSION" docker-compose up -d
+docker-compose up -d
