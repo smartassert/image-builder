@@ -34,8 +34,12 @@ echo "All services:"
 echo "$ALL_SERVICES"
 echo "Running services:"
 echo "$RUNNING_SERVICES"
-echo "Non-running services:"
-echo "$NON_RUNNING_SERVICES"
+echo "Stopped services:"
+echo "$STOPPED_SERVICES"
+echo "Paused services:"
+echo "$PAUSED_SERVICES"
+echo "Restarting services:"
+echo "$RESTARTING_SERVICES"
 
 if [ "$RUNNING_SERVICES" != "$ALL_SERVICES" ]; then
     docker-compose ps
@@ -44,9 +48,14 @@ if [ "$RUNNING_SERVICES" != "$ALL_SERVICES" ]; then
     echo "$ALL_SERVICES"
     echo "Running services:"
     echo "$RUNNING_SERVICES"
-    echo "Non-running services:"
-    echo "$NON_RUNNING_SERVICES"
+    echo "Stopped services:"
+    echo "$STOPPED_SERVICES"
+    echo "Paused services:"
+    echo "$PAUSED_SERVICES"
+    echo "Restarting services:"
+    echo "$RESTARTING_SERVICES"
 
+    docker-compose logs
 
     exit 1
 fi
