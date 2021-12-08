@@ -55,15 +55,16 @@ build {
     destination = "~/"
     sources = [
       "${path.root}/docker-compose.yml",
-      "${path.root}/first-boot.sh"
+      "${path.root}/first-boot.sh",
+      "${path.root}/app.env",
+      "${path.root}/caddy.env",
+      "${path.root}/.env"
     ]
   }
 
   provisioner "shell" {
     environment_vars = [
-      "VERSION=${var.version}",
-      "CADDY_DOMAIN=localhost",
-      "DATABASE_URL=postgresql://postgres:db_password@0.0.0.0:5432/users-db?serverVersion=12&charset=utf8"
+      "VERSION=${var.version}"
     ]
     scripts = [
       "${path.root}/../../provisioner/install_docker_compose.sh",
