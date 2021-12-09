@@ -52,8 +52,7 @@ build {
     environment_vars = [
       "DIGITALOCEAN_API_TOKEN=${var.digitalocean_api_token}",
       "VERSION=${var.version}",
-      "CADDY_DOMAIN=localhost",
-      "POSTGRES_PASSWORD=db_password"
+      "CADDY_DOMAIN=localhost"
     ]
     scripts = [
       "${path.root}/../../provisioner/install_docker_compose.sh",

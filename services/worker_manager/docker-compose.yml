@@ -16,22 +16,8 @@ services:
       - ~/caddy/index.php:/app/public/index.php
       - ~/caddy/Caddyfile:/etc/caddy/Caddyfile
 
-  postgres:
-    image: postgres:13
-    container_name: postgres
-    restart: always
-    environment:
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-    ports:
-      - "5432:5432"
-
   app:
     image: ghcr.io/smartassert/worker-manager:${VERSION}
     container_name: app
     restart: always
     env_file: app.env
-    environment:
-      DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD}@postgres:5432/worker-db?serverVersion=12&charset=utf8
-      MESSENGER_TRANSPORT_DSN: doctrine://default
-    depends_on:
-      - postgres
