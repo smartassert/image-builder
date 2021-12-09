@@ -9,7 +9,7 @@
 } > ./app.env
 
 {
-  echo "DOMAIN=$DOMAIN"
+  echo "DOMAIN=${DOMAIN:-localhost}"
   echo "TLS_INTERNAL="
   echo "IP=$(dig @resolver4.opendns.com myip.opendns.com +short)"
 } > ./caddy.env
