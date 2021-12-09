@@ -21,6 +21,8 @@ run_command_until_successful sudo apt-get install -y \
 # Install haveged https://github.com/jirka-h/haveged
 # This increases the entropy of an otherwise-quiet headless VM where entropy generation is slow
 # docker-compose operations often require entropy and a lack thereof will cause docker-compose to hang until there is sufficient entropy
+sudo apt-cache show haveged
+cat /etc/apt/sources.list
 run_command_until_successful sudo apt-get install -y \
   haveged
 
