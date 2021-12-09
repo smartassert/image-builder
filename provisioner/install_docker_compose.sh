@@ -8,10 +8,7 @@ function run_command_until_successful () {
   done
 }
 
-run_command_until_successful sudo apt-get update
-
-# Install packages required by docker-compose
-run_command_until_successful sudo apt-get install -y \
+run_command_until_successful sudo apt-get update && sudo apt-get install -y \
   apt-transport-https \
   ca-certificates \
   curl \
