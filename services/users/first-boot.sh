@@ -5,7 +5,6 @@
   echo "JWT_PASSPHRASE=$JWT_PASSPHRASE"
   echo "PRIMARY_ADMIN_TOKEN=$PRIMARY_ADMIN_TOKEN"
   echo "SECONDARY_ADMIN_TOKEN=$SECONDARY_ADMIN_TOKEN"
-  echo "IS_READY=$IS_READY"
 } > ./app.env
 
 {
@@ -20,3 +19,5 @@ base64 -d <<< "$JWT_PUBLIC_KEY_BASE64" > jwt/public.pem
 docker-compose up -d
 docker-compose exec -T app php bin/console doctrine:database:create --if-not-exists
 docker-compose exec -T app php bin/console doctrine:migrations:migrate --no-interaction
+
+echo "IS_READY=$IS_READY" >> ./app.env
