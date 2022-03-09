@@ -8,6 +8,7 @@
   echo "REMOTE_STORAGE_SECRET=$REMOTE_STORAGE_SECRET"
   echo "REMOTE_STORAGE_FILE_SOURCE_BUCKET=$REMOTE_STORAGE_FILE_SOURCE_BUCKET"
   echo "REMOTE_STORAGE_RUN_SOURCE_BUCKET=$REMOTE_STORAGE_RUN_SOURCE_BUCKET"
+  echo "IS_READY=1"
 } >> ./app.env
 
 {
@@ -19,5 +20,3 @@
 docker-compose up -d
 docker-compose exec -T app php bin/console doctrine:database:create --if-not-exists
 docker-compose exec -T app php bin/console doctrine:migrations:migrate --no-interaction
-
-echo "IS_READY=$IS_READY" >> ./app.env
