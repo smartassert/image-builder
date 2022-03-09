@@ -1,0 +1,21 @@
+version: "3"
+
+services:
+  caddy:
+    image: caddy:2.4.5
+    container_name: caddy
+    restart: unless-stopped
+    env_file: caddy.env
+    ports:
+      - "443:443"
+    links:
+      - app:app
+    volumes:
+      - ~/caddy/index.php:/app/public/index.php
+      - ~/caddy/Caddyfile:/etc/caddy/Caddyfile
+
+  app:
+    image: ghcr.io/smartassert/sources:${VERSION}
+    container_name: app
+    restart: always
+    env_file: app.env
