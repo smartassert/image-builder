@@ -17,7 +17,7 @@ jobs:
       - name: Set service ids
         id: service_ids
         run: |
-          echo "::set-output name=value::sources users worker_manager"
+          echo "::set-output name=value::['sources', 'users', 'worker_manager']"
 
   caddy_fmt:
     needs: setup
@@ -25,7 +25,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        service_id: ${{ needs.setup.outputs.service_ids }}
+        service_id: ${{ fromJson(needs.setup.outputs.service_ids) }}
 
     steps:
       - name: Checkout
@@ -41,7 +41,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        service_id: ${{ needs.setup.outputs.service_ids }}
+        service_id: ${{ fromJson(needs.setup.outputs.service_ids) }}
 
     steps:
       - name: Checkout
