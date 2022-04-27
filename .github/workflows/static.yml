@@ -80,6 +80,7 @@ jobs:
         with:
           command: validate
           arguments: -syntax-only
+          target: $PWD/services/${{ matrix.service_id }}/image.pkr.hcl
 
   actionlint:
     name: Actionlint
