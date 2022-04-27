@@ -16,8 +16,8 @@ jobs:
     steps:
       - name: Set service ids
         id: service_ids
-        run: |
-          echo "::set-output name=value::['sources', 'users', 'worker_manager']"
+        run: |          
+          echo "::set-output name=value::['sources', 'users', 'worker_manager, ']"
 
   caddy_fmt:
     needs: setup
