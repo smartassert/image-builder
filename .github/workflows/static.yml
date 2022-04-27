@@ -63,6 +63,25 @@ jobs:
         run: |
           CADDYFILE_PATH="$PWD/services/${{ matrix.service_id }}/caddy/Caddyfile" ./ci/validate-caddyfile.sh
 
+  packer_validate:
+    needs: setup
+    name: Packer validate
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        service_id: ${{ fromJson(needs.setup.outputs.service_ids) }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Validate service packer definition
+        uses: hashicorp/packer-github-actions@master
+        with:
+          command: validate
+          arguments: -syntax-only
+          target: services/${{ matrix.service_id }}/image.pkr.hcl
+
   actionlint:
     name: Actionlint
     runs-on: ubuntu-latest
