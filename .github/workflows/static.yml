@@ -16,8 +16,17 @@ jobs:
     steps:
       - name: Set service ids
         id: service_ids
-        run: |          
-          echo "::set-output name=value::['sources', 'users', 'worker_manager, ']"
+        run: |
+          OUTPUT="["
+          SERVICE_IDS=$(ls services)
+          
+          for SERVICE_ID in $SERVICE_IDS; do
+            OUTPUT="$OUTPUT'$SERVICE_ID', "
+          done
+          
+          OUTPUT="$OUTPUT]"
+          
+          echo "::set-output name=value::$OUTPUT"
 
   caddy_fmt:
     needs: setup
