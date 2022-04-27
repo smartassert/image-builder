@@ -65,7 +65,7 @@ jobs:
 
   packer_validate:
     needs: setup
-    name: Caddy validate
+    name: Packer validate
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -80,7 +80,7 @@ jobs:
         with:
           command: validate
           arguments: -syntax-only
-          target: $PWD/services/${{ matrix.service_id }}/image.pkr.hcl
+          target: "$PWD/services/${{ matrix.service_id }}/image.pkr.hcl"
 
   actionlint:
     name: Actionlint
