@@ -18,3 +18,5 @@ sed -i 's/IS_READY=0/IS_READY=1/g' ./app.env
 
 docker-compose up -d
 docker-compose exec -T app php bin/console messenger:setup-transports
+docker-compose exec -T app php bin/console doctrine:database:create --if-not-exists
+docker-compose exec -T app php bin/console doctrine:migrations:migrate --no-interaction
