@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
 
+sed -i 's/IS_READY=0/IS_READY=1/g' ./app.env
+
 {
   echo "DATABASE_URL=$DATABASE_URL"
   echo "AUTHENTICATION_BASE_URL=$AUTHENTICATION_BASE_URL"
-  echo "IS_READY=1"
 } >> ./app.env
 
 {

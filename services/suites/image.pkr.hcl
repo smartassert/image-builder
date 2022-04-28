@@ -45,8 +45,7 @@ build {
       "${path.root}/docker-compose.yml",
       "${path.root}/first-boot.sh",
       "${path.root}/app.env",
-      "${path.root}/caddy.env",
-      "${path.root}/.env"
+      "${path.root}/caddy.env"
     ]
   }
 
