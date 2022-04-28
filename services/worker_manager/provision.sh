@@ -1,11 +1,9 @@
 #!/usr/bin/env bash
 
-echo "VERSION=$VERSION" >> /etc/environment
+echo "VERSION=$VERSION" > ./.env
+echo "IS_READY=0" > ./app.env
 
 mkdir -p /var/log
 chown -R www-data:www-data /var/log
 
-sudo \
-  VERSION="$VERSION" \
-  DIGITALOCEAN_ACCESS_TOKEN="$DIGITALOCEAN_ACCESS_TOKEN" \
-  docker-compose up -d
+docker-compose up -d
