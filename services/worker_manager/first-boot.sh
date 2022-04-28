@@ -16,4 +16,5 @@ sed -i 's/IS_READY=0/IS_READY=1/g' ./app.env
   echo "FIND_RETRY_LIMIT=3"
 } >> ./app.env
 
-sudo docker-compose exec -T app php bin/console messenger:setup-transports
+docker-compose up -d
+docker-compose exec -T app php bin/console messenger:setup-transports
