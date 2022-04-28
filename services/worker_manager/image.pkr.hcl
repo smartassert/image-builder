@@ -44,6 +44,7 @@ build {
     sources = [
       "${path.root}/docker-compose.yml",
       "${path.root}/app.env",
+      "${path.root}/caddy.env",
       "${path.root}/first-boot.sh"
     ]
   }
