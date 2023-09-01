@@ -11,7 +11,7 @@ jobs:
     name: Setup
     runs-on: ubuntu-latest
     outputs:
-      service_ids: ${{ steps.service_ids.outputs.value }}
+      service_ids: ${{ env.service_ids }}
 
     steps:
       - name: Checkout
