@@ -29,7 +29,7 @@ jobs:
           
           OUTPUT="$OUTPUT]"
           
-          echo "::set-output name=value::$OUTPUT"
+          echo "service_ids=$OUTPUT" >> "$GITHUB_ENV"
 
   caddy_fmt:
     needs: setup
