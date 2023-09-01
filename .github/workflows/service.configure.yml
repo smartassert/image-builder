@@ -30,24 +30,21 @@ jobs:
         run: echo "$INPUTS"
 
       - name: Set service_id
-        id: service_id
         env:
           REPOSITORY_DISPATCH_VALUE: ${{ github.event.client_payload.service_id }}
           WORKFLOW_DISPATCH_VALUE: ${{ github.event.inputs.service_id }}
-        run: echo "::set-output name=value::${REPOSITORY_DISPATCH_VALUE:-$WORKFLOW_DISPATCH_VALUE}"
+        run: echo "service_id=${REPOSITORY_DISPATCH_VALUE:-$WORKFLOW_DISPATCH_VALUE}" >> "$GITHUB_ENV"
 
       - name: Set build configuration
-        id: build_configuration
         env:
           REPOSITORY_DISPATCH_VALUE: ${{ github.event.client_payload.build_configuration }}
           WORKFLOW_DISPATCH_VALUE: ${{ github.event.inputs.build_configuration }}
-        run: |
-          echo "::set-output name=value::${REPOSITORY_DISPATCH_VALUE:-$WORKFLOW_DISPATCH_VALUE}"
+        run: echo "build_configuration=${REPOSITORY_DISPATCH_VALUE:-$WORKFLOW_DISPATCH_VALUE}" >> "$GITHUB_ENV"
 
       - name: Verify setup
         env:
-          SERVICE_ID: ${{ steps.service_id.outputs.value }}
-          BUILD_CONFIGURATION: ${{ steps.build_configuration.outputs.value }}
+          SERVICE_ID: ${{ env.service_id }}
+          BUILD_CONFIGURATION: ${{ env.build_configuration }}
         run: |
           if [ "" = "$SERVICE_ID" ]; then
             echo "service_id not set"
@@ -67,26 +64,25 @@ jobs:
 
       - name: Store service build configuration
         env:
-          CONFIGURATION_PATH: ./services/${{ steps.service_id.outputs.value }}/build_configuration.json
-          BUILD_CONFIGURATION: ${{ steps.build_configuration.outputs.value }}
+          CONFIGURATION_PATH: ./services/${{ env.service_id }}/build_configuration.json
+          BUILD_CONFIGURATION: ${{ env.build_configuration }}
         run: |
           mkdir -p "$(dirname "$CONFIGURATION_PATH")"
           jq -S '.' <<< "$BUILD_CONFIGURATION" > "$CONFIGURATION_PATH"
 
       - name: Set commit message
-        id: commit_message
-        run: echo "::set-output name=value::Automatic build configuration update for ${{ steps.service_id.outputs.value }} $(date '+%Y-%m-%d %H:%M:%S')"
+        run: echo "commit_message=Automatic build configuration update for ${{ env.service_id }} $(date '+%Y-%m-%d %H:%M:%S')" >> "$GITHUB_ENV"
 
       - name: Commit
         id: commit
         uses: stefanzweifel/git-auto-commit-action@v4
         with:
-          commit_message: "${{ steps.commit_message.outputs.value }}"
+          commit_message: "${{ env.commit_message }}"
 
       - name: Trigger image.build
         if: ${{ steps.commit.outputs.changes_detected == 'true' }}
         env:
           GH_TOKEN: ${{ secrets.PAT_TOKEN_SELF }}
-          SERVICE_ID: ${{ steps.service_id.outputs.value }}
+          SERVICE_ID: ${{ env.service_id }}
         run: |
           gh workflow run image.build.yml -f service_id="$SERVICE_ID" -f should_deploy="true"
