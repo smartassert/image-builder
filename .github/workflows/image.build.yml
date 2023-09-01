@@ -24,16 +24,15 @@ jobs:
     name: Setup
     runs-on: ubuntu-latest
     outputs:
-      service_ids: ${{ steps.service_ids.outputs.value }}
-      should_deploy: ${{ steps.should_deploy.outputs.value }}
-      dry_run: ${{ steps.dry_run.outputs.value }}
+      service_ids: ${{ env.service_ids }}
+      should_deploy: ${{ env.should_deploy }}
+      dry_run: ${{ env.dry_run }}
 
     steps:
       - name: Checkout
         uses: actions/checkout@v2
 
       - name: Set service ids
-        id: service_ids
         run: |
           if [ "pull_request" = "${{ github.event_name }}" ]; then
             SERVICE_IDS=$(ls services)
@@ -47,10 +46,9 @@ jobs:
 
           SERVICE_IDS_AS_JSON_ARRAY=$(jq -ncR '[inputs]' <<< "$SERVICE_IDS")
 
-          echo "::set-output name=value::$SERVICE_IDS_AS_JSON_ARRAY"
+          echo "service_ids=$SERVICE_IDS_AS_JSON_ARRAY" >> "$GITHUB_ENV"
 
       - name: Set 'should_deploy'
-        id: should_deploy
         run: |
           SHOULD_DEPLOY="false"
           if [ "workflow_dispatch" = "${{ github.event_name }}" ]; then
@@ -61,10 +59,9 @@ jobs:
             SHOULD_DEPLOY="false"
           fi
 
-          echo "::set-output name=value::$SHOULD_DEPLOY"
+          echo "should_deploy=$SHOULD_DEPLOY" >> "$GITHUB_ENV"
 
       - name: Set 'dry_run'
-        id: dry_run
         run: |
           DRY_RUN="false"
           if [ "workflow_dispatch" = "${{ github.event_name }}" ]; then
@@ -75,7 +72,7 @@ jobs:
             DRY_RUN="false"
           fi
 
-          echo "::set-output name=value::$DRY_RUN"
+          echo "dry_run=$DRY_RUN" >> "$GITHUB_ENV"
 
   build:
     needs: setup
@@ -104,34 +101,31 @@ jobs:
           ref: main
 
       - name: Set service configuration directory
-        id: configuration_directory
-        run: echo "::set-output name=value::./services/${{ matrix.service_id }}"
+        run: echo "configuration_directory=./services/${{ matrix.service_id }}" >> "$GITHUB_ENV"
 
       - name: Read build configuration into packer -var arguments
-        id: build_configuration
         run: |
-          FILE_PATH="${{ steps.configuration_directory.outputs.value }}/build_configuration.json"
+          FILE_PATH="${{ env.configuration_directory }}/build_configuration.json"
           if [ ! -f "$FILE_PATH" ]; then
             echo "Build configuration for service ${{ matrix.service_id }} not found: $FILE_PATH"
             exit 1
           fi
 
           OUTPUT=$(./vendor/smartassert/bash-ga-ci-tools/src/output-json-scalar-object.sh "-var {{ key }}={{ value }}" < "$FILE_PATH")
-          echo "::set-output name=value::$OUTPUT"
+          echo "build_configuration=$OUTPUT" >> "$GITHUB_ENV"
 
       - name: Examine build configuration
-        run: echo "${{ steps.build_configuration.outputs.value }}"
+        run: echo "${{ env.build_configuration }}"
 
       - name: Set path to image definition
-        id: image_definition_path
         run: |
-          FILE_PATH="${{ steps.configuration_directory.outputs.value }}/image.pkr.hcl"
+          FILE_PATH="${{ env.configuration_directory }}/image.pkr.hcl"
           if [ ! -f "$FILE_PATH" ]; then
             echo "Image definition for service ${{ matrix.service_id }} not found: $FILE_PATH"
             exit 1
           fi
 
-          echo "::set-output name=value::$FILE_PATH"
+          echo "image_definition_path=$FILE_PATH" >> "$GITHUB_ENV"
 
       - name: Validate image configuration
         uses: hashicorp/packer-github-actions@master
@@ -139,43 +133,39 @@ jobs:
           DIGITALOCEAN_API_TOKEN: ${{ secrets.DIGITALOCEAN_API_TOKEN }}
         with:
           command: validate
-          arguments: ${{ steps.build_configuration.outputs.value }}
-          target: ${{ steps.image_definition_path.outputs.value }}
+          arguments: ${{ env.build_configuration }}
+          target: ${{ env.image_definition_path }}
 
       - name: Set snapshot name
-        id: snapshot_name
-        run: |
-          echo "::set-output name=value::${{ matrix.service_id }}-$(date '+%Y%m%dT%H%M%S')"
+        run: echo "snapshot_name=${{ matrix.service_id }}-$(date '+%Y%m%dT%H%M%S')" >> "$GITHUB_ENV"
 
       - name: Set packer log path
-        id: packer_log_path
-        run: echo "::set-output name=value::./packer.log"
+        run: echo "packer_log_path=./packer.log" >> "$GITHUB_ENV"
 
       - name: Create image
         if: ${{ needs.setup.outputs.dry_run == 'false' }}
         uses: hashicorp/packer-github-actions@master
         env:
-          PACKER_LOG_PATH: ${{ steps.packer_log_path.outputs.value }}
+          PACKER_LOG_PATH: ${{ env.packer_log_path }}
           PACKER_LOG: 1
           DIGITALOCEAN_API_TOKEN: ${{ secrets.DIGITALOCEAN_API_TOKEN }}
-          SNAPSHOT_NAME: ${{ steps.snapshot_name.outputs.value }}
+          SNAPSHOT_NAME: ${{ env.snapshot_name }}
         with:
           command: build
-          arguments: "-machine-readable ${{ steps.build_configuration.outputs.value }}"
-          target: ${{ steps.image_definition_path.outputs.value }}
+          arguments: "-machine-readable ${{ env.build_configuration }}"
+          target: ${{ env.image_definition_path }}
 
       - name: Extract image ID from packer log
         if: ${{ needs.setup.outputs.dry_run == 'false' }}
-        id: image
         env:
-          PACKER_LOG_PATH: ${{ steps.packer_log_path.outputs.value }}
-        run: echo "::set-output name=id::$(./vendor/smartassert/bash-ga-deploy-tools/src/digitalocean-snapshot/extract-id-from-packer-log.sh)"
+          PACKER_LOG_PATH: ${{ env.packer_log_path }}
+        run: echo "image_id=$(./vendor/smartassert/bash-ga-deploy-tools/src/digitalocean-snapshot/extract-id-from-packer-log.sh)" >> "$GITHUB_ENV"
 
       - name: Verify image exists
         if: ${{ needs.setup.outputs.dry_run == 'false' }}
         env:
           DIGITALOCEAN_API_TOKEN: ${{ secrets.DIGITALOCEAN_API_TOKEN }}
-          IMAGE_ID: ${{ steps.image.outputs.id }}
+          IMAGE_ID: ${{ env.image_id }}
           EXPECTED_EXISTS: "true"
         run: ./vendor/smartassert/bash-ga-deploy-tools/src/digitalocean-snapshot/verify-existence.sh
 
@@ -184,7 +174,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.PAT_TOKEN_SELF }}
           SERVICE_ID: ${{ matrix.service_id }}
-          IMAGE_ID: ${{ steps.image.outputs.id }}
+          IMAGE_ID: ${{ env.image_id }}
         run: |
           gh workflow run instance-manager.service-set-image.yml -f service_id="$SERVICE_ID" -f image_id="$IMAGE_ID"
 
@@ -192,7 +182,7 @@ jobs:
         if: ${{ needs.setup.outputs.dry_run == 'false' && needs.setup.outputs.should_deploy == 'false' }}
         env:
           DIGITALOCEAN_API_TOKEN: ${{ secrets.DIGITALOCEAN_API_TOKEN }}
-          IMAGE_ID: ${{ steps.image.outputs.id }}
+          IMAGE_ID: ${{ env.image_id }}
           EXPECTED_EXISTS: "false"
         run: |
           ./vendor/smartassert/bash-ga-deploy-tools/src/digitalocean-snapshot/delete.sh
