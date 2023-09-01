@@ -47,7 +47,7 @@ jobs:
         run: ./vendor/smartassert/bash-ga-deploy-tools/src/digitalocean-snapshot/verify-existence.sh
 
       - name: Dispatch service-configure event to smartassert/instance-manager
-        uses: peter-evans/repository-dispatch@v1
+        uses: peter-evans/repository-dispatch@v2
         with:
           token: ${{ secrets.INSTANCE_MANAGER_TOKEN }}
           repository: smartassert/instance-manager
