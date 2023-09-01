@@ -11,7 +11,7 @@ jobs:
     name: Setup
     runs-on: ubuntu-latest
     outputs:
-      service_ids: ${{ steps.service_ids.outputs.value }}
+      service_ids: ${{ env.service_ids }}
 
     steps:
       - name: Checkout
@@ -29,7 +29,7 @@ jobs:
           
           OUTPUT="$OUTPUT]"
           
-          echo "::set-output name=value::$OUTPUT"
+          echo "service_ids=$OUTPUT" >> "$GITHUB_ENV"
 
   caddy_fmt:
     needs: setup
